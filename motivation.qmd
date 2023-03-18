@@ -1,0 +1,154 @@
+---
+title: "Motivation"
+author: "Mélanie Fournier"
+format: 
+    html:
+        code-fold: true
+    pdf:
+        geometry: 
+        - top=30mm
+        - left=20mm
+        number-sections: true
+        include-in-header: 
+            text: |
+                \usepackage{amsmath}
+                \usepackage{easy-todo}
+                \usepackage{amsthm}
+        documentclass: article
+        fontsize: "14"
+jupyter: python3
+---
+
+
+
+
+Let $A$ be non singular square matrix of dimension $n\geq 1$ and let $b\in\mathbb{R}^n$. We consider the linear system $Ay = b$, where $y \in \mathbb{R}^n$. The system has for unique solution $y^* = A^{-1}b$. This is a fundamental problem to solve in numerical analysis, and there are numerous numerical methods to solve this, whether they are direct methods or iterative methods. In this thesis, we consider an iterative method. We consider the initial value problem 
+
+$$
+y'(t) = Ay(t)- b, \; \;  y(0) = y_0
+$$
+
+where $y_0\in \mathbb{R}^n$ and $t\in \mathbb{R}$. Multiplying the equation by $e^{-At}$, where $e^{-At}$ is the usual matrix exponential, and rearranging the terms yields 
+
+$$
+e^{-At}y'(t) - Ae^{-At}y(t) = e^{-At}b
+$$
+
+We recognise on the left hand side the derivative of the product $e^{-At}y(t)$, and thus, by the fundamental theorem of calculus,
+
+$$
+\left[ e^{-Au}y(u)\right]_0^t = \int_0^t -e^{-Au}b \; du.
+$$
+
+Multiplying by $A^{-1}A$ inside the integral in the LHS, we get 
+
+$$
+e^{-At}y(t) - y_0 = A^{-1}\left[e^{-Au}\right]_0^t b = A^{-1}e^{-At}b - A^{-1}b.
+$$
+
+Multiplying each side by $e^{At}$ and rearranging the terms we get an expression for $y(t)$,
+
+$$
+y(t) = e^{At}(y_0 - A^{-1}b) + A^{-1}b.
+$$
+
+Note that each of those step can be taken backward , which means that the solution we have is unique. We have thus proved 
+
+::: {#thm-ODEtheoretical}
+
+Let $A$ be a non singular, square matrix of dimension $n\geq 1$, $b\in\mathbb{R}^n$ a vector, and consider the initial value problem 
+
+$$
+y'(t) = Ay(t) - b, \; y(0) = y_0
+$$ {#eq-IVPth}
+
+where $t \rightarrow y(t)$ is a function from $\mathbb{R}$ to $\mathbb{R}^n$. Then the problem has a unique solution in the form of
+
+$$
+y(t) = e^{At}(y_0 - y^*) + y^*,
+$$
+
+where $y^* = A^{-1}b$, and $e^{At}$ is defined using the usual matrix exponential. 
+
+:::
+
+
+Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarly distinct) eigenvalues of $A$, write $\lambda_i = a_i + iy_i$, where $a_i,b_i \in \mathbb{R}$ are respectively the real part and the imaginary parts of the $i^{\text{th}}$ eigenvalue. The following holds
+
+
+
+:::{#thm-steadyState}
+
+ $y(t) \to y^*$ as $t \to +\infty$ for any initial value $y_0$ if and only if, for all $i = 1 , \dots , n$, $a_i <0$, that is, all the eigenvalues of $A$ have a strictly negative real part.
+
+:::
+
+
+
+
+
+:::{.proof}
+(In the diagonalisable case)
+
+We assume that $A$ is diagonalisable. Write $A = P\Delta P^{-1}$ where $\Delta$ is diagonal. 
+
+$$
+\Delta = \begin{pmatrix}   
+\lambda_1 & & &\\
+&\lambda_2 & &  \\
+&& \ddots & \\
+&&& \lambda_n 
+\end{pmatrix}
+$$
+
+Then $e^{At} = Pe^{\Delta t} P^{-1}$, where 
+
+$$
+e^{\Delta t} = \begin{pmatrix}   
+e^{\lambda_1 t} & & &\\
+&e^{\lambda_2 t} & &  \\
+&& \ddots & \\
+&&& e^{\lambda_n t}
+\end{pmatrix}
+$$
+
+
+Let $z(t) = P^{-1}(y(t)-y^*)$, where $y(t)$ is the unique solution to @eq-IVPth for some arbitrary initial value $y_0$. 
+
+Since $P$ is non singular, $y(t) \to y^*$ if and only if $z(t) \to 0$. We have
+
+$$
+z(t) = P^{-1} e^{At}(y_0-y^*)
+$$
+
+We note that $P^{-1} e^{At} = e^{\Delta t} P^{-1}$, thus
+
+$$
+z(t) = e^{\Delta t} P^{-1}(y_0-y^*).
+$$
+
+
+Looking at the $i^{\text{th}}$ element $z(t)_i$, we have 
+
+$$
+|z(t)_i| = e^{a_it}\left( P^{-1}(y_0-y^*)\right)_i
+$$
+
+where $a_i = \Re[\lambda_i]$. Clearly, if $a_i < 0$, $z(t)_i \to 0$ as $t \to +\infty$. If this holds for any $i = 1, \dots , n$, then $z(t) \to 0$ as $t\to +\infty$. This proves ($\Leftarrow$).
+
+This is also a necessary condition. Indeed, since $y_0$ is arbitrary, we can chose it so that $P^{-1}(y_0-y^*) = (1, \dots , 1)^T$. Then $z(t) = (e^{\lambda_1 t}, e^{\lambda_2 t}, \dots , e^{\lambda_n t})^T$ which converges to $0$ only if all the eigenvalues have a strictly negative real part.
+
+:::
+
+
+:::{.remark}
+A general proof is available on [@BellmanStab, chap. 1]
+:::
+
+
+We now go back to the original problem of solving the linear system $Ay = b$. If all the eigenvalues of $A$ have a strictly negative real part, then, any numerical solver for the initial value problem $y'(t) = Ay(t) - b$ with $y(0) = y_0$ where $t$ is some pseudo-time variable also becomes an iterative solver for the linear system $Ay = b$, as $y(t) \to y^*$. 
+
+
+:::{.remark}
+If all the eigenvalues of $A$ have a strictly positive real part, then we can simply solve $y' = (-A)y - (-b) = -Ay+b$ instead.
+:::

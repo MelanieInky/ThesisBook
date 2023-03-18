@@ -1,0 +1,23 @@
+{
+  "intro.qmd": {
+    "intro.html": "bd8e2a6a"
+  },
+  "index.qmd": {
+    "index.html": "d15b396e"
+  },
+  "summary.qmd": {
+    "summary.html": "06a2c1b6"
+  },
+  "references.qmd": {
+    "references.html": "a82f0cd6"
+  },
+  "Part1.qmd": {
+    "Part1.html": "7a5409c8"
+  },
+  "chapter1.qmd": {
+    "chapter1.html": "0e01570b"
+  },
+  "motivation.qmd": {
+    "motivation.html": "9e856e08"
+  }
+}

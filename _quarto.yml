@@ -1,0 +1,25 @@
+project:
+  type: book
+
+book:
+  title: "ThesisBook"
+  author: "Mélanie"
+  date: "3/15/2023"
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - motivation.qmd
+    - Part1.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+
+
+
