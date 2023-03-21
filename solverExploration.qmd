@@ -1,0 +1,168 @@
+---
+title: "Runge Kutta solver applied to the test problem"
+author: "Mélanie Fournier"
+format: 
+    html:
+        code-fold: true
+    pdf:
+        geometry: 
+        - top=30mm
+        - left=20mm
+        number-sections: true
+        include-in-header: 
+            text: |
+                \usepackage{amsmath}
+                \usepackage{easy-todo}
+                \usepackage{amsthm}
+        documentclass: article
+        fontsize: "14"
+jupyter: python3
+---
+
+
+We now have to solve the ODE $u' = e - Mu$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, where $n$ is the chosen number of subdivisions of $[0,1]$. Since we are only interested on the asymptotic behavior of $u$, we only need to care about the stability of the numerical solver we wish to use. We consider the following RK scheme with two stages.
+
+
+blablbal
+
+
+This solver has two parameters $\Delta t$ and $\alpha$. The objective is for the solver to converge to a steady state solution as fast as possible. Set $u_0 = u(0) = e$ as an initial value. We define the relative residual after $k$ steps as 
+
+$$
+r_k = ||Mu_k - e||/ ||e||.
+$$
+
+where $||.||$ is the 2-norm. since $||e|| = \sqrt{n-1}$,
+
+$$
+r_k = \frac{||Mu_k - e||}{\sqrt{n-1}}
+$$
+
+
+If the solver we chose is stable, then $||r_k|| \to 0$ as $k \to \infty$. We define now the convergence at step $n$ to be the ratio of residual at step $k$ and $k-1$. That is 
+
+$$
+c_k = \frac{||r_k||}{||r_{k-1}||} = \frac{||Mu_k - e||}{||Mu_{k-1}-e||}
+$$
+
+where $||.||$ is the 2-norm. 
+
+
+```{python}
+#| echo: false
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+class testProblem:
+## Define it as 
+    def __init__(self,b,n) -> None:
+        self.n = n
+        self.b = b
+        self.deltaX = 1 / (n+1)
+        self.M = self.buildM(b,n,self.deltaX)
+        self.e = self.buildE(n, self.deltaX)
+
+
+    def buildM(self,b,n,deltaX):
+        """
+        we go from u0 to u(n+1).
+        """
+        deltaX = 1 / (n+1)
+        A = 1/ deltaX *(np.eye(n) -1 * np.eye(n,k = -1))
+        B = 1 / deltaX**2 * b* (-2*np.eye(n) + np.eye(n, k = -1) + np.eye(n,k=1))
+        return A-B
+    
+    def buildE(self,n,deltaX):
+        return np.ones(n)
+    
+    def f(self,y):
+        return self.e - self.M@y
+    
+    def oneStepSmoother(self,y,t,deltaT,alpha):
+        """
+        Perform one pseudo time step deltaT of the solver for the diff eq
+        y' = e - My = f(y). .
+        """
+        k1 = self.f(y)
+        k2 = self.f(y + alpha*deltaT*k1)
+        yNext = y + deltaT*k2
+        return yNext
+    
+    def findOptimalParameters(self):
+        #This is where the reinforcement learning algorithm 
+        #take place in
+        return 0 , 0
+    
+
+    def mainSolver(self,n_iter = 10):
+        """ Main solver for the problem, calculate the approximated solution
+        after n_iter pseudo time steps. """
+        resNormList = np.zeros(n_iter+1)
+        t = 0
+        #Initial guess y = e
+        y = np.ones(e)
+        resNormList[0] = np.linalg.norm(self.M@y-self.e)
+        ##Finding the optimal params
+        alpha, deltaT = self.findOptimalParameters()
+        ##Will need to be removed, just for debugging
+        alpha = 0.5
+        deltaT = 0.00006
+        #For now, we use our best guess
+        for i in range(n_iter):
+            y = self.oneStepSmoother(y,t,deltaT,alpha)
+            t += deltaT
+            resNorm = np.linalg.norm(self.M@y - self.e)
+            resNormList[i+1] = resNorm
+        return y , resNormList
+
+    def mainSolver2(self,alpha, deltaT, n_iter = 10):
+        """ Like the main solver, except we give 
+        the parameters explicitely """
+        resNormList = np.zeros(n_iter+1)
+        t = 0
+        #Initial guess y = e
+        y = np.ones(self.n)
+        resNormList[0] = np.linalg.norm(self.M@y-self.e)
+        #For now, we use our best guess
+        for i in range(n_iter):
+            y = self.oneStepSmoother(y,t,deltaT,alpha)
+            t += deltaT
+            resNorm = np.linalg.norm(self.M@y - self.e)
+            resNormList[i+1] = resNorm
+        return y , resNormList
+        
+```
+
+
+
+```{python}
+#| fig-cap: Evolution of the residual norm over iteration, with problem parameters $n = 100$ and $b = 0.5$, and RK parameters $\Delta t = 0.00009$ and $\alpha = 0.3$. 
+#| echo: false
+
+n = 100
+b = 0.5
+alpha = 0.3
+deltaT = 0.00009
+problem = testProblem(b,n)
+
+y ,  resNormList = problem.mainSolver2(alpha,deltaT,2000)
+
+relRes = resNormList / np.sqrt(n-1)
+
+resRatio = resNormList[1:]/resNormList[:-1]
+
+fig, (ax1, ax2) = plt.subplots(2,1)
+ax1.plot(relRes)
+ax1.set_yscale('log')
+ax1.set_ylabel('Relative Residual $r_n$')
+ax1.set_xlabel('Iteration')
+
+ax2.plot(resRatio)
+ax2.set_ylabel('Residual ratio')
+ax2.set_xlabel('Iteration')
+plt.show()
+```
+
+

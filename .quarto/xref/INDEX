@@ -29,5 +29,11 @@
   "RKsolver.qmd": {
     "RKsolver.html": "9e2d4086",
     "RKsolver.tex": "134a9634"
+  },
+  "testEqIntro.qmd": {
+    "testEqIntro.html": "8055aaa8"
+  },
+  "solverExploration.qmd": {
+    "solverExploration.html": "02b07564"
   }
 }

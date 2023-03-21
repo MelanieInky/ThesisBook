@@ -1,0 +1,104 @@
+---
+title: "A test problem - Convection diffusion equation"
+author: "Mélanie Fournier"
+format: 
+    html:
+        code-fold: true
+    pdf:
+        geometry: 
+        - top=30mm
+        - left=20mm
+        number-sections: true
+        include-in-header: 
+            text: |
+                \usepackage{amsmath}
+                \usepackage{easy-todo}
+                \usepackage{amsthm}
+        documentclass: article
+        fontsize: "14"
+jupyter: python3
+---
+
+
+As a test case for the solver, we consider the steady state convection-diffusion equation.
+
+$$
+    u_x = bu_{xx} + 1
+$$
+
+where $b$ is some physical parameter and $u(x)$ is defined on the interval $[0,1]$. The boundary condition are given by $u(0) = u(1) = 0$. This equation has an analytical solution that is given by
+
+$$
+u(x) = x - \frac{e^{-(1-x)/b} - e^{-1/b}}{1-e^{-1/b}}.
+$$
+
+
+We are however interested in solving this numerically, with a finite difference approach. We partition the interval $[0,1]$ into equidistant points $x_i, i = 0, \dots n$. We note the distance between each points as $\Delta x$, and we have $u(x_0) = u(0) = 0$ and $u(x_n) = u(1) = 0$. We use the notation $u^i = u(x_i)$. We approximate, for $i \geq 1$ the derivative 
+
+$$
+    u_x^i = \frac{u^i - u^{i-1}}{\Delta x}
+$$
+and the second order derivative is approximated by 
+$$
+    u^i_{xx} = \frac{u^{i+1} - 2u^i + u^{i-1}}{\Delta x ^2}
+$$
+
+Note that the first derivative is approximated backward in time. For $i = 1 , \dots , n-1$, we thus have the approximation 
+
+$$
+u_x^i =  \frac{u^i - u^{i-1}}{\Delta x}  = b \frac{u^{i+1} - 2u^i + u^{i-1}}{\Delta x ^2} + 1
+$$
+
+This can be given in matrix format by letting $u = (u^1,\dots, u^{n-1})^T$
+
+$$
+    Au = Bu + e
+$$
+
+where $e = (1,1,\dots , 1)^T$,
+
+$$
+A = \frac{1}{\Delta x}\begin{bmatrix}
+    1 &  &&&\\
+    -1 & 1 &&\\
+    & -1 & 1 &\\
+    &&\ddots & \ddots &\\
+    &&&-1& 1 
+\end{bmatrix}    
+$$
+
+and 
+
+$$
+B =  \frac{b}{\Delta x ^2}\begin{bmatrix}
+    -2 & 1 &&&\\
+    1 & \ddots & \ddots &&\\
+    & \ddots & \ddots & \ddots&\\
+    && \ddots & \ddots & 1 &\\
+    &&&1 & -2  
+\end{bmatrix} .
+$$
+
+With $M = A-B$, we have to solve the linear system 
+
+$$
+Mu = e
+$$
+
+where $M$ is a square matrix of dimension $(n-1) \times (n-1)$ and $e$ is the one vector of dimension $n-1$.
+
+:::{.remark}
+
+(To make better but I think it works)
+It is apparent that $M$ is diagonally dominant. Since all elements of the diagonal are positive, then so are the eigenvalues real part. Assuming $M$ is non singular, we have that $-M$ is stable.
+
+:::
+
+To solve this linear system, we use the method highlighted before. We thus introduce a pseudo time variable $t$ and we consider the ODE.
+
+$$
+u'(t) = e - Mu(t)
+$$
+
+Assuming $M$ is non singular, we can use @thm-steadyState to guarantee that the ODE will converge to a steady state independently of the initial value we chose. In the next chapter, we will apply the Runge-Kutta scheme we saw earlier to the problem and will see how parameters changes results.
+
