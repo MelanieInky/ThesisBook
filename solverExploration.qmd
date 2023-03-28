@@ -20,7 +20,7 @@ jupyter: python3
 ---
 
 
-We now have to solve the ODE $u' = e - Mu$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, where $n$ is the chosen number of subdivisions of $[0,1]$. Since we are only interested on the asymptotic behavior of $u$, we only need to care about the stability of the numerical solver we wish to use. We consider the following RK scheme with two stages.
+We now have to solve the ODE $u' = b - Nu$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, where $n$ is the chosen number of subdivisions of $[0,1]$. Since we are only interested on the asymptotic behavior of $u$, we only need to care about the stability of the numerical solver we wish to use. We consider the following RK scheme with two stages.
 
 
 blablbal
@@ -29,15 +29,10 @@ blablbal
 This solver has two parameters $\Delta t$ and $\alpha$. The objective is for the solver to converge to a steady state solution as fast as possible. Set $u_0 = u(0) = e$ as an initial value. We define the relative residual after $k$ steps as 
 
 $$
-r_k = ||Mu_k - e||/ ||e||.
+r_k = ||Nu_k - b||/ ||b||.
 $$
 
-where $||.||$ is the 2-norm. since $||e|| = \sqrt{n-1}$,
-
-$$
-r_k = \frac{||Mu_k - e||}{\sqrt{n-1}}
-$$
-
+where $||.||$ is the 2-norm.
 
 If the solver we chose is stable, then $||r_k|| \to 0$ as $k \to \infty$. We define now the convergence at step $n$ to be the ratio of residual at step $k$ and $k-1$. That is 
 
@@ -51,105 +46,27 @@ where $||.||$ is the 2-norm.
 ```{python}
 #| echo: false
 
-
 import numpy as np
 import matplotlib.pyplot as plt
-
-class testProblem:
-## Define it as 
-    def __init__(self,b,n) -> None:
-        self.n = n
-        self.b = b
-        self.deltaX = 1 / (n+1)
-        self.M = self.buildM(b,n,self.deltaX)
-        self.e = self.buildE(n, self.deltaX)
-
-
-    def buildM(self,b,n,deltaX):
-        """
-        we go from u0 to u(n+1).
-        """
-        deltaX = 1 / (n+1)
-        A = 1/ deltaX *(np.eye(n) -1 * np.eye(n,k = -1))
-        B = 1 / deltaX**2 * b* (-2*np.eye(n) + np.eye(n, k = -1) + np.eye(n,k=1))
-        return A-B
-    
-    def buildE(self,n,deltaX):
-        return np.ones(n)
-    
-    def f(self,y):
-        return self.e - self.M@y
-    
-    def oneStepSmoother(self,y,t,deltaT,alpha):
-        """
-        Perform one pseudo time step deltaT of the solver for the diff eq
-        y' = e - My = f(y). .
-        """
-        k1 = self.f(y)
-        k2 = self.f(y + alpha*deltaT*k1)
-        yNext = y + deltaT*k2
-        return yNext
-    
-    def findOptimalParameters(self):
-        #This is where the reinforcement learning algorithm 
-        #take place in
-        return 0 , 0
-    
-
-    def mainSolver(self,n_iter = 10):
-        """ Main solver for the problem, calculate the approximated solution
-        after n_iter pseudo time steps. """
-        resNormList = np.zeros(n_iter+1)
-        t = 0
-        #Initial guess y = e
-        y = np.ones(e)
-        resNormList[0] = np.linalg.norm(self.M@y-self.e)
-        ##Finding the optimal params
-        alpha, deltaT = self.findOptimalParameters()
-        ##Will need to be removed, just for debugging
-        alpha = 0.5
-        deltaT = 0.00006
-        #For now, we use our best guess
-        for i in range(n_iter):
-            y = self.oneStepSmoother(y,t,deltaT,alpha)
-            t += deltaT
-            resNorm = np.linalg.norm(self.M@y - self.e)
-            resNormList[i+1] = resNorm
-        return y , resNormList
-
-    def mainSolver2(self,alpha, deltaT, n_iter = 10):
-        """ Like the main solver, except we give 
-        the parameters explicitely """
-        resNormList = np.zeros(n_iter+1)
-        t = 0
-        #Initial guess y = e
-        y = np.ones(self.n)
-        resNormList[0] = np.linalg.norm(self.M@y-self.e)
-        #For now, we use our best guess
-        for i in range(n_iter):
-            y = self.oneStepSmoother(y,t,deltaT,alpha)
-            t += deltaT
-            resNorm = np.linalg.norm(self.M@y - self.e)
-            resNormList[i+1] = resNorm
-        return y , resNormList
-        
+from testProblemClass import testProblem
 ```
 
 
 
 ```{python}
-#| fig-cap: Evolution of the residual norm over iteration, with problem parameters $n = 100$ and $b = 0.5$, and RK parameters $\Delta t = 0.00009$ and $\alpha = 0.3$. 
+#| fig-cap: Evolution of the residual norm over iteration, with problem parameters $n = 100$ and $b = 0.05$, and RK parameters $\Delta t = 1.6$ and $\alpha = 0.3$. 
 #| echo: false
 
 n = 100
-b = 0.5
+b = 0.05
 alpha = 0.3
-deltaT = 0.00009
+deltaT = 1.65
 problem = testProblem(b,n)
 
 y ,  resNormList = problem.mainSolver2(alpha,deltaT,2000)
 
-relRes = resNormList / np.sqrt(n-1)
+e_norm = np.linalg.norm(problem.e,2)
+relRes = resNormList / e_norm
 
 resRatio = resNormList[1:]/resNormList[:-1]
 
@@ -166,3 +83,71 @@ plt.show()
 ```
 
 
+ # A small experiment.
+
+We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b, n)$. Since the residual ratio vary quite a bit depending on the number of iteration, we decide to investigate the residual ratio after 10 iterations and 100 iterations. So, for the problem parameters $b = 0.05$, and $n = 100$, we plot $c_{10 }= f(\Delta t, \alpha)$ and $c_{100} = g(\Delta t, \alpha)$. We wish to answer the following questions
+
+- Where are the optimal parameters for this specific problem, that is, the ones that minimize $c_{10}$ and $c_{100}$, and do they also depend on the iteration number or not. 
+- What do these functions look like. In particular, we may be interested in the function convexity.
+
+
+In both cases, we use a contour plot
+
+```{python}
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator
+
+def resRatio(resNormList):
+    return resNormList[-1] / resNormList[-2]
+
+
+
+l = 100
+deltaTgrid = np.linspace(0.1,4.3,l)
+alphaGrid = np.linspace(0,1,l)
+
+deltaTgrid, alphaGrid = np.meshgrid(deltaTgrid,alphaGrid)
+
+resRatioGrid2 = np.zeros((l,l))
+
+#Version 10
+for i in range(l):
+    for j in range(l):
+        #print('alpha', alphaGrid[j,0])
+        #print('deltaT', deltaTgrid[0,i])
+        y , resNormList = problem.mainSolver2(alphaGrid[j,i],deltaTgrid[j,i],10)
+        ratio = resRatio(resNormList)
+        #print('ratio', ratio)
+        resRatioGrid2[j,i] = resRatio(resNormList)
+
+
+
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+ax.plot_surface(deltaTgrid,alphaGrid,np.clip(resRatioGrid2,0.5,1), cmap=cm.coolwarm, linewidth=0)
+ax.view_init(elev = 90,azim = 180)
+plt.show()
+
+```
+
+```{python}
+import plotly.graph_objects as go
+
+fig = go.Figure(data = 
+    go.Contour(
+        z = np.clip(resRatioGrid2,0.5,1),
+        y = alphaGrid[:,0],
+        x = deltaTgrid[0,:],
+        colorbar=dict(
+            title='Residual ratio, after 10 iter.', # title here
+            titleside='right',
+            titlefont=dict(
+            size=14,
+            family='Arial, sans-serif'))
+    ))
+
+fig.update_layout(
+    xaxis_title = 'Delta t',
+    yaxis_title = 'alpha'
+)
+
+```

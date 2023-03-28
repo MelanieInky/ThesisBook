@@ -83,7 +83,7 @@ With $M = A-B$, we have to solve the linear system
 
 $$
 Mu = e
-$$
+$$ {#eq-UnscaledSystem}
 
 where $M$ is a square matrix of dimension $(n-1) \times (n-1)$ and $e$ is the one vector of dimension $n-1$.
 
@@ -94,11 +94,53 @@ It is apparent that $M$ is diagonally dominant. Since all elements of the diagon
 
 :::
 
-To solve this linear system, we use the method highlighted before. We thus introduce a pseudo time variable $t$ and we consider the ODE.
+
+
+```{python}
+#| fig-cap: Theoretical and discretized solution of the problem with $b = 0.09$, $n = 50$.
+#| echo: false
+import numpy as np
+import matplotlib.pyplot as plt
+from testProblemClass import testProblem
+
+n = 50
+b = 0.09
+problem = testProblem(b,n)
+
+M = problem.M
+e = problem.e
+
+y = np.linalg.solve(M,e)
+
+x = np.linspace(0,1,n)
+y_th = x - (np.exp(-(1-x)/b) - np.exp(-1/b))/(1-np.exp(-1/b))
+
+fig , ax = plt.subplots()
+ax.plot(x,y_th,label='theoretical solution')
+ax.plot(x,y,label='discretized solution')
+ax.legend()
+ax.set_xlabel('x')
+ax.set_ylabel('u(x)')
+
+plt.show()
+```
+
+
+
+
+To solve this linear system, we use the method highlighted before. To make it easier for later, we chose to scale $M$ so that its diagonal elements are $1$. This allows us to have all eigenvalues in the circle centered around $1$ with radius $1$ independently of the parametrisation. Setting $\gamma = \frac{1}{\Delta x} + \frac{2b}{\Delta x^2}$, solving @eq-UnscaledSystem is equivalent to solving the system
 
 $$
-u'(t) = e - Mu(t)
+Nu = b
 $$
 
-Assuming $M$ is non singular, we can use @thm-steadyState to guarantee that the ODE will converge to a steady state independently of the initial value we chose. In the next chapter, we will apply the Runge-Kutta scheme we saw earlier to the problem and will see how parameters changes results.
+where with $N = M/\gamma$, $b = e/\gamma$. The eigenvalues of $M$ are also scaled by $1/\gamma$ so $-N$ is stable, assuming it is non singular. We are now ready to solve the system iteratively using ODE solver. 
+
+We thus introduce a pseudo time variable $t$ and we consider the ODE.
+
+$$
+u'(t) = b - Nu(t)
+$$
+
+Assuming $N$ is non singular, we can use @thm-steadyState to guarantee that the ODE will converge to a steady state independently of the initial value we chose. In the next chapter, we will apply the Runge-Kutta scheme we saw earlier to the problem and will see how parameters changes results.
 
