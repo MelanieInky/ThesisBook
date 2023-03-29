@@ -91,9 +91,11 @@ We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for
 - What do these functions look like. In particular, we may be interested in the function convexity.
 
 
-In both cases, we use a contour plot
+In both cases, we use a contour plot. In @fig-resRatio10 and @fig-resRatio100, the residual ratio is clipped when it is $\geq 1$ so as to maximise contrast.
 
 ```{python}
+#| echo: false
+
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 
@@ -122,14 +124,14 @@ for i in range(l):
 
 
 
-fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-ax.plot_surface(deltaTgrid,alphaGrid,np.clip(resRatioGrid2,0.5,1), cmap=cm.coolwarm, linewidth=0)
-ax.view_init(elev = 90,azim = 180)
-plt.show()
 
 ```
 
 ```{python}
+#| fig-cap: Residual ratio at 10 iterations, for problem parameters $b = 0.05$ and $n = 100$, and with varying solver parameters $\alpha$ and $\Delta t$
+#| label: fig-resRatio10
+#| echo: false
+#| eval: false
 import plotly.graph_objects as go
 
 fig = go.Figure(data = 
@@ -151,3 +153,45 @@ fig.update_layout(
 )
 
 ```
+
+
+```{python}
+#| fig-cap: Residual ratio at 100 iterations, for problem parameters $b = 0.05$ and $n = 100$, and with varying solver parameters $\alpha$ and $\Delta t$
+#| label: fig-resRatio100
+#| echo: false
+#| eval: false
+
+#Version 100
+for i in range(l):
+    for j in range(l):
+        #print('alpha', alphaGrid[j,0])
+        #print('deltaT', deltaTgrid[0,i])
+        y , resNormList = problem.mainSolver2(alphaGrid[j,i],deltaTgrid[j,i],100)
+        ratio = resRatio(resNormList)
+        #print('ratio', ratio)
+        resRatioGrid2[j,i] = resRatio(resNormList)
+
+fig = go.Figure(data = 
+    go.Contour(
+        z = np.clip(resRatioGrid2,0.5,1),
+        y = alphaGrid[:,0],
+        x = deltaTgrid[0,:],
+        colorbar=dict(
+            title='Residual ratio, after 100 iter.', # title here
+            titleside='right',
+            titlefont=dict(
+            size=14,
+            family='Arial, sans-serif'))
+    ))
+
+fig.update_layout(
+    xaxis_title = 'Delta t',
+    yaxis_title = 'alpha'
+)
+
+```
+
+The stability region after 100 iterations is more narrow, suggesting that convergence may not hold even if it seems to hold for the first few iterations. Nevertheless, we can see how the parameters act on the function. 
+
+This is of course an exploration of a particular problem, and it makes no sense in practice to compute the optimal parameters with a grid search. We thus explore a possible solution by using a reinforcement learning algorithm to "learn" these optimal parameters. 
+

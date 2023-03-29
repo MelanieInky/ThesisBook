@@ -12,7 +12,7 @@ book:
     - motivation.qmd
     - testEqIntro.qmd
     - solverExploration.qmd
-    - Part1.qmd
+    - reinforcementBasic.qmd
     - summary.qmd
     - references.qmd
 
