@@ -58,26 +58,98 @@ A finite Markov decision process is defined as a discrete time process, where we
 
 A Markov decision process has a model, which consist of 
 
-- the probability of getting from state $s$ to the state $s'$ by taking action $a$, which we call the state transition probability $p(s'|s,a) = P(s_{t+1} = s' | s_t = s, a_t = a)$.
-- the probability of getting reward $r$ by taking the action $a$ at a state $s$ $p(r|s,a) = P(r_{t+1} = r | s_t = s, a_t = a)$. 
+- the probability of getting from state $s$ to the state $s'$ by taking action $a$, which we call the state transition probability $p(s'|s,a) = P(S_{t+1} = s' | s_t = s, a_t = a)$.
+- the probability of getting reward $r$ by taking the action $a$ at a state $s$ $p(r|s,a) = P(R_{t+1} = r | S_t = s, A_t = a)$. 
 
-Furthermore, a policy function is also given that governs for a given state $s\in\mathcal{S}$, the probability of taking action $a\in\mathcal{A}$, that probability is $\pi(a|s) = Pr(a_{t+1} = a|s_t = s)$.
+Furthermore, a policy function is also given that governs for a given state $s\in\mathcal{S}$, the probability of taking action $a\in\mathcal{A}$, that probability is $\pi(a|s) = Pr(A_{t+1} = a|S_t = s)$.
 
 :::
 
 
 :::{.remark}
 
-We have implicitly defined the random variables designing the state, action, reward at a time $t$, those are respectively $s_t,a_t,r_t$. A diagram of the process is as follow
-
-
+We have implicitly defined the random variables designing the state, action, reward at a time $t$, those are respectively $S_t,A_t,R_t$. A diagram of the process is as follow
 
 :::
 
+
+
+(Here is a shiny diagram, I should learn tikz..)
+
+
+:::{.remark}
+
+The state space $\mathcal{S}$ and the action space $\mathcal{A}$ can be finite or not. We only consider the case of finite Markov decision process to make matter easier, with generalization only if necessary. This also mean that the model is finite. 
+
+The model in a MDP can be in practice impossible to define in advance. This is remedied by using so called *model free* reinforcement learning algorithms.
+
+:::
+
+:::{.remark}
+Markov property applies, in particular lack of memory. (TODO) 
+:::
 
 :::{#exm-fmdpex}
 (A more mathematical example, adorable)
 
+(More or less a gridworld example to write about)
+
+:::
+
+At this point, we may be able to roughly define how to translate the problem (TODO, should formulate it better so I can reference it). 
+
+- The state space is defined by the problem parameters $(b,n)$. A simplification that could be possible would be to discretize the state space. 
+- Actions would be choosing the solver parameters $(\Delta t, \alpha)$. This can also be discretized. 
+- Reward can be defined to be proportional to convergence rate after a certain number of iterations, where better convergence rate leads to better rewards.
+- The model can be partially described, in the sense that while we can't model rewards, we can define the state transition probabilities by simply choosing a new state at random.
+
+
+### Bellman equation
+
+We first define a trajectory. We note as $S_t$ the state of an agent at instant $t$. Then, according to the policy, this agent takes the action $A_t$. After taking this action, the agent is now at the state $S_{t+1}$, and it gets the rewards $R_{t+1}$. Then the agent takes action $A_{t+1}$, and gets to a new state $S_{t+2}$ with reward $R_{t+2}$. This can continues indefinitely. We define the trajectory of an agent with starting state $S_t = s$ as the states-rewards pairs ${(S_{t+1},A_{t+1}),(S_{t+2},A_{t+2} ),\dots}$.
+
+
+```{python}
+#| echo: false
+#| fig-cap: A helpful diagram showing trajectory, to be remade with tikz.
+from IPython.display import Image
+Image('images/helpful_diagram.jpg')
+```
+
+
+Ideally, we would like to chose a policy that aim to maximize rewards along any trajectory, given any starting state. This is the goal of any reinforcement learning algorithm. 
+We now define the discounted return along a trajectory. 
+
+
+:::{#def-discount}
+Let $t = 0, 1, \dots$. The discounted return along the trajectory ${(S_{t+1},A_{t+1}),(S_{t+2},A_{t+2} ),\dots}$ is the random variable given by
+
+$$
+G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots
+$$
+
+where $\gamma \in (0,1)$ is called the discount rate. 
+:::
+
+The discounted return is thus the sum of rewards along a trajectory. The discount rate is chosen depending on whether we want the agent to favor short term rewards, in which case a discount rate closer to $0$ can be chosen, or long term rewards, with a discount rate closer to $1$.
+
+Since the discount rate is a random variable, we can look at its expectation, in particular, we are interested in its conditional expectation, given a starting state $S_t = s$. This expectation is called the state value.
+
+
+:::{#def-state_value}
+(State value) The state value of a state $s$ is the function, define for any $s\in\mathcal{S}$
+
+$$
+v_\pi(s) = E[G_t|S_t = s]
+$$
+
+where $\pi$ is a given policy. 
 
 
 :::
+
+:::{.remark}
+The state value is independent on the time $t$! 
+:::
+
+The objective is thus to find a policy $\pi$ that maximizes the state values. We next derive the Bellman equation. 
