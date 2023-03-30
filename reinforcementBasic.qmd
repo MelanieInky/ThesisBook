@@ -153,3 +153,5 @@ The state value is independent on the time $t$!
 :::
 
 The objective is thus to find a policy $\pi$ that maximizes the state values. We next derive the Bellman equation. 
+
+(test @reinforcementBookShiyuZhao , @Sutton1998)
