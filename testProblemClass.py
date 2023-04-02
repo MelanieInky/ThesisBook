@@ -9,8 +9,9 @@ class testProblem:
         self.deltaX = 1 / (n+1)
         self.M = self.buildM()
         self.e = self.buildE()
-
-
+        self.pol = policy()
+    
+    
     def buildM(self):
         """
         we go from u0 to u(n+1).
@@ -48,28 +49,37 @@ class testProblem:
         #take place in
         return 0 , 0
     
+    def update(self, b,n):
+        self.b = b
+        self.n = n
+        self.M = self.buildM()
+        self.e = self.buildE()
+        self.deltaX = 1 / (n+1)
 
     def mainSolver(self,n_iter = 10):
         """ Main solver for the problem, calculate the approximated solution
         after n_iter pseudo time steps. """
-        resNormList = np.zeros(n_iter+1)
         t = 0
         #Initial guess y = e
-        y = np.ones(e)
-        resNormList[0] = np.linalg.norm(self.M@y-self.e)
-        ##Finding the optimal params
-        alpha, deltaT = self.findOptimalParameters()
-        ##Will need to be removed, just for debugging
-        alpha = 0.5
-        deltaT = 0.00006
-        #For now, we use our best guess
+        y = np.copy(self.e)
+        resNorm = np.linalg.norm(self.M@y-self.e)
+        lastResNorm = resNorm
+        ##Finding the parameters according to current policy
+        alpha, deltaT = self.pol(self.b, self.n)
         for i in range(n_iter):
             y = self.oneStepSmoother(y,t,deltaT,alpha)
             t += deltaT
-            resNorm = np.linalg.norm(self.M@y - self.e)
-            resNormList[i+1] = resNorm
-        return y , resNormList
-
+            newResNorm = np.linalg.norm(self.M@y - self.e)
+            print(newResNorm)
+            #Check for overflow!
+            if np.isinf(newResNorm) or np.isnan(newResNorm):
+                print("Overflow while calculating residual!")
+                return y , resNorm, lastResNorm
+            
+            lastResNorm = resNorm
+            resNorm = newResNorm
+        return y , resNorm, lastResNorm
+    
     def mainSolver2(self,alpha, deltaT, n_iter = 10):
         """ Like the main solver, except we give 
         the parameters explicitely """
@@ -86,4 +96,121 @@ class testProblem:
             resNorm = np.linalg.norm(self.M@y - self.e,2)
             resNormList[i+1] = resNorm
         return y , resNormList
-        
+
+    def getActionAndReward(self,n_iter = 40):
+        """Take an action, given the current problem parameters and policy,
+        then compute the reward. Return the action taken, and the associated reward"""
+        t = 0
+        #Initial guess y = e
+        y = np.copy(self.e)
+        resNorm = np.linalg.norm(self.M@y-self.e)
+        lastResNorm = resNorm
+        ##Finding the parameters according to current policy
+        alpha, deltaT = self.pol(self.b, self.n)
+        for i in range(n_iter):
+            y = self.oneStepSmoother(y,t,deltaT,alpha)
+            t += deltaT
+            newResNorm = np.linalg.norm(self.M@y - self.e)
+            print(newResNorm)
+            #Check for overflow!
+            if np.isinf(newResNorm) or np.isnan(newResNorm):
+                print("Overflow while calculating residual!")
+                break
+            lastResNorm = resNorm
+            resNorm = newResNorm
+        ratio =  resNorm / lastResNorm
+        reward = 1 -ratio 
+        print("alpha : ", alpha)
+        print("deltaT : ", deltaT )
+        print("reward : " , reward)
+        return alpha, deltaT, reward
+    
+
+
+    def generateEpisode(self, length = 5):
+        """Given the currert policy, generate an episode of fixed length"""
+        bHistory = np.zeros(length)
+        nHistory = np.zeros(length)
+        alphaHistory = np.zeros(length)
+        deltaTHistory = np.zeros(length)
+        rewardHistory = np.zeros(length)
+        for i in range(length):
+            bHistory[i] = self.b
+            nHistory[i] = self.n
+            #Compute action and reward
+            alpha, deltaT , reward = self.getActionAndReward()
+            alphaHistory[i] = alpha
+            deltaTHistory[i] = deltaT
+            rewardHistory[i] = reward
+            gradient = self.pol.logLikGradient(self.b,self.n,alpha,deltaT)
+            print("gradient : ", gradient)
+            #Then jump to a new state, at random
+            newb = np.random.uniform(0,1)
+            newn = np.random.randint(5,200)
+            self.update(newb,newn)
+
+        myEpisode = episode(bHistory,nHistory,alphaHistory, deltaTHistory,rewardHistory)
+        return myEpisode
+
+
+
+
+class episode:
+    def __init__(self,b,n,alpha,deltaT,reward):
+        self.bHist = b
+        self.nHist = n
+        self.alphaHist = alpha
+        self.deltaTHist = deltaT
+        self.rewardHist = reward
+
+
+class policy:
+    """ Policy class. Will be used to compute all sorts of things"""
+    def __init__(self) -> None:
+        """ Policy, first with random values"""
+        self.theta = np.random.rand(6)/50
+        self.stdDev = 0.01 #Will be learned later
+
+    def __call__(self, b,n):
+        """ Evaluate the policy and return the alpha, deltaT parameters"""
+        theta = self.theta
+        alphaMean = theta[0]*b + theta[1]*n + theta[4]
+        deltaTMean = theta[2]*b + theta[3]*n + theta[5]
+        alpha = np.random.normal(alphaMean,self.stdDev)
+        deltaT = np.random.normal(deltaTMean,self.stdDev)
+        return alpha, deltaT
+    
+    def __str__(self) -> str:
+        """Overload for the print"""
+        D = np.reshape(self.theta[:4],(2,2))
+        part1 = "Policy function, of the form [alpha , deltaT] = D*[b,n]' + bias, with D = \n"
+        part2 =  D.__str__()
+        part3 = "\nand b = " + self.theta[4:].__str__()
+        part4 = "\nwith common std dev of " + str(self.stdDev) + "."
+        return part1 + part2 + part3 + part4
+    
+    def logLikGradient(self,b,n,alpha,deltaT):
+        """ Get the gradient of log likelihood, for each parameters"""
+        theta = self.theta
+        xi1 = (alpha - theta[0] * b - theta[1] * n - theta[4])/(2*self.stdDev**2)
+        xi2 = (deltaT - theta[2] * b - theta[3] * n - theta[5])/(2*self.stdDev**2)
+        gradTheta = np.zeros(6)
+        gradTheta[0] = b*xi1
+        gradTheta[1] = n*xi1
+        gradTheta[4] = xi1
+        gradTheta[2] = b*xi2
+        gradTheta[3] = n*xi2
+        gradTheta[5] = xi2
+        self.gradient = gradTheta
+        return gradTheta
+
+
+
+
+problem = testProblem(0.05,100)
+print(problem.pol)
+problem.getActionAndReward()
+print(problem.pol(problem.b,problem.n))
+
+
+myEpisode = problem.generateEpisode()

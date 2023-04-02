@@ -1,0 +1,32 @@
+---
+title: "Runge Kutta solver applied to the test problem"
+author: "Mélanie Fournier"
+format: 
+    html:
+        code-fold: true
+    pdf:
+        geometry: 
+        - top=30mm
+        - left=20mm
+        number-sections: true
+        include-in-header: 
+            text: |
+                \usepackage{amsmath}
+                \usepackage{easy-todo}
+                \usepackage{amsthm}
+        documentclass: article
+        fontsize: "14"
+jupyter: python3
+---
+
+
+
+
+```{python}
+from testProblemClass import testProblem , policy
+
+problem = testProblem(0.05,30)
+print(problem.pol)
+problem.computeReward()
+
+```
