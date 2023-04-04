@@ -96,7 +96,7 @@ class testProblem:
             resNormList[i+1] = resNorm
         return y , resNormList
 
-    def getActionAndReward(self,n_iter = 40):
+    def getActionAndReward(self,n_iter = 10):
         """Take an action, given the current problem parameters and policy,
         then compute the reward. Return the action taken, and the associated reward"""
         t = 0
@@ -111,16 +111,16 @@ class testProblem:
             t += deltaT
             newResNorm = np.linalg.norm(self.M@y - self.e)
             #Check for overflow!
-            if np.isinf(newResNorm) or np.isnan(newResNorm):
+            if np.isinf(newResNorm) or np.isnan(newResNorm) or newResNorm>100000:
                 print("Overflow while calculating residual!")
-                break
+                return alpha, deltaT , -3
             lastResNorm = resNorm
             resNorm = newResNorm
         ratio =  resNorm / lastResNorm
         if(ratio<=1):
             reward = 1000*(1-ratio)
         else:
-            reward = 1 - ratio 
+            reward = 1 - ratio
         return alpha, deltaT, reward
     
 
@@ -140,7 +140,7 @@ class testProblem:
             alphaHistory[i] = alpha
             deltaTHistory[i] = deltaT
             rewardHistory[i] = reward
-            gradient = self.pol.logLikGradient(self.b,self.n,alpha,deltaT)
+            #gradient = self.pol.logLikGradient(self.b,self.n,alpha,deltaT)
             #Then jump to a new state, at random
             newb = np.random.uniform(0,1)
             newn = np.random.randint(5,200)
@@ -149,30 +149,40 @@ class testProblem:
         myEpisode = episode(bHistory,nHistory,alphaHistory, deltaTHistory,rewardHistory)
         return myEpisode
 
-    def learnOneEpisode(self):
-        gamma = 0.95
-        length = 100
+    def learnOneEpisode(self,length = 100):
+        gamma = 0.1
         myEpisode = self.generateEpisode(length)
         theta = np.copy(self.pol.theta)
         for t in range(length):
             #Calculate the sum of rewards
             Gt = 0
             for i in range(t,length):
-                Gt += myEpisode.rewardHist[i] * (gamma**i)
-                #Calculate the log likelihood gradient.
+                #Return on the trajectory
+                Gt += myEpisode.rewardHist[i] * (gamma**(i-t))
+
             b = myEpisode.bHist[t]
             n = myEpisode.nHist[t]
             alpha = myEpisode.alphaHist[t]
             deltaT = myEpisode.deltaTHist[t]
+            #Calculate the log likelihood gradient, for the current policy
             logLikGrad = self.pol.logLikGradient(b,n,alpha,deltaT)
             grad = logLikGrad*Gt
-            print('estimated reward : ' ,Gt)
-            self.pol.theta = self.pol.theta + 0.000001*grad
+            self.pol.theta = self.pol.theta + 0.00000008*grad
         return myEpisode
         
-    def learn(self,length = 100):
+    def learn(self,length = 100, log = True):
+        thetaList = []
+        epLength = 100
         for i in range(length):
-            self.learnOneEpisode()
+            print("Episode number : ", i)
+            ep = self.learnOneEpisode(epLength)
+            if(log):
+                print('logging episode ', i )
+                for k in range(epLength):
+                    epStr = ep.log(k)
+                    print epStr
+            thetaList.append(self.pol.theta)
+        return thetaList
         
 
             
@@ -190,6 +200,12 @@ class episode:
     
     def length(self):
         return len(self.bHist)
+    
+    def logStr(self,k):
+        
+        logStr = "%s , %s , %s , %s , %s , %s" % (k, self.bHist[k], self.nHist[k], self.alphaHist[k] , self.deltaTHist[k], self.rewardHist[k])
+        return logStr
+
 
 
 class policy:
@@ -197,7 +213,7 @@ class policy:
     def __init__(self) -> None:
         """ Policy, first with random values"""
         self.theta = np.random.rand(6)/200
-        self.stdDev = 0.01 #Will be learned later
+        self.stdDev = 0.1 #Will be learned later
 
 
     def set(self,theta):
@@ -230,10 +246,10 @@ class policy:
         gradTheta = np.zeros(6)
         gradTheta[0] = b*xi1
         gradTheta[1] = n*xi1
-        gradTheta[4] = xi1
+        gradTheta[4] = 2*xi1
         gradTheta[2] = b*xi2
         gradTheta[3] = n*xi2
-        gradTheta[5] = xi2
+        gradTheta[5] = 2*xi2
         self.gradient = gradTheta
         return gradTheta
 
@@ -242,9 +258,20 @@ class policy:
 
 problem = testProblem(0.05,100)
 
-problem.pol.set(theta= np.array([0,0,0,0,0.3,1]))
-myEpisode = problem.generateEpisode()
 
-episode2 = problem.learnOneEpisode()
 
-problem.learn(10)
+problem.pol.set(theta= np.array([0,0,0,0,0.5,2]))
+policyList = np.array(problem.learn(10))
+
+plt.plot(policyList[:,5])
+
+
+
+
+##Letting that here that 
+
+#[-0.23202347,  0.00146731,  0.12682147, -0.00300641,  0.21202325, 1.36603787]
+
+
+#problem.pol.set(theta = np.array([-0.23202347,  0.00146731,  0.12682147, -0.00300641,  0.21202325, 1.36603787]))
+#Is a good policy apparently
