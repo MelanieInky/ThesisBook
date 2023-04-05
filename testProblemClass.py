@@ -1,5 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import csv
+from datetime import datetime
+import os
+
 
 class testProblem:
 ## Define it as 
@@ -112,7 +116,7 @@ class testProblem:
             newResNorm = np.linalg.norm(self.M@y - self.e)
             #Check for overflow!
             if np.isinf(newResNorm) or np.isnan(newResNorm) or newResNorm>100000:
-                print("Overflow while calculating residual!")
+                #print("Overflow while calculating residual!")
                 return alpha, deltaT , -3
             lastResNorm = resNorm
             resNorm = newResNorm
@@ -149,14 +153,15 @@ class testProblem:
         myEpisode = episode(bHistory,nHistory,alphaHistory, deltaTHistory,rewardHistory)
         return myEpisode
 
-    def learnOneEpisode(self,length = 100):
+    def learnOneEpisode(self,epLength = 100):
         gamma = 0.1
-        myEpisode = self.generateEpisode(length)
-        theta = np.copy(self.pol.theta)
-        for t in range(length):
+        myEpisode = self.generateEpisode(epLength)
+        thetaArray = np.zeros((epLength,6))
+        gradThetaArray = np.zeros((epLength,6))
+        for t in range(epLength):
             #Calculate the sum of rewards
             Gt = 0
-            for i in range(t,length):
+            for i in range(t,epLength):
                 #Return on the trajectory
                 Gt += myEpisode.rewardHist[i] * (gamma**(i-t))
 
@@ -167,22 +172,40 @@ class testProblem:
             #Calculate the log likelihood gradient, for the current policy
             logLikGrad = self.pol.logLikGradient(b,n,alpha,deltaT)
             grad = logLikGrad*Gt
+            thetaArray[t,:] = self.pol.theta
+            gradThetaArray[t,:] = logLikGrad
+            #Then applies the gradient ascent directly on the sample
             self.pol.theta = self.pol.theta + 0.00000008*grad
-        return myEpisode
+        return myEpisode , thetaArray , gradThetaArray
         
-    def learn(self,length = 100, log = True):
-        thetaList = []
+    def learn(self,length = 100, log = True,offset = 0, fileName = 'Log/log.csv'):
+        #The offset is only for logging purposes.
+        #So we can write the correct Episode number 
+        #When making multiple files
         epLength = 100
+        if(log):
+            f = open(fileName , 'a')
+            firstLine = 'ep_number , ep_state_nb , b , n , alpha , deltaT , reward , theta_0, theta_1 , theta_2 , theta_3 , theta_4 , theta_5 , grad_theta_0 , grad_theta_1 , grad_theta_2 , grad_theta_3 , grad_theta_4 , grad_theta_5 \n' 
+            f.write(firstLine)
+            print('Logging activated')
+        #Loop for a certain number of episodes.
+        meanRewardList = np.zeros(length)
         for i in range(length):
-            print("Episode number : ", i)
-            ep = self.learnOneEpisode(epLength)
+            ep , theta , grad = self.learnOneEpisode(epLength)
+            meanRewardList[i] = np.mean(ep.rewardHist)
+            ####Logging
             if(log):
-                print('logging episode ', i )
                 for k in range(epLength):
-                    epStr = ep.log(k)
-                    print epStr
-            thetaList.append(self.pol.theta)
-        return thetaList
+                    thetaStr = np.array2string(theta[k,:],separator=',').lstrip('[').rstrip(']').replace('\n', '') + ','
+                    gradStr = np.array2string(grad[k,:], separator=',').lstrip('[').rstrip(']').replace('\n', '')
+                    epStr = ep.logStr(k) + ','
+                    epNumber = str(i + offset) + ','
+                    totalString = epNumber + epStr + thetaStr + gradStr + '\n'
+                    f.write(totalString)
+        if(log):
+            f.close()
+        print('Mean reward for the batch' , np.mean(meanRewardList))
+        return 0
         
 
             
@@ -202,7 +225,7 @@ class episode:
         return len(self.bHist)
     
     def logStr(self,k):
-        
+        #Log the state-action-reward-etc at time k.
         logStr = "%s , %s , %s , %s , %s , %s" % (k, self.bHist[k], self.nHist[k], self.alphaHist[k] , self.deltaTHist[k], self.rewardHist[k])
         return logStr
 
@@ -246,10 +269,10 @@ class policy:
         gradTheta = np.zeros(6)
         gradTheta[0] = b*xi1
         gradTheta[1] = n*xi1
-        gradTheta[4] = 2*xi1
+        gradTheta[4] = xi1
         gradTheta[2] = b*xi2
         gradTheta[3] = n*xi2
-        gradTheta[5] = 2*xi2
+        gradTheta[5] = xi2
         self.gradient = gradTheta
         return gradTheta
 
@@ -260,10 +283,16 @@ problem = testProblem(0.05,100)
 
 
 
-problem.pol.set(theta= np.array([0,0,0,0,0.5,2]))
-policyList = np.array(problem.learn(10))
+#problem.pol.set(theta= np.array([0,0,0,0,0.5,2]))
+problem.pol.set(theta = np.array([-0.00959971, -0.00817385, -0.0023457 , -0.01549442,  0.47988811,1.99517977]))
+date= datetime.now().strftime('%Hh%Mm%Ss')
+os.mkdir('Log/' + date)
 
-plt.plot(policyList[:,5])
+learningBatchSize = 1000
+for i in range(100):
+    fileName = 'Log/' + date + '/%s.csv' % i
+    problem.learn(learningBatchSize,offset = learningBatchSize*i, fileName= fileName)
+
 
 
 
