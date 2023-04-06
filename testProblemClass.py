@@ -196,12 +196,13 @@ class testProblem:
             ####Logging
             if(log):
                 for k in range(epLength):
-                    thetaStr = np.array2string(theta[k,:],separator=',').lstrip('[').rstrip(']').replace('\n', '') + ','
-                    gradStr = np.array2string(grad[k,:], separator=',').lstrip('[').rstrip(']').replace('\n', '')
-                    epStr = ep.logStr(k) + ','
-                    epNumber = str(i + offset) + ','
-                    totalString = epNumber + epStr + thetaStr + gradStr + '\n'
-                    f.write(totalString)
+                    if(k == 0 or k == 50 or k==99):
+                        thetaStr = np.array2string(theta[k,:],separator=',').lstrip('[').rstrip(']').replace('\n', '') + ','
+                        gradStr = np.array2string(grad[k,:], separator=',').lstrip('[').rstrip(']').replace('\n', '')
+                        epStr = ep.logStr(k) + ','
+                        epNumber = str(i + offset) + ','
+                        totalString = epNumber + epStr + thetaStr + gradStr + '\n'
+                        f.write(totalString)
         if(log):
             f.close()
         print('Mean reward for the batch' , np.mean(meanRewardList))
@@ -279,12 +280,13 @@ class policy:
 
 
 
-problem = testProblem(0.05,100)
+
+#problem = testProblem(0.05,100)
 
 
 
 #problem.pol.set(theta= np.array([0,0,0,0,0.5,2]))
-problem.pol.set(theta = np.array([-0.00959971, -0.00817385, -0.0023457 , -0.01549442,  0.47988811,1.99517977]))
+#problem.pol.set(theta = np.array([-0.00959971, -0.00817385, -0.0023457 , -0.01549442,  0.47988811,1.99517977]))
 date= datetime.now().strftime('%Hh%Mm%Ss')
 os.mkdir('Log/' + date)
 
@@ -304,3 +306,6 @@ for i in range(100):
 
 #problem.pol.set(theta = np.array([-0.23202347,  0.00146731,  0.12682147, -0.00300641,  0.21202325, 1.36603787]))
 #Is a good policy apparently
+
+
+#First training used 0.00000008*grad. std deviation 0.1, gmma = 0.1 and episode lenght 100
