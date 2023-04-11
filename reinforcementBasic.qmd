@@ -137,10 +137,10 @@ Since the discount rate is a random variable, we can look at its expectation, in
 
 
 :::{#def-state_value}
-(State value) The state value of a state $s$ is the function, define for any $s\in\mathcal{S}$
+(State value) The state value of a state $s$ is the function, defined for any $s\in\mathcal{S}$ as
 
 $$
-v_\pi(s) = E[G_t|S_t = s]
+v_\pi(s) = E[G_t|S_t = s] = E[R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots | S_t]
 $$
 
 where $\pi$ is a given policy. 
@@ -149,9 +149,70 @@ where $\pi$ is a given policy.
 :::
 
 :::{.remark}
-The state value is independent on the time $t$! 
+The Markov property of the MDP means that the state value does not depend on time.
 :::
 
 The objective is thus to find a policy $\pi$ that maximizes the state values. We next derive the Bellman equation. 
 
-(test @reinforcementBookShiyuZhao , @Sutton1998)
+It is first apparent that 
+
+
+\begin{align}   
+G_t &= R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots \nonumber\\
+&=R_{t+1} + \gamma \left(R_{t+2} + \gamma R_{t+3}+ \dots \right) \nonumber\\
+&=R_{t+1} + \gamma G_{t+1}
+\end{align}
+
+
+
+
+Inputting this into the state value yields
+
+$$
+v_\pi(s) = E[G_t|S_t = s]= E[R_{t+1}| S_t = s] + \gamma E[G_{t+1} | S_t = s]
+$$
+
+The first term is the expectation of immediate reward, following a certain policy $\pi$, the second is the expectation of future rewards. Let us expand on that formula a bit more. We use the law of total expectation on the first part of the RHS to get
+
+$$
+E[R_{t+1}| S_t = s] = E[E[R_{t+1}|S,A]] = \sum_{a\in\mathcal{A}}\pi(a,s)\sum_{r\in\mathcal{R}}rp(r|s,a)
+$$
+
+where $\mathcal{R} = \mathcal{R}(s,a)$ is the set of possible rewards one can get by taking action $a$ at state $s$. 
+
+We now develop the second part of the RHS of the equation to get,
+
+$$
+E[G_{t+1} | S_t = s] = E[E[G_{t+1} | S_t = s , S_{t+1}]] = \sum_{s'\in\mathcal{S}}E[G_{t+1}|S_t = s, S_{t+1} = s']p(s'|s)
+$$
+
+where $p(s'|s) = \sum_{a\in\mathcal{A}} p(s'|s,a)\pi(a,s)$ is the probability of the next state being $s'$ if the current state is $s$. Because of the Markov property of the MDP, we can remove the conditioning $S_t = s$ and thus, $E[G_{t+1}|S_t = s, S_{t+1} = s'] = E[G_{t+1}|S_{t+1} = s] = v_\pi(s')$. Then 
+$$
+E[G_{t+1} | S_t = s] = \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A}}v_\pi(s')\pi(a|s)p(s'|s,a).
+$$
+
+Putting everything together, we get a first form of Bellman equation for (finite) MDP.
+
+$$
+v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)\left[\sum_{r\in\mathcal{R}}rp(r|s,a) + \gamma\sum_{s'\in\mathcal{S}}v_\pi(s')p(s'|s,a) \right]
+$$
+
+Some remarks
+
+- The Bellman equation gives a recursive relation for the state values. Solving this equation is called policy evaluation and involves fixed point iterations, which we will not get into details here.
+- This equation is valid for a given policy. 
+
+
+The expression between the brackets is called the action value $q_\pi(s,a)$. Bellman's equation is then simply
+
+$$
+v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)q_\pi(s,a) = E_\pi[q] 
+$$
+
+
+## Bellman optimality equation
+
+Given some state value, one may ask the fundamental question. 
+
+
+(test @reinforcementBookShiyuZhao , @Sutton1998 , @Williams1992, @lillicrap2019continuous). 

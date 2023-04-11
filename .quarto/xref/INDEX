@@ -38,5 +38,8 @@
   },
   "reinforcementBasic.qmd": {
     "reinforcementBasic.html": "62f5950b"
+  },
+  "policyGradient.qmd": {
+    "policyGradient.html": "a29f8c78"
   }
 }
