@@ -13,9 +13,10 @@ book:
     - testEqIntro.qmd
     - solverExploration.qmd
     - reinforcementBasic.qmd
+    - policyGradient.qmd
+    - experiment.qmd
     - summary.qmd
     - references.qmd
-    - policyGradient.qmd
 
 bibliography: references.bib
 

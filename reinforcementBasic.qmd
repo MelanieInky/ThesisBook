@@ -209,6 +209,8 @@ $$
 v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)q_\pi(s,a) = E_\pi[q] 
 $$
 
+(///TODO)
+
 
 ## Bellman optimality equation
 

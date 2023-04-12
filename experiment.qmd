@@ -1,0 +1,50 @@
+---
+title: "Implementation"
+author: "Mélanie Fournier"
+format: 
+    html:
+        code-fold: true
+    pdf:
+        geometry: 
+        - top=30mm
+        - left=20mm
+        number-sections: true
+        include-in-header: 
+            text: |
+                \usepackage{amsmath}
+                \usepackage{easy-todo}
+                \usepackage{amsthm}
+        documentclass: article
+        fontsize: "14"
+jupyter: python3
+---
+
+
+## A linear approximation of the policy.
+
+The policy is this..
+
+## REINFORCE basic
+
+Here are the results, 
+
+there are problem with the results
+
+## Gradient ascent with different learning parameters. 
+
+Here is how we can get better convergence by changing the learning parameters
+
+## Impact of initial condition.
+
+Gradient based algorithm have a tendency to converge to local minima. (in our case maxima, but same thing really), therefore, it would be interesting to see how initial policy impacts the learned policy now that we have convergence.
+
+## Moving beyond the basics.
+
+(Some discussion on what to do next, etc... ) Example include.
+
+- Better algorithm, with less sample variance and more sample efficiency.
+- Moving beyond a linear policy. (approximation using NN).
+- Meta learning, maybe?
+- Applying the concept learned here to a more varied set of problem, instead of just confining ourselves to steady state diffusion-convection equation.
+
+
