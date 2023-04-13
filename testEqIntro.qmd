@@ -1,24 +1,9 @@
 ---
-title: "A test problem - Convection diffusion equation"
 author: "Mélanie Fournier"
-format: 
-    html:
-        code-fold: true
-    pdf:
-        geometry: 
-        - top=30mm
-        - left=20mm
-        number-sections: true
-        include-in-header: 
-            text: |
-                \usepackage{amsmath}
-                \usepackage{easy-todo}
-                \usepackage{amsthm}
-        documentclass: article
-        fontsize: "14"
 jupyter: python3
 ---
 
+# A test problem - Convection diffusion equation
 
 As a test case for the solver, we consider the steady state convection-diffusion equation.
 
@@ -94,18 +79,22 @@ It is apparent that $M$ is diagonally dominant. Since all elements of the diagon
 
 :::
 
-
+```{python}
+#| echo: false
+#| output: false
+import numpy as np
+import matplotlib.pyplot as plt
+from testProblemClass import testProblem
+```
 
 ```{python}
 #| fig-cap: Theoretical and discretized solution of the problem with $b = 0.09$, $n = 50$.
 #| echo: false
-import numpy as np
-import matplotlib.pyplot as plt
-from testProblemClass import testProblem
+
 
 n = 50
 b = 0.09
-problem = testProblem(b,n)
+problem = testProblem(b = b,n = n)
 
 M = problem.M
 e = problem.e

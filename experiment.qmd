@@ -1,5 +1,4 @@
 ---
-title: "Implementation"
 author: "Mélanie Fournier"
 format: 
     html:
@@ -9,34 +8,162 @@ format:
         - top=30mm
         - left=20mm
         number-sections: true
-        include-in-header: 
-            text: |
-                \usepackage{amsmath}
-                \usepackage{easy-todo}
-                \usepackage{amsthm}
-        documentclass: article
-        fontsize: "14"
 jupyter: python3
 ---
 
 
+# Implementation
+
 ## A linear approximation of the policy.
 
-The policy is this..
+We want a policy of the form $(\Delta t, \alpha) =A(b,n)' + \text{c}$.
+
+We define the following stochastic policy
+
+$$
+\begin{pmatrix}
+\mu_\alpha \\
+\mu_{\Delta t}
+\end{pmatrix} = 
+\begin{pmatrix}
+\theta_0 & \theta_1\\
+\theta_2 & \theta_3
+\end{pmatrix} 
+\begin{pmatrix}
+b\\
+n
+\end{pmatrix} +
+\begin{pmatrix}
+\theta_4\\
+\theta_5
+\end{pmatrix}
+$$
+
+Then $\alpha \sim \mathcal{N}(\mu_\alpha,\sigma^2)$ and similarly $\Delta t \sim \mathcal{N}(\mu_{\Delta t}, \sigma^2)$. The term $\sigma^2$ will help us balance exploration vs exploitation. The probability density function of $\alpha$ is then
+
+$$
+f(\alpha) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2}\right)$$
+
+Taking the logarithm 
+
+$$
+\ln(f(\alpha)) = \ln(\frac{1}{\sqrt{2\pi}\sigma}) - \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2} $$.
+
+We now take the gradient w.r.t $\theta$ to get
+
+$$
+\nabla_\theta \ln(f(\alpha)) = \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T
+$$
+
+where $\xi_\alpha = \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)}{\sigma^2}$.
+
+Doing a similar thing with $\Delta t$, we get the gradient,
+
+$$
+\nabla_\theta \ln(g(\Delta t)) = \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^T.
+$$
+
+And now we add both gradient together (see remark), we get the gradient of the policy, for a specific action $a = (\alpha, \Delta t)$ and state $s=(b,n)$,
+
+$$
+\nabla_\theta \ln\pi(a|s,\theta) =  \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T+ \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^T.
+$$
+
+We used here the standard notation.
+
+
+:::{.remark}
+
+This is technically a joint density, but since $\alpha$ and $\Delta t$ are independent, and since we have to take the logarithm which will transform $\times$ into $+$, this doesn't affect the computation of the gradient so I'll allow myself doing things a bit wrong.(//TODO : I swear I'll make a better argument!).  
+
+(This is also why having a logarithm is super useful.)
+
+:::
+
+
+
+:::{.remark}
+One may remark that the REINFORCE algorithm uses a discrete policy space. This is not too much of an issue. Instead of using the probability mass function of the policy, we will instead use the probability density function as a substitute(@lillicrap2019continuous). The fact that the pdf admits values $>1$ is not an issue as we adjust the learning rate accordingly.
+:::
+
+
+
 
 ## REINFORCE basic
 
-Here are the results, 
+Here are the results, (Experiments will be rerun, those are placeholder graph)
 
-there are problem with the results
+```{python}
+#| echo: false
+#| fig-cap: Evolution of the theta parameters with episode number. The hyperparameters are sigma=0.1, learning rate 5e-6....
+
+import polars as pl
+import matplotlib.pyplot as plt
+
+import polars as pl
+import seaborn as sns
+
+
+fileName = 'Log/07Apr-17h24m40s/log.csv'
+df = pl.read_csv(fileName)
+
+plt.plot(df.select(pl.col('theta_5')), label = 'Theta 5')
+plt.plot(df.select(pl.col('theta_4')), label = 'Theta 4')
+plt.plot(df.select(pl.col('theta_3')),label = 'Theta 3')
+plt.plot(df.select(pl.col('theta_2')),label = 'Theta 2')
+plt.plot(df.select(pl.col('theta_1')),label = 'Theta 1')
+plt.plot(df.select(pl.col('theta_0')),label = 'Theta 0')
+plt.legend()
+plt.xlabel('Episode number')
+plt.ylabel('Theta')
+plt.show()
+
+
+```
+
+```{python}
+#| echo: false
+#| fig-cap: Evolution of the average reward inside the episode with episode number. The hyperparameters are sigma=0.1, learning rate 5e-6.... The variance is high! The trendline is a polynomial fit not to be trusted too much.
+import numpy as np
+
+reward = df.select(pl.col('avg_ep_reward')).to_numpy().reshape(30000)
+ep_number = np.arange(0,30000)
+fit = np.polyfit(ep_number,reward,5)
+p = np.poly1d(fit)
+
+plt.plot(reward)
+plt.plot(ep_number,p(ep_number))
+plt.xlabel('Episode number')
+plt.ylabel('Average reward of the episode.')
+plt.show()
+```
+
+there are problem with the results, namely
+
+- The learning rate must be kept low, otherwise things explode nastily.
+- The convergence is extremely slow, to the point were we may be wondering if it converges at all
+
+(The next sections are things I've done to mitigate these problem, with varying degrees of successes, the log are there, but also I need to clean up my code and rerun it for reproducibility sake as I was tinkering a lot at the time, the goal is to have a program were each hyperparameter can be chosen at the beginning/as environment variables, and making all the experiments easily reproducible).
+
+
+
+## Exploration vs exploitation tradeoff.
+
+Changing $\sigma^2$ to a higher value makes for a flatter gradient, so not only are we taking more risks, we can actually afford a higher learning rate without exploding!
+
 
 ## Gradient ascent with different learning parameters. 
 
-Here is how we can get better convergence by changing the learning parameters
+Here is how we can get better convergence by changing the learning parameters.
+
+One problem is that if we look at the gradient directions, how steep they are depend on the problem parameters. And since $n$ can vary between 5 and 300, this make for a muuuuuch steeper gradient than the direction associated with $b$, which only varies between 0 and 1. As a result, the direction associated with $n$ tend to converge but not the other. This can be remedied by applying varying learning rate in each direction. It actually works quite well!
+'
 
 ## Impact of initial condition.
 
 Gradient based algorithm have a tendency to converge to local minima. (in our case maxima, but same thing really), therefore, it would be interesting to see how initial policy impacts the learned policy now that we have convergence.
+(Not done yet, but I suspect some nasty surprises!)
+
 
 ## Moving beyond the basics.
 

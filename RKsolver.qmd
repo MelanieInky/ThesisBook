@@ -9,13 +9,6 @@ format:
         - top=30mm
         - left=20mm
         number-sections: true
-        include-in-header: 
-            text: |
-                \usepackage{amsmath}
-                \usepackage{easy-todo}
-                \usepackage{amsthm}
-        documentclass: article
-        fontsize: "14"
 jupyter: python3
 ---
 

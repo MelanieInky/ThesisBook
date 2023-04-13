@@ -25,6 +25,10 @@ format:
     theme: cosmo
   pdf:
     documentclass: scrreprt
-
+    pdf-engine: xelatex
+    geometry: 
+    - top=30mm
+    - left=20mm
+    number-sections: true
 
 

@@ -1,5 +1,4 @@
 ---
-title: "Policy gradient methods"
 author: "Mélanie Fournier"
 format: 
     html:
@@ -9,15 +8,12 @@ format:
         - top=30mm
         - left=20mm
         number-sections: true
-        include-in-header: 
-            text: |
-                \usepackage{amsmath}
-                \usepackage{easy-todo}
-                \usepackage{amsthm}
-        documentclass: article
-        fontsize: "14"
 jupyter: python3
 ---
+
+# Policy gradient methods
+
+We introduce policy based method in this chapter.
 
 ## The test problem, in a RL framework
 
@@ -69,7 +65,7 @@ We take our problem as formulated before. The state is defined as the problem pa
 
 Similarly, the policy is defined by choosing the values $(\alpha,\Delta t) \in [0,1]\times \mathbb{R}^+$, depending on the state. Once again, the action space is continuous. 
 
-One approach would be to discretize the entire state $\times$ action space, and then to apply classical dynamic programming algorithm to get some results. Then, after an optimal policy is found, do some form of interpolation for problem parameters outside of the discretized space. This approach has its own merit, as there is 3 dimensions that need to be discretized, and $n$ can be chosen within a finite range. The main issue is that since there are no relationship between the states, solving the resulting Bellman optimal equation is effectively close to brute forcing the problem.
+One approach would be to discretize the entire state $\times$ action space, and then to apply classical dynamic programming algorithm to get some results. Then, after an optimal policy is found, do some form of interpolation for problem parameters outside of the discretized space. This approach has its own merit, as there is 3 dimensions that need to be discretized, and $n$ can be chosen within a finite range. The main issue is that since there are no relationship between the states, solving the resulting Bellman optimal equation is effectively close to brute forcing the problem. (//TODO, this need a stronger argument instead of "My intuition said so".)
 
 Another approach is to use approximation function. A common approach is to approximate the value function $v(s)$ by some parametrization $v(s) \approx \hat{v}(s,\omega)$ where $\omega \in \mathbb{R}^n$ are $n$ parameters. Such methods are called *value based*. The method we use in this thesis, on the other hand, use an approximation of the policy function defined as $\pi(a|s,\theta)$, where $\theta\in \mathbb{R}^n$ is a parameter vector is dimension $n$. Such method are called *policy based*. The reason to chose from this class of algorithm is two-fold.
 

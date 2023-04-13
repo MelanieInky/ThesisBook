@@ -1,5 +1,4 @@
 ---
-title: "Reinforcement learning - Basic"
 author: "Mélanie Fournier"
 format: 
     html:
@@ -9,18 +8,12 @@ format:
         - top=30mm
         - left=20mm
         number-sections: true
-        include-in-header: 
-            text: |
-                \usepackage{amsmath}
-                \usepackage{easy-todo}
-                \usepackage{amsthm}
-        documentclass: article
-        fontsize: "14"
 jupyter: python3
 ---
 
-
+# Basics of reinforcement learning(RL).
 In this section, we outline the main ideas behind reinforcement learning and how they can be applied in the context of this thesis. 
+
 
 
 ## A non mathematical, but delicious example.

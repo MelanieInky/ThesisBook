@@ -322,7 +322,7 @@ with open(config_log_file, 'a') as f:
 
 
 fileName = 'Log/' + date + '/log.csv'
-problem.learn(length=20000, fileName=fileName)
+problem.learn(length=2, fileName=fileName)
 
 import polars as pl
 import seaborn as sns
