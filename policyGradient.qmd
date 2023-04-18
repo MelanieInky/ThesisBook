@@ -37,17 +37,38 @@ We are interested in using reinforcement learning to solve this problem. The las
 - A individual state can be defined as a pair $s = (b,n)$.
 - An individual action can be defined as a pair $a = (\Delta t, \alpha)$.
 - Given a state $s$, the action chosen depend on the policy $\pi(a = (\Delta t, \alpha) |s = (b,n))$. This policy can be deterministic or stochastic.
-- Once a state-action pair is chosen, the residual ratio is computed. The reward can then be defined as a function of calculated residual ratio, where the lower the ratio(the better the convergence), the better the reward.
+- Once a state-action pair is chosen, the residual ratio is computed. The reward can then be defined as a function of calculated residual ratio, which is defined in the next section. 
  
 The state transition model is more difficult to find a direct translation for. For the purpose of this thesis, the next state is chosen at random after computing an action and a reward. This is not ideal.  
 
 There are still several challenges that need to be addressed.
 
-- (TODO again, but the point stands)State transition being random defeats the point of RL. The learning rate which is usually set close to 1 for typical RL tasks. Here, it makes no sense to set it this high so it will be kept low.
-- State-Action space is continuous. We previously assumed finite spaces.
-- In the definition of a MDP, the reward is a modeled random variable. This is not the case here.
+- State transition being random makes for a poor model to apply reinforcement learning to. In a typical RL scenario, the discount rate is usually set close to 1 as the agent need to take into account the future states it will be in. Here, the next state is independent on the action taken, so it makes no sense to set the discount rate high. As a consequence, we set it low.
+- In our problem, the State-Action space is continuous. We previously assumed finite spaces.
+- In the definition of a MDP, the reward is a modeled random variable. This is not the case here, as we do not know in advance how the solver will behave.
 
-All of these challenges are addressed in the next sections
+The first challenge is inherent to the way we defined the problem. We answer the last two challenges in the next sections. 
+
+## Computing the reward.
+
+Once a state and action is chosen, the reward need to be computed. We said before that, for each state and action, we compute the residual ratio after 10 iterations $c_{10}$. With that ratio, we need to define an appropriate reward metrics. We design the reward such that:
+
+- The lower the ratio $c_{10}$, the better the convergence rate and the better the reward should be.
+- It appears natural to have a positive reward when $c_{10}<1$, which implies convergence, and a negative reward otherwise.
+
+ The reward is 
+
+$$
+r(c_{10}) = \begin{cases}
+100\times (1-c_{10}) \;\;\;\;\;\qquad \text{ if } c_{10}<1\\
+\max(-10,1 - c_{10}) \qquad \text{ if } c_{10}\geq1
+\end{cases}
+$$
+
+When $c_{10}<1$, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. Because the ratio tends to be very close to $1$, we multiply everything by $100$, adding more contrast to the rewards. 
+
+When, on the other hand $c_{10}\geq 1$, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at $-10$.
+
 
 
 ## Model based, model free
@@ -67,7 +88,7 @@ Similarly, the policy is defined by choosing the values $(\alpha,\Delta t) \in [
 
 One approach would be to discretize the entire state $\times$ action space, and then to apply classical dynamic programming algorithm to get some results. Then, after an optimal policy is found, do some form of interpolation for problem parameters outside of the discretized space. This approach has its own merit, as there is 3 dimensions that need to be discretized, and $n$ can be chosen within a finite range. The main issue is that since there are no relationship between the states, solving the resulting Bellman optimal equation is effectively close to brute forcing the problem. (//TODO, this need a stronger argument instead of "My intuition said so".)
 
-Another approach is to use approximation function. A common approach is to approximate the value function $v(s)$ by some parametrization $v(s) \approx \hat{v}(s,\omega)$ where $\omega \in \mathbb{R}^n$ are $n$ parameters. Such methods are called *value based*. The method we use in this thesis, on the other hand, use an approximation of the policy function defined as $\pi(a|s,\theta)$, where $\theta\in \mathbb{R}^n$ is a parameter vector is dimension $n$. Such method are called *policy based*. The reason to chose from this class of algorithm is two-fold.
+Another approach is to use approximation function. A common approach is to approximate the value function $v(s)$ by some parametrization $v(s) \approx \hat{v}(s,\omega)$ where $\omega \in \mathbb{R}^d$ are $d$ parameters. Such methods are called *value based*. The method we use in this thesis, on the other hand, use an approximation of the policy function defined as $\pi(a|s,\theta)$, where $\theta\in \mathbb{R}^d$ is a parameter vector is dimension $d$. Such method are called *policy based*. The reason to chose from this class of algorithm is two-fold.
 
 - When thinking about the test problem, one approach which appears natural is to chose the solver parameters as a linear function of the problem parameters. A policy based approach allow us to do exactly this. 
 
@@ -82,4 +103,20 @@ Approximation is usually done using neural networks, building on the universal a
 
 ## Policy gradient methods and the REINFORCE algorithm.
 
-//TODO, 
+We apply a policy gradient method to our problem
+
+### Objective function.
+
+Now that we control the policy via the parameter vector $\theta$, we ought to determine a way to find the best value for $\theta$. We define the objective function
+
+$$
+J(\theta) = E[v_\pi(S)]
+$$
+
+where $S$ is the state. 
+
+### Policy gradient theorem
+
+### REINFORCE algorithm
+
+Here is the pseudocode.

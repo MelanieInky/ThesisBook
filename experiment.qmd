@@ -16,9 +16,10 @@ jupyter: python3
 
 ## A linear approximation of the policy.
 
-We want a policy of the form $(\Delta t, \alpha) =A(b,n)' + \text{c}$.
 
-We define the following stochastic policy
+We want to have a policy of the form $(\Delta t, \alpha) =A(b,n)' + \text{c}$, where $A$ is a two by two matrix and $c$ a 2-vector.
+
+We define the following stochastic policy, define first
 
 $$
 \begin{pmatrix}
@@ -39,20 +40,33 @@ n
 \end{pmatrix}
 $$
 
-Then $\alpha \sim \mathcal{N}(\mu_\alpha,\sigma^2)$ and similarly $\Delta t \sim \mathcal{N}(\mu_{\Delta t}, \sigma^2)$. The term $\sigma^2$ will help us balance exploration vs exploitation. The probability density function of $\alpha$ is then
+Then we chose the random policy $\alpha \sim \mathcal{N}(\mu_\alpha,\sigma^2)$,and similarly $\Delta t \sim \mathcal{N}(\mu_{\Delta t}, \sigma^2)$. The term $\sigma^2$, which is the variance of the policy is chosen fixed, and will help us balance exploration vs exploitation. Since $\alpha$ and $\Delta t$ are chosen independently, the joint probability density of both parameters is the product of both marginal pdf, that is 
 
 $$
-f(\alpha) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2}\right)$$
+f(\alpha,\Delta t) = f_{1}(\alpha)\cdot f_{2}(\Delta t)
+$$
 
-Taking the logarithm 
+where 
+$$
+f_1(\alpha) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2}\right)
+$$
+
+and similarly,
 
 $$
-\ln(f(\alpha)) = \ln(\frac{1}{\sqrt{2\pi}\sigma}) - \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2} $$.
+f_2(\Delta t) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\Delta t - \theta_2b-\theta_3n-\theta_5)^2}{2\sigma^2}\right)
+$$.
+
+Taking the logarithm, we get $\ln(f(\alpha,\Delta t) = \ln(f_1(\alpha)) + \ln(f_2(\Delta t))$. Thus,
+
+$$
+\ln(f_1(\alpha)) = \ln(\frac{1}{\sqrt{2\pi}\sigma}) - \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2} 
+$$.
 
 We now take the gradient w.r.t $\theta$ to get
 
 $$
-\nabla_\theta \ln(f(\alpha)) = \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T
+\nabla_\theta \ln(f_1(\alpha)) = \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T
 $$
 
 where $\xi_\alpha = \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)}{\sigma^2}$.
@@ -60,37 +74,36 @@ where $\xi_\alpha = \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)}{\sigma^2}$.
 Doing a similar thing with $\Delta t$, we get the gradient,
 
 $$
-\nabla_\theta \ln(g(\Delta t)) = \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^T.
+\nabla_\theta \ln(f_2(\Delta t)) = \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^T.
 $$
 
-And now we add both gradient together (see remark), we get the gradient of the policy, for a specific action $a = (\alpha, \Delta t)$ and state $s=(b,n)$,
+where $\xi_{\Delta t} = \frac{(\Delta t - \theta_2b-\theta_3n-\theta_5)}{\sigma^2}$
+We now add both gradients together to we get the gradient of the policy, for a specific action $a = (\alpha, \Delta t)$ and state $s=(b,n)$,
 
 $$
 \nabla_\theta \ln\pi(a|s,\theta) =  \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T+ \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^T.
-$$
+$$ {#eq-policyGradient}
 
-We used here the standard notation.
+We used here the standard notation. That is, $\pi(a|s,\theta) = f(\alpha,\Delta t)$.
 
 
-:::{.remark}
 
-This is technically a joint density, but since $\alpha$ and $\Delta t$ are independent, and since we have to take the logarithm which will transform $\times$ into $+$, this doesn't affect the computation of the gradient so I'll allow myself doing things a bit wrong.(//TODO : I swear I'll make a better argument!).  
-
-(This is also why having a logarithm is super useful.)
-
-:::
 
 
 
 :::{.remark}
-One may remark that the REINFORCE algorithm uses a discrete policy space. This is not too much of an issue. Instead of using the probability mass function of the policy, we will instead use the probability density function as a substitute(@lillicrap2019continuous). The fact that the pdf admits values $>1$ is not an issue as we adjust the learning rate accordingly.
+One may remark that the REINFORCE algorithm uses a discrete policy space. This is not an issue. Instead of using the probability mass function of the policy, we will instead use the probability density function as a substitute(@lillicrap2019continuous). The fact that the pdf admits values $>1$ is not an issue as we adjust the learning rate accordingly.
 :::
 
 
 
 
-## REINFORCE basic
+## Application of the REINFORCE algorithm.
 
+
+
+
+The Reinforce algorithm is used in 
 Here are the results, (Experiments will be rerun, those are placeholder graph)
 
 ```{python}
