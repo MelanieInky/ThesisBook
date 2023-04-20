@@ -101,22 +101,96 @@ Approximation is usually done using neural networks, building on the universal a
 
 :::
 
-## Policy gradient methods and the REINFORCE algorithm.
+## Policy gradient methods.
 
-We apply a policy gradient method to our problem
+
+
 
 ### Objective function.
 
-Now that we control the policy via the parameter vector $\theta$, we ought to determine a way to find the best value for $\theta$. We define the objective function
+We apply a policy gradient method to our problem. Let $\theta \in \mathbb{R}^d$ be a parameter vector and $\pi(a|s,\theta) = p(A_t = a | S_t = s , \theta)$ an approximate policy that is derivable w.r.t $\theta$. We want to define an objective function $J(\theta)$ that we want to maximize in order to find the best value of $\theta$.
+
+ To this end, we make the following assumptions, which are specific to our problem. For simplicity, we restrict ourselves to the discrete case. 
+
+- The states are uniformly distributed. That is, for any $s\in\mathcal{S}, p(S_t = s) = 1 / |\mathcal{S}|$, where $|\mathcal{S}|$ is the number of element of $S$. This correspond to the idea of taking a new state at random in our problem. 
+
+We define the objective function
 
 $$
-J(\theta) = E[v_\pi(S)]
+J(\theta) = \overline{v_\pi(S)} = \frac{1}{|\mathcal{S}|}\sum_{s\in S}v_\pi(s)
 $$
 
-where $S$ is the state. 
+that is, $J(\theta)$ is the average, (non weighted, as per assumption) state value.
+
+We want to maximize this objective function. To this end, we use a gradient ascend algorithm of the form
+
+$$
+\theta_{t+1} = \theta_t + \alpha \nabla_\theta J(\theta).
+$$
+
+We are faced with the immediate issue that the algorithm requires knowing the gradient of the objective function.  
 
 ### Policy gradient theorem
 
-### REINFORCE algorithm
+We prove, using the aforementioned assumptions the policy gradient theorem. This proof is adapted from [@Sutton1998,chap 13.2]. 
+
+Using the expression //TODO: REF, the expression for a specific state value can be written as
+
+$$
+v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a|s)q_\pi(a,s)
+$$
+
+We take the gradient w.r.t $\theta$ to get
+$$
+\nabla v_\pi(s) = \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s) + \pi(a|s)\nabla q_\pi(a,s)
+$$
+
+Using the expression //REF for the action value we get 
+
+$$
+\nabla q_\pi(a,s) = \nabla \left[ \sum_{r}p(r|s,a)r + \gamma\sum_{s'}p(s'|a,s)v_\pi(s')\right]
+$$
+
+It is apparent that the first part of the RHS is not dependent on $\theta$, therefore, and neither is the state transition probability, the gradient becomes
+
+$$
+\nabla q_\pi(a,s) =  \gamma\sum_{s'}p(s'|a,s)\nabla v_\pi(s').
+$$
+
+By assumption $p(s'|a,s) = 1/|\mathcal{S}|$, and thus 
+
+$$
+\nabla q_\pi(a,s) =  \gamma\sum_{s'}\frac{1}{|\mathcal{S}|}\nabla v_\pi(s').
+$$
+
+We recognize the expression for the gradient of the metric to get $\nabla q_\pi(a,s) = \gamma \nabla J(\theta)$.
+$$
+\nabla v_\pi(s) = \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s) + \gamma\pi(a|s)\nabla J(\theta)
+$$
+
+Since the policy $\pi(a|s)$ is a probability over the action space, it sums to $1$ and we can get the second part of the RHS out of the sum
+
+$$
+\nabla v_\pi(s) = \gamma J(\theta) + \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s)
+$$
+
+Using $\nabla J(\theta) = \frac{1}{|\mathcal{S}|}\sum_{s\in\mathcal{S}}\nabla v_\pi(s)$, we get
+
+
+\begin{align}
+\nabla J(\theta) &= \frac{1}{|\mathcal{S}|}\sum_{s\in\mathcal{S}}\left[\gamma J(\theta) + \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s)\right] \\
+&= \gamma \nabla J(\theta) + \sum_{s\in\mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s)
+\end{align}
+
+
+And after a small rearrangement of the terms
+
+$$
+\nabla J(\theta) = \frac{1}{1-\gamma}\sum_{s\in \mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|S)q_\pi(a,S)
+$$
+
+This is an expression of the policy gradient theorem.
+
+### REINFORCE algorithm 
 
 Here is the pseudocode.
