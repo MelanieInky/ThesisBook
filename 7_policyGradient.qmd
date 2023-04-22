@@ -189,8 +189,51 @@ $$
 \nabla J(\theta) = \frac{1}{1-\gamma}\sum_{s\in \mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|S)q_\pi(a,S)
 $$
 
-This is an expression of the policy gradient theorem.
+This is an expression of the policy gradient theorem. The reason to put the fraction $1/|\mathcal{S}|$ inside the first sum is to get a parallel with the more general expression, where in general, we have a weighted sum with different weight depending on the state. Depending on the metric used and the environment, this can be the stationary distribution of the states for a given policy.
+
+We state the policy gradient theorem in a more general form 
+
+:::{#thm-policyGradient}
+(Policy gradient theorem)
+
+Given an appropriate objective function $J(\theta)$, the gradient of the metric is given by the proportional relationship
+
+$$
+\nabla J(\theta) \propto \sum_s \mu(s) \sum_a q_\pi(a,s)\nabla \pi(a|s)
+$$
+
+where $\mu(s)$ is the stationary distribution of the Markov process on policy $\pi$. 
+:::
+
+
+:::{.remark}
+
+Depending on the model, the objective function may change. Nevertheless, the expression of the policy gradient theorem stay similar. In particular, the constant of proportionality may change.   
+
+:::
+
+The policy gradient theorem is powerful in the sense that we can derive the gradient of the objective function, something that is tied to the environment, to establishing the gradient of the parametrized policy function, which we have more control over. 
+
+
 
 ### REINFORCE algorithm 
 
-Here is the pseudocode.
+
+Here, we introduce reinforce the classic REINFORCE algorithm@Williams1992. Even with the policy gradient theorem, we are still faced with the problem of estimating the action values $q_\pi$. But we remark that the formula in the policy gradient is an expectation. 
+
+$$
+\nabla J(\theta) \propto E_{S_\pi}\left[\sum_a q_\pi(a,S)\nabla \pi(a|S)\right]
+$$
+
+where $S_\pi$ is the stationary distribution of the state.  
+By using the identity $\frac{\nabla f}{f} = \nabla \ln f$, we can also rewrite the inner term as
+
+$$
+\sum_a q_\pi(a,S)\nabla \pi(a|S) = \sum_a \pi(a|S)q_\pi(a,S)\nabla \ln \pi(a|S),
+$$
+
+which is also an expectation, and thus
+
+$$
+\nabla J(\theta) \propto E_{S\sim S_\pi, A\sim A_\pi}\left[q_\pi(A,S)\nabla \ln \pi(A|S)\right].
+$$

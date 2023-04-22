@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Mélanie Fournier">
+
+<title>ThesisBook - 6&nbsp; Policy gradient methods</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./8_implementation.html" rel="next">
+<link href="./6_reinforcementBasic.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Policy gradient methods</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">ThesisBook</a> 
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./2_intro.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./3_motivation.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Motivation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./4_convecDiff.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">A test problem - Convection diffusion equation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./5_solverExploration.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Runge-Kutta solver applied to the test problem</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./6_reinforcementBasic.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of reinforcement learning(RL).</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./7_policyGradient.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Policy gradient methods</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./8_implementation.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Implementation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./9_summary.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Summary</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10_references.html" class="sidebar-item-text sidebar-link">References</a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-test-problem-in-a-rl-framework" id="toc-the-test-problem-in-a-rl-framework" class="nav-link active" data-scroll-target="#the-test-problem-in-a-rl-framework"><span class="toc-section-number">6.1</span>  The test problem, in a RL framework</a></li>
+  <li><a href="#computing-the-reward." id="toc-computing-the-reward." class="nav-link" data-scroll-target="#computing-the-reward."><span class="toc-section-number">6.2</span>  Computing the reward.</a></li>
+  <li><a href="#model-based-model-free" id="toc-model-based-model-free" class="nav-link" data-scroll-target="#model-based-model-free"><span class="toc-section-number">6.3</span>  Model based, model free</a></li>
+  <li><a href="#dealing-with-a-large-state-action-space." id="toc-dealing-with-a-large-state-action-space." class="nav-link" data-scroll-target="#dealing-with-a-large-state-action-space."><span class="toc-section-number">6.4</span>  Dealing with a large state-action space.</a></li>
+  <li><a href="#policy-gradient-methods." id="toc-policy-gradient-methods." class="nav-link" data-scroll-target="#policy-gradient-methods."><span class="toc-section-number">6.5</span>  Policy gradient methods.</a>
+  <ul class="collapse">
+  <li><a href="#objective-function." id="toc-objective-function." class="nav-link" data-scroll-target="#objective-function."><span class="toc-section-number">6.5.1</span>  Objective function.</a></li>
+  <li><a href="#policy-gradient-theorem" id="toc-policy-gradient-theorem" class="nav-link" data-scroll-target="#policy-gradient-theorem"><span class="toc-section-number">6.5.2</span>  Policy gradient theorem</a></li>
+  <li><a href="#reinforce-algorithm" id="toc-reinforce-algorithm" class="nav-link" data-scroll-target="#reinforce-algorithm"><span class="toc-section-number">6.5.3</span>  REINFORCE algorithm</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Policy gradient methods</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Mélanie Fournier </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>We introduce policy based method in this chapter.</p>
+<section id="the-test-problem-in-a-rl-framework" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="the-test-problem-in-a-rl-framework"><span class="header-section-number">6.1</span> The test problem, in a RL framework</h2>
+<p>As a reminder, we have a test problem with the following problem parameters:</p>
+<ul>
+<li><p>a parameter <span class="math inline">\(b \in [0,1]\)</span> in the steady-state convection diffusion equation, and</p></li>
+<li><p>a discretization parameter <span class="math inline">\(n\in\mathbb{N}\)</span> defining the number of points in the linear grid used to solve numerically the equation.</p></li>
+</ul>
+<p>We end up with a linear equation to solve for, which can be solver using the method highlighted before. We wish to find the solver parameters <span class="math inline">\(\Delta t\)</span> and <span class="math inline">\(\alpha\)</span> that will minimize the residual of REF as fast as possible. To simplify future computation, we will be interested in minimizing the residual ratio after 10 iteration of the Runge-Kutta solver <span class="math inline">\(c_{10}\)</span>. We define this ratio as <span class="math inline">\(c_{b,n}(\Delta t, \alpha)\)</span>, a function parametrized by <span class="math inline">\(b\)</span> and <span class="math inline">\(n\)</span>, with arguments <span class="math inline">\(\Delta t\)</span> and <span class="math inline">\(\alpha\)</span>. We are faced with the following optimization problem:</p>
+<p>For any <span class="math inline">\(b\)</span>, <span class="math inline">\(n\)</span>, find <span class="math display">\[
+(\Delta t^*, \alpha^*) =  \arg \min_{\Delta t, \alpha} c_{b,n}(\Delta t, \alpha).
+\]</span></p>
+<p>We are interested in using reinforcement learning to solve this problem. The last section provided an overview of the elements of reinforcement learning, and we can now translate our problem in a RL setting.</p>
+<ul>
+<li>A individual state can be defined as a pair <span class="math inline">\(s = (b,n)\)</span>.</li>
+<li>An individual action can be defined as a pair <span class="math inline">\(a = (\Delta t, \alpha)\)</span>.</li>
+<li>Given a state <span class="math inline">\(s\)</span>, the action chosen depend on the policy <span class="math inline">\(\pi(a = (\Delta t, \alpha) |s = (b,n))\)</span>. This policy can be deterministic or stochastic.</li>
+<li>Once a state-action pair is chosen, the residual ratio is computed. The reward can then be defined as a function of calculated residual ratio, which is defined in the next section.</li>
+</ul>
+<p>The state transition model is more difficult to find a direct translation for. For the purpose of this thesis, the next state is chosen at random after computing an action and a reward. This is not ideal.</p>
+<p>There are still several challenges that need to be addressed.</p>
+<ul>
+<li>State transition being random makes for a poor model to apply reinforcement learning to. In a typical RL scenario, the discount rate is usually set close to 1 as the agent need to take into account the future states it will be in. Here, the next state is independent on the action taken, so it makes no sense to set the discount rate high. As a consequence, we set it low.</li>
+<li>In our problem, the State-Action space is continuous. We previously assumed finite spaces.</li>
+<li>In the definition of a MDP, the reward is a modeled random variable. This is not the case here, as we do not know in advance how the solver will behave.</li>
+</ul>
+<p>The first challenge is inherent to the way we defined the problem. We answer the last two challenges in the next sections.</p>
+</section>
+<section id="computing-the-reward." class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="computing-the-reward."><span class="header-section-number">6.2</span> Computing the reward.</h2>
+<p>Once a state and action is chosen, the reward need to be computed. We said before that, for each state and action, we compute the residual ratio after 10 iterations <span class="math inline">\(c_{10}\)</span>. With that ratio, we need to define an appropriate reward metrics. We design the reward such that:</p>
+<ul>
+<li>The lower the ratio <span class="math inline">\(c_{10}\)</span>, the better the convergence rate and the better the reward should be.</li>
+<li>It appears natural to have a positive reward when <span class="math inline">\(c_{10}&lt;1\)</span>, which implies convergence, and a negative reward otherwise.</li>
+</ul>
+<p>The reward is</p>
+<p><span class="math display">\[
+r(c_{10}) = \begin{cases}
+100\times (1-c_{10}) \;\;\;\;\;\qquad \text{ if } c_{10}&lt;1\\
+\max(-10,1 - c_{10}) \qquad \text{ if } c_{10}\geq1
+\end{cases}
+\]</span></p>
+<p>When <span class="math inline">\(c_{10}&lt;1\)</span>, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. Because the ratio tends to be very close to <span class="math inline">\(1\)</span>, we multiply everything by <span class="math inline">\(100\)</span>, adding more contrast to the rewards.</p>
+<p>When, on the other hand <span class="math inline">\(c_{10}\geq 1\)</span>, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at <span class="math inline">\(-10\)</span>.</p>
+</section>
+<section id="model-based-model-free" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="model-based-model-free"><span class="header-section-number">6.3</span> Model based, model free</h2>
+<p>One problem we are faced with is the problem of the model. In the last section, we assume that both <span class="math inline">\(p(s'|s,a)\)</span> and <span class="math inline">\(p(r|s,a)\)</span> are known. Depending on the problem, this is not straightforward to define. Thankfully, the model can be empirically estimated via Monte Carlo methods.</p>
+<p>In particular, we often have to compute expectation of random variables. The most basic method is simply to sample the desired random variable and to use the empirical mean as an estimator of the desired expectation. Stochastic estimation is also used in numerous reinforcement learning algorithm.</p>
+</section>
+<section id="dealing-with-a-large-state-action-space." class="level2" data-number="6.4">
+<h2 data-number="6.4" class="anchored" data-anchor-id="dealing-with-a-large-state-action-space."><span class="header-section-number">6.4</span> Dealing with a large state-action space.</h2>
+<p>In the last chapter, we made the assumption that the every space, be it state, action, or reward is finite. However, this is in practice not always the case, as some state may be continuously defined for example. Even if those spaces are discrete, the <em>curse of dimensionality</em> (TODO, should something be cited) may not allow us to efficiently represent every state or action.</p>
+<p>We take our problem as formulated before. The state is defined as the problem parameters, that is <span class="math inline">\(b\in[0,1]\)</span> and <span class="math inline">\(n = 1 , 2, \dots\)</span>. Without any adjustment, the state space is of the form <span class="math inline">\([0,1] \times \mathbb{N}\)</span>, and is not finite.</p>
+<p>Similarly, the policy is defined by choosing the values <span class="math inline">\((\alpha,\Delta t) \in [0,1]\times \mathbb{R}^+\)</span>, depending on the state. Once again, the action space is continuous.</p>
+<p>One approach would be to discretize the entire state <span class="math inline">\(\times\)</span> action space, and then to apply classical dynamic programming algorithm to get some results. Then, after an optimal policy is found, do some form of interpolation for problem parameters outside of the discretized space. This approach has its own merit, as there is 3 dimensions that need to be discretized, and <span class="math inline">\(n\)</span> can be chosen within a finite range. The main issue is that since there are no relationship between the states, solving the resulting Bellman optimal equation is effectively close to brute forcing the problem. (//TODO, this need a stronger argument instead of “My intuition said so”.)</p>
+<p>Another approach is to use approximation function. A common approach is to approximate the value function <span class="math inline">\(v(s)\)</span> by some parametrization <span class="math inline">\(v(s) \approx \hat{v}(s,\omega)\)</span> where <span class="math inline">\(\omega \in \mathbb{R}^d\)</span> are <span class="math inline">\(d\)</span> parameters. Such methods are called <em>value based</em>. The method we use in this thesis, on the other hand, use an approximation of the policy function defined as <span class="math inline">\(\pi(a|s,\theta)\)</span>, where <span class="math inline">\(\theta\in \mathbb{R}^d\)</span> is a parameter vector is dimension <span class="math inline">\(d\)</span>. Such method are called <em>policy based</em>. The reason to chose from this class of algorithm is two-fold.</p>
+<ul>
+<li><p>When thinking about the test problem, one approach which appears natural is to chose the solver parameters as a linear function of the problem parameters. A policy based approach allow us to do exactly this.</p></li>
+<li><p>A challenge that we are faced with is the poor model of state transition. Choosing such a linear policy allow us to find some relations between the states.</p></li>
+</ul>
+<div class="remark proof">
+<p><span class="proof-title"><em>Remark</em>. </span>Approximation is usually done using neural networks, building on the universal approximation theorem(<span class="citation" data-cites="HORNIK1989359"><a href="#ref-HORNIK1989359" role="doc-biblioref">[1]</a></span>). In our case, a linear approximation is used.</p>
+</div>
+</section>
+<section id="policy-gradient-methods." class="level2" data-number="6.5">
+<h2 data-number="6.5" class="anchored" data-anchor-id="policy-gradient-methods."><span class="header-section-number">6.5</span> Policy gradient methods.</h2>
+<section id="objective-function." class="level3" data-number="6.5.1">
+<h3 data-number="6.5.1" class="anchored" data-anchor-id="objective-function."><span class="header-section-number">6.5.1</span> Objective function.</h3>
+<p>We apply a policy gradient method to our problem. Let <span class="math inline">\(\theta \in \mathbb{R}^d\)</span> be a parameter vector and <span class="math inline">\(\pi(a|s,\theta) = p(A_t = a | S_t = s , \theta)\)</span> an approximate policy that is derivable w.r.t <span class="math inline">\(\theta\)</span>. We want to define an objective function <span class="math inline">\(J(\theta)\)</span> that we want to maximize in order to find the best value of <span class="math inline">\(\theta\)</span>.</p>
+<p>To this end, we make the following assumptions, which are specific to our problem. For simplicity, we restrict ourselves to the discrete case.</p>
+<ul>
+<li>The states are uniformly distributed. That is, for any <span class="math inline">\(s\in\mathcal{S}, p(S_t = s) = 1 / |\mathcal{S}|\)</span>, where <span class="math inline">\(|\mathcal{S}|\)</span> is the number of element of <span class="math inline">\(S\)</span>. This correspond to the idea of taking a new state at random in our problem.</li>
+</ul>
+<p>We define the objective function</p>
+<p><span class="math display">\[
+J(\theta) = \overline{v_\pi(S)} = \frac{1}{|\mathcal{S}|}\sum_{s\in S}v_\pi(s)
+\]</span></p>
+<p>that is, <span class="math inline">\(J(\theta)\)</span> is the average, (non weighted, as per assumption) state value.</p>
+<p>We want to maximize this objective function. To this end, we use a gradient ascend algorithm of the form</p>
+<p><span class="math display">\[
+\theta_{t+1} = \theta_t + \alpha \nabla_\theta J(\theta).
+\]</span></p>
+<p>We are faced with the immediate issue that the algorithm requires knowing the gradient of the objective function.</p>
+</section>
+<section id="policy-gradient-theorem" class="level3" data-number="6.5.2">
+<h3 data-number="6.5.2" class="anchored" data-anchor-id="policy-gradient-theorem"><span class="header-section-number">6.5.2</span> Policy gradient theorem</h3>
+<p>We prove, using the aforementioned assumptions the policy gradient theorem. This proof is adapted from <span class="citation" data-cites="Sutton1998"><a href="#ref-Sutton1998" role="doc-biblioref">[2]</a>,chap 13.2</span>.</p>
+<p>Using the expression //TODO: REF, the expression for a specific state value can be written as</p>
+<p><span class="math display">\[
+v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a|s)q_\pi(a,s)
+\]</span></p>
+<p>We take the gradient w.r.t <span class="math inline">\(\theta\)</span> to get <span class="math display">\[
+\nabla v_\pi(s) = \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s) + \pi(a|s)\nabla q_\pi(a,s)
+\]</span></p>
+<p>Using the expression //REF for the action value we get</p>
+<p><span class="math display">\[
+\nabla q_\pi(a,s) = \nabla \left[ \sum_{r}p(r|s,a)r + \gamma\sum_{s'}p(s'|a,s)v_\pi(s')\right]
+\]</span></p>
+<p>It is apparent that the first part of the RHS is not dependent on <span class="math inline">\(\theta\)</span>, therefore, and neither is the state transition probability, the gradient becomes</p>
+<p><span class="math display">\[
+\nabla q_\pi(a,s) =  \gamma\sum_{s'}p(s'|a,s)\nabla v_\pi(s').
+\]</span></p>
+<p>By assumption <span class="math inline">\(p(s'|a,s) = 1/|\mathcal{S}|\)</span>, and thus</p>
+<p><span class="math display">\[
+\nabla q_\pi(a,s) =  \gamma\sum_{s'}\frac{1}{|\mathcal{S}|}\nabla v_\pi(s').
+\]</span></p>
+<p>We recognize the expression for the gradient of the metric to get <span class="math inline">\(\nabla q_\pi(a,s) = \gamma \nabla J(\theta)\)</span>. <span class="math display">\[
+\nabla v_\pi(s) = \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s) + \gamma\pi(a|s)\nabla J(\theta)
+\]</span></p>
+<p>Since the policy <span class="math inline">\(\pi(a|s)\)</span> is a probability over the action space, it sums to <span class="math inline">\(1\)</span> and we can get the second part of the RHS out of the sum</p>
+<p><span class="math display">\[
+\nabla v_\pi(s) = \gamma J(\theta) + \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s)
+\]</span></p>
+<p>Using <span class="math inline">\(\nabla J(\theta) = \frac{1}{|\mathcal{S}|}\sum_{s\in\mathcal{S}}\nabla v_\pi(s)\)</span>, we get</p>
+<p><span class="math display">\[\begin{align}
+\nabla J(\theta) &amp;= \frac{1}{|\mathcal{S}|}\sum_{s\in\mathcal{S}}\left[\gamma J(\theta) + \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s)\right] \\
+&amp;= \gamma \nabla J(\theta) + \sum_{s\in\mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s)
+\end{align}\]</span></p>
+<p>And after a small rearrangement of the terms</p>
+<p><span class="math display">\[
+\nabla J(\theta) = \frac{1}{1-\gamma}\sum_{s\in \mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|S)q_\pi(a,S)
+\]</span></p>
+<p>This is an expression of the policy gradient theorem. The reason to put the fraction <span class="math inline">\(1/|\mathcal{S}|\)</span> inside the first sum is to get a parallel with the more general expression, where in general, we have a weighted sum with different weight depending on the state. Depending on the metric used and the environment, this can be the stationary distribution of the states for a given policy.</p>
+<p>We state the policy gradient theorem in a more general form</p>
+<div id="thm-policyGradient" class="theorem">
+<p><span class="theorem-title"><strong>Theorem 6.1 </strong></span>(Policy gradient theorem)</p>
+<p>Given an appropriate objective function <span class="math inline">\(J(\theta)\)</span>, the gradient of the metric is given by the proportional relationship</p>
+<p><span class="math display">\[
+\nabla J(\theta) \propto \sum_s \mu(s) \sum_a q_\pi(a,s)\nabla \pi(a|s)
+\]</span></p>
+<p>where <span class="math inline">\(\mu(s)\)</span> is the stationary distribution of the Markov process on policy <span class="math inline">\(\pi\)</span>.</p>
+</div>
+<div class="remark proof">
+<p><span class="proof-title"><em>Remark</em>. </span>Depending on the model, the objective function may change. Nevertheless, the expression of the policy gradient theorem stay similar. In particular, the constant of proportionality may change.</p>
+</div>
+<p>The policy gradient theorem is powerful in the sense that we can derive the gradient of the objective function, something that is tied to the environment, to establishing the gradient of the parametrized policy function, which we have more control over.</p>
+</section>
+<section id="reinforce-algorithm" class="level3" data-number="6.5.3">
+<h3 data-number="6.5.3" class="anchored" data-anchor-id="reinforce-algorithm"><span class="header-section-number">6.5.3</span> REINFORCE algorithm</h3>
+<p>Here, we introduce reinforce the classic REINFORCE algorithm@Williams1992. Even with the policy gradient theorem, we are still faced with the problem of estimating the action values <span class="math inline">\(q_\pi\)</span>. But we remark that the formula in the policy gradient is an expectation.</p>
+<p><span class="math display">\[
+\nabla J(\theta) \propto E_{S_\pi}\left[\sum_a q_\pi(a,S)\nabla \pi(a|S)\right]
+\]</span></p>
+<p>where <span class="math inline">\(S_\pi\)</span> is the stationary distribution of the state.<br>
+By using the identity <span class="math inline">\(\frac{\nabla f}{f} = \nabla \ln f\)</span>, we can also rewrite the inner term as</p>
+<p><span class="math display">\[
+\sum_a q_\pi(a,S)\nabla \pi(a|S) = \sum_a \pi(a|S)q_\pi(a,S)\nabla \ln \pi(a|S),
+\]</span></p>
+<p>which is also an expectation, and thus</p>
+<p><span class="math display">\[
+\nabla J(\theta) \propto E_{S\sim S_\pi, A\sim A_\pi}\left[q_\pi(A,S)\nabla \ln \pi(A|S)\right].
+\]</span></p>
+
+
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-HORNIK1989359" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">K. Hornik, M. Stinchcombe, and H. White, <span>“Multilayer feedforward networks are universal approximators,”</span> <em>Neural Networks</em>, vol. 2, no. 5, pp. 359–366, 1989, doi: <a href="https://doi.org/10.1016/0893-6080(89)90020-8">https://doi.org/10.1016/0893-6080(89)90020-8</a>.</div>
+</div>
+<div id="ref-Sutton1998" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">R. S. Sutton and A. G. Barto, <em>Reinforcement learning: An introduction</em>, Second. The MIT Press, 2018. Available: <a href="http://incompleteideas.net/book/the-book-2nd.html">http://incompleteideas.net/book/the-book-2nd.html</a></div>
+</div>
+</div>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./6_reinforcementBasic.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of reinforcement learning(RL).</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./8_implementation.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Implementation</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

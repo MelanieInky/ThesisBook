@@ -84,7 +84,7 @@ It is apparent that $M$ is diagonally dominant. Since all elements of the diagon
 #| output: false
 import numpy as np
 import matplotlib.pyplot as plt
-from testProblemClass import testProblem
+from testProblemClass import TestProblem
 ```
 
 ```{python}
@@ -94,7 +94,7 @@ from testProblemClass import testProblem
 
 n = 50
 b = 0.09
-problem = testProblem(b = b,n = n)
+problem = TestProblem(b = b,n = n)
 
 M = problem.M
 e = problem.e

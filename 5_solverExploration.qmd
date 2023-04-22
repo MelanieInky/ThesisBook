@@ -35,7 +35,7 @@ where $||.||$ is the 2-norm.
 
 import numpy as np
 import matplotlib.pyplot as plt
-from testProblemClass import testProblem
+from testProblemClass import TestProblem
 ```
 
 
@@ -48,9 +48,9 @@ n = 100
 b = 0.05
 alpha = 0.3
 deltaT = 1.65
-problem = testProblem(b,n)
+problem = TestProblem(b,n)
 
-y ,  resNormList = problem.mainSolver2(alpha,deltaT,2000)
+y ,  resNormList = problem.main_solver2(alpha,deltaT,2000)
 
 e_norm = np.linalg.norm(problem.e,2)
 relRes = resNormList / e_norm
@@ -71,7 +71,7 @@ plt.show()
 
 
 
- ## A small experiment.
+## A small experiment.
 
 We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b, n)$. Since the residual ratio vary quite a bit depending on the number of iteration, we decide to investigate the residual ratio after 10 iterations and 100 iterations. So, for the problem parameters $b = 0.05$, and $n = 100$, we plot $c_{10 }= f(\Delta t, \alpha)$ and $c_{100} = g(\Delta t, \alpha)$. We wish to answer the following questions
 
@@ -88,12 +88,14 @@ In both cases, we use a contour plot. In @fig-resRatio10 and @fig-resRatio100, t
 
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
+import plotly.graph_objects as go
 
 def resRatio(resNormList):
     return resNormList[-1] / resNormList[-2]
 
 
 
+##Make an l*l grid to search in
 l = 100
 deltaTgrid = np.linspace(0.1,4.3,l)
 alphaGrid = np.linspace(0,1,l)
@@ -102,39 +104,18 @@ deltaTgrid, alphaGrid = np.meshgrid(deltaTgrid,alphaGrid)
 
 resRatioGrid2 = np.zeros((l,l))
 
-#Version 10
+#Version 10th residual ratio
 for i in range(l):
     for j in range(l):
         #print('alpha', alphaGrid[j,0])
         #print('deltaT', deltaTgrid[0,i])
-        y , resNormList = problem.mainSolver2(alphaGrid[j,i],deltaTgrid[j,i],10)
+        y , resNormList = problem.main_solver2(alphaGrid[j,i],deltaTgrid[j,i],10)
         ratio = resRatio(resNormList)
         #print('ratio', ratio)
         resRatioGrid2[j,i] = resRatio(resNormList)
 
 
-
-
-```
-
-
-```{python}
-#| fig-cap: Residual ratio at 10 iterations, for problem parameters $b = 0.05$ and $n = 100$, and with varying solver parameters $\alpha$ and $\Delta t$
-#| label: fig-resRatio10
-from IPython.display import Image
-Image('images/c10.png')
-
-```
-
-```{python}
-#| fig-cap: Residual ratio at 100 iterations, for problem parameters $b = 0.05$ and $n = 100$, and with varying solver parameters $\alpha$ and $\Delta t$
-#| label: fig-resRatio100
-Image('images/c100.png')
-```
-```{python}
-#| echo: false
-#| eval: false
-import plotly.graph_objects as go
+##VISUALISATION
 
 fig = go.Figure(data = 
     go.Contour(
@@ -154,20 +135,21 @@ fig.update_layout(
     yaxis_title = 'alpha'
 )
 
+
 ```
 
 
 ```{python}
-
 #| echo: false
 #| eval: false
 
+
+###NOT RUN because it takes a while to compile otherwise
 #Version 100
 for i in range(l):
     for j in range(l):
-        #print('alpha', alphaGrid[j,0])
-        #print('deltaT', deltaTgrid[0,i])
-        y , resNormList = problem.mainSolver2(alphaGrid[j,i],deltaTgrid[j,i],100)
+        #Solve using the parameters
+        y , resNormList = problem.main_solver2(alphaGrid[j,i],deltaTgrid[j,i],100)
         ratio = resRatio(resNormList)
         #print('ratio', ratio)
         resRatioGrid2[j,i] = resRatio(resNormList)
@@ -192,7 +174,27 @@ fig.update_layout(
 
 ```
 
-The stability region after 100 iterations is more narrow, suggesting that convergence may not hold even if it seems to hold for the first few iterations. Nevertheless, we can see how the parameters act on the function. 
+```{python}
+#| fig-cap: Residual ratio at 10 iterations, for problem parameters $b = 0.05$ and $n = 100$, and with varying solver parameters $\alpha$ and $\Delta t$
+#| label: fig-resRatio10
+#| echo: false
+from IPython.display import Image
+Image('images/c10.png')
 
-This is of course an exploration of a particular problem, and it makes no sense in practice to compute the optimal parameters with a grid search. We thus explore a possible solution by using a reinforcement learning algorithm to "learn" these optimal parameters. 
+```
+
+```{python}
+#| fig-cap: Residual ratio at 100 iterations, for problem parameters $b = 0.05$ and $n = 100$, and with varying solver parameters $\alpha$ and $\Delta t$
+#| label: fig-resRatio100
+#| echo: false
+Image('images/c100.png')
+```
+
+
+
+
+
+The stability region after 100 iterations is more narrow, suggesting that convergence may not hold even if it seems to hold for the first few iterations. Nevertheless, we can see how the parameters act on the function.
+
+This is of course an exploration of particular problem parameters, and it is not advisable in practice to compute the optimal parameters with a grid search. We thus explore a possible solution to this problem by using a reinforcement learning algorithm to "learn" these optimal parameters.
 

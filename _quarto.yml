@@ -8,17 +8,18 @@ book:
   date: "3/15/2023"
   chapters:
     - index.qmd
-    - intro.qmd
-    - motivation.qmd
-    - testEqIntro.qmd
-    - solverExploration.qmd
-    - reinforcementBasic.qmd
-    - policyGradient.qmd
-    - experiment.qmd
-    - summary.qmd
-    - references.qmd
+    - 2_intro.qmd
+    - 3_motivation.qmd
+    - 4_convecDiff.qmd
+    - 5_solverExploration.qmd
+    - 6_reinforcementBasic.qmd
+    - 7_policyGradient.qmd
+    - 8_implementation.qmd
+    - 9_summary.qmd
+    - 10_references.qmd
 
 bibliography: references.bib
+csl: ieee.csl
 
 format:
   html:

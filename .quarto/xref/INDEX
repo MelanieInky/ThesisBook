@@ -44,5 +44,32 @@
   },
   "experiment.qmd": {
     "experiment.html": "ed124aa3"
+  },
+  "2_intro.qmd": {
+    "2_intro.html": "5804a689"
+  },
+  "3_motivation.qmd": {
+    "3_motivation.html": "28ee2379"
+  },
+  "4_convecDiff.qmd": {
+    "4_convecDiff.html": "ff7cb1ef"
+  },
+  "5_solverExploration.qmd": {
+    "5_solverExploration.html": "c56f349f"
+  },
+  "6_reinforcementBasic.qmd": {
+    "6_reinforcementBasic.html": "48bd05c8"
+  },
+  "7_policyGradient.qmd": {
+    "7_policyGradient.html": "1fed0ddf"
+  },
+  "8_implementation.qmd": {
+    "8_implementation.html": "4f729298"
+  },
+  "9_summary.qmd": {
+    "9_summary.html": "0e72052e"
+  },
+  "10_references.qmd": {
+    "10_references.html": "e0af7f63"
   }
 }

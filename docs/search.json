@@ -1,0 +1,58 @@
+[
+  {
+    "objectID": "8_implementation.html#a-linear-approximation-of-the-policy.",
+    "href": "8_implementation.html#a-linear-approximation-of-the-policy.",
+    "title": "7  Implementation",
+    "section": "7.1 A linear approximation of the policy.",
+    "text": "7.1 A linear approximation of the policy.\nWe want to have a policy of the form \\((\\Delta t, \\alpha) =A(b,n)' + \\text{c}\\), where \\(A\\) is a two by two matrix and \\(c\\) a 2-vector.\nWe define the following stochastic policy, define first\n\\[\n\\begin{pmatrix}\n\\mu_\\alpha \\\\\n\\mu_{\\Delta t}\n\\end{pmatrix} =\n\\begin{pmatrix}\n\\theta_0 & \\theta_1\\\\\n\\theta_2 & \\theta_3\n\\end{pmatrix}\n\\begin{pmatrix}\nb\\\\\nn\n\\end{pmatrix} +\n\\begin{pmatrix}\n\\theta_4\\\\\n\\theta_5\n\\end{pmatrix}\n\\]\nThen we chose the random policy \\(\\alpha \\sim \\mathcal{N}(\\mu_\\alpha,\\sigma^2)\\),and similarly \\(\\Delta t \\sim \\mathcal{N}(\\mu_{\\Delta t}, \\sigma^2)\\). The term \\(\\sigma^2\\), which is the variance of the policy is chosen fixed, and will help us balance exploration vs exploitation. Since \\(\\alpha\\) and \\(\\Delta t\\) are chosen independently, the joint probability density of both parameters is the product of both marginal pdf, that is\n\\[\nf(\\alpha,\\Delta t) = f_{1}(\\alpha)\\cdot f_{2}(\\Delta t)\n\\]\nwhere \\[\nf_1(\\alpha) = \\frac{1}{\\sqrt{2\\pi}\\sigma}\\exp\\left(-\\frac{(\\alpha - \\theta_0b-\\theta_1n-\\theta_4)^2}{2\\sigma^2}\\right)\n\\]\nand similarly,\n\\[\nf_2(\\Delta t) = \\frac{1}{\\sqrt{2\\pi}\\sigma}\\exp\\left(-\\frac{(\\Delta t - \\theta_2b-\\theta_3n-\\theta_5)^2}{2\\sigma^2}\\right)\n\\].\nTaking the logarithm, we get \\(\\ln(f(\\alpha,\\Delta t) = \\ln(f_1(\\alpha)) + \\ln(f_2(\\Delta t))\\). Thus,\n\\[\n\\ln(f_1(\\alpha)) = \\ln(\\frac{1}{\\sqrt{2\\pi}\\sigma}) - \\frac{(\\alpha - \\theta_0b-\\theta_1n-\\theta_4)^2}{2\\sigma^2}\n\\].\nWe now take the gradient w.r.t \\(\\theta\\) to get\n\\[\n\\nabla_\\theta \\ln(f_1(\\alpha)) = \\xi_\\alpha (b\\theta_0,n\\theta_1,0,0,\\theta_4,0)^T\n\\]\nwhere \\(\\xi_\\alpha = \\frac{(\\alpha - \\theta_0b-\\theta_1n-\\theta_4)}{\\sigma^2}\\).\nDoing a similar thing with \\(\\Delta t\\), we get the gradient,\n\\[\n\\nabla_\\theta \\ln(f_2(\\Delta t)) = \\xi_{\\Delta t}(0,0,b\\theta_2,n\\theta_3,0,\\theta_5)^T.\n\\]\nwhere \\(\\xi_{\\Delta t} = \\frac{(\\Delta t - \\theta_2b-\\theta_3n-\\theta_5)}{\\sigma^2}\\) We now add both gradients together to we get the gradient of the policy, for a specific action \\(a = (\\alpha, \\Delta t)\\) and state \\(s=(b,n)\\),\n\\[\n\\nabla_\\theta \\ln\\pi(a|s,\\theta) =  \\xi_\\alpha (b\\theta_0,n\\theta_1,0,0,\\theta_4,0)^T+ \\xi_{\\Delta t}(0,0,b\\theta_2,n\\theta_3,0,\\theta_5)^T.\n\\tag{7.1}\\]\nWe used here the standard notation. That is, \\(\\pi(a|s,\\theta) = f(\\alpha,\\Delta t)\\).\n\nRemark. One may remark that the REINFORCE algorithm uses a discrete policy space. This is not an issue. Instead of using the probability mass function of the policy, we will instead use the probability density function as a substitute([1]). The fact that the pdf admits values \\(>1\\) is not an issue as we adjust the learning rate accordingly."
+  },
+  {
+    "objectID": "8_implementation.html#application-of-the-reinforce-algorithm.",
+    "href": "8_implementation.html#application-of-the-reinforce-algorithm.",
+    "title": "7  Implementation",
+    "section": "7.2 Application of the REINFORCE algorithm.",
+    "text": "7.2 Application of the REINFORCE algorithm.\nThe Reinforce algorithm is used in Here are the results, (Experiments will be rerun, those are placeholder graph)\n\n\n\n\n\nEvolution of the theta parameters with episode number. The hyperparameters are sigma=0.1, learning rate 5e-6….\n\n\n\n\n\n\n\n\n\nEvolution of the average reward inside the episode with episode number. The hyperparameters are sigma=0.1, learning rate 5e-6…. The variance is high! The trendline is a polynomial fit not to be trusted too much.\n\n\n\n\nthere are problem with the results, namely\n\nThe learning rate must be kept low, otherwise things explode nastily.\nThe convergence is extremely slow, to the point were we may be wondering if it converges at all\n\n(The next sections are things I’ve done to mitigate these problem, with varying degrees of successes, the log are there, but also I need to clean up my code and rerun it for reproducibility sake as I was tinkering a lot at the time, the goal is to have a program were each hyperparameter can be chosen at the beginning/as environment variables, and making all the experiments easily reproducible)."
+  },
+  {
+    "objectID": "8_implementation.html#exploration-vs-exploitation-tradeoff.",
+    "href": "8_implementation.html#exploration-vs-exploitation-tradeoff.",
+    "title": "7  Implementation",
+    "section": "7.3 Exploration vs exploitation tradeoff.",
+    "text": "7.3 Exploration vs exploitation tradeoff.\nChanging \\(\\sigma^2\\) to a higher value makes for a flatter gradient, so not only are we taking more risks, we can actually afford a higher learning rate without exploding!"
+  },
+  {
+    "objectID": "8_implementation.html#gradient-ascent-with-different-learning-parameters.",
+    "href": "8_implementation.html#gradient-ascent-with-different-learning-parameters.",
+    "title": "7  Implementation",
+    "section": "7.4 Gradient ascent with different learning parameters.",
+    "text": "7.4 Gradient ascent with different learning parameters.\nHere is how we can get better convergence by changing the learning parameters.\nOne problem is that if we look at the gradient directions, how steep they are depend on the problem parameters. And since \\(n\\) can vary between 5 and 300, this make for a muuuuuch steeper gradient than the direction associated with \\(b\\), which only varies between 0 and 1. As a result, the direction associated with \\(n\\) tend to converge but not the other. This can be remedied by applying varying learning rate in each direction. It actually works quite well! ’"
+  },
+  {
+    "objectID": "8_implementation.html#impact-of-initial-condition.",
+    "href": "8_implementation.html#impact-of-initial-condition.",
+    "title": "7  Implementation",
+    "section": "7.5 Impact of initial condition.",
+    "text": "7.5 Impact of initial condition.\nGradient based algorithm have a tendency to converge to local minima. (in our case maxima, but same thing really), therefore, it would be interesting to see how initial policy impacts the learned policy now that we have convergence. (Not done yet, but I suspect some nasty surprises!)"
+  },
+  {
+    "objectID": "8_implementation.html#moving-beyond-the-basics.",
+    "href": "8_implementation.html#moving-beyond-the-basics.",
+    "title": "7  Implementation",
+    "section": "7.6 Moving beyond the basics.",
+    "text": "7.6 Moving beyond the basics.\n(Some discussion on what to do next, etc… ) Example include.\n\nBetter algorithm, with less sample variance and more sample efficiency.\nMoving beyond a linear policy. (approximation using NN).\nMeta learning, maybe?\nApplying the concept learned here to a more varied set of problem, instead of just confining ourselves to steady state diffusion-convection equation.\n\n\n\n\n\n[1] T. P. Lillicrap et al., “Continuous control with deep reinforcement learning.” 2019. Available: https://arxiv.org/abs/1509.02971"
+  },
+  {
+    "objectID": "9_summary.html",
+    "href": "9_summary.html",
+    "title": "8  Summary",
+    "section": "",
+    "text": "In summary, this book has no content whatsoever."
+  },
+  {
+    "objectID": "10_references.html",
+    "href": "10_references.html",
+    "title": "References",
+    "section": "",
+    "text": "[1] Bellman Richard Ernest, Stability theory of\ndifferential equations /. New York : McGraw-Hill, 1953.\n\n\n[2] S.\nZhao, “Mathematical foundations of reinforcement learning.”\n2023. https://github.com/MathFoundationRL/Book-Mathmatical-Foundation-of-Reinforcement-Learning\n(accessed Mar. 30, 2023).\n\n\n[3] R.\nS. Sutton and A. G. Barto, Reinforcement learning: An\nintroduction, Second. The MIT Press, 2018. Available: http://incompleteideas.net/book/the-book-2nd.html\n\n\n[4] R.\nJ. Williams, “Simple statistical gradient-following algorithms for\nconnectionist reinforcement learning,” Machine Learning,\nvol. 8, no. 3, pp. 229–256, May 1992, doi: 10.1007/BF00992696.\n\n\n[5] T.\nP. Lillicrap et al., “Continuous control with deep\nreinforcement learning.” 2019. Available: https://arxiv.org/abs/1509.02971\n\n\n[6] K.\nHornik, M. Stinchcombe, and H. White, “Multilayer feedforward\nnetworks are universal approximators,” Neural Networks,\nvol. 2, no. 5, pp. 359–366, 1989, doi: https://doi.org/10.1016/0893-6080(89)90020-8."
+  }
+]

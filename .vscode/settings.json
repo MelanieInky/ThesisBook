@@ -7,5 +7,8 @@
         "latex",
         "plaintext",
         "quarto"
-    ]
+    ],
+    "python.linting.banditEnabled": true,
+    "python.linting.enabled": true,
+    "python.analysis.typeCheckingMode": "off"
 }
