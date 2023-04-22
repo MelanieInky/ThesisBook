@@ -253,7 +253,7 @@ e^{\lambda_1 t} &amp; &amp; &amp;\\
 &amp;&amp;&amp; e^{\lambda_n t}
 \end{pmatrix}
 \]</span></p>
-<p>Let <span class="math inline">\(z(t) = P^{-1}(y(t)-y^*)\)</span>, where <span class="math inline">\(y(t)\)</span> is the unique solution to <a href="#eq-IVPth">Equation&nbsp;<span class="quarto-unresolved-ref">eq-IVPth</span></a> for some arbitrary initial value <span class="math inline">\(y_0\)</span>.</p>
+<p>Let <span class="math inline">\(z(t) = P^{-1}(y(t)-y^*)\)</span>, where <span class="math inline">\(y(t)\)</span> is the unique solution to <a href="#eq-IVPth">Equation&nbsp;<span>2.1</span></a> for some arbitrary initial value <span class="math inline">\(y_0\)</span>.</p>
 <p>Since <span class="math inline">\(P\)</span> is non singular, <span class="math inline">\(y(t) \to y^*\)</span> if and only if <span class="math inline">\(z(t) \to 0\)</span>. We have</p>
 <p><span class="math display">\[
 z(t) = P^{-1} e^{At}(y_0-y^*)
@@ -270,7 +270,7 @@ z(t) = e^{\Delta t} P^{-1}(y_0-y^*).
 <p>This is also a necessary condition. Indeed, since <span class="math inline">\(y_0\)</span> is arbitrary, we can chose it so that <span class="math inline">\(P^{-1}(y_0-y^*) = (1, \dots , 1)^T\)</span>. Then <span class="math inline">\(z(t) = (e^{\lambda_1 t}, e^{\lambda_2 t}, \dots , e^{\lambda_n t})^T\)</span> which converges to <span class="math inline">\(0\)</span> only if all the eigenvalues have a strictly negative real part.</p>
 </div>
 <div class="remark proof">
-<p><span class="proof-title"><em>Remark</em>. </span>A general proof is available on <span class="citation" data-cites="BellmanStab"><a href="#ref-BellmanStab" role="doc-biblioref">[1, Ch. 1]</a></span></p>
+<p><span class="proof-title"><em>Remark</em>. </span>A general proof is available on <span class="citation" data-cites="BellmanStab"><a href="10_references.html#ref-BellmanStab" role="doc-biblioref">[1, Ch. 1]</a></span></p>
 </div>
 <p>We now go back to the original problem of solving the linear system <span class="math inline">\(Ay = b\)</span>. If all the eigenvalues of <span class="math inline">\(A\)</span> have a strictly negative real part, then, any numerical solver for the initial value problem <span class="math inline">\(y'(t) = Ay(t) - b\)</span> with <span class="math inline">\(y(0) = y_0\)</span> where <span class="math inline">\(t\)</span> is some pseudo-time variable also becomes an iterative solver for the linear system <span class="math inline">\(Ay = b\)</span>, as <span class="math inline">\(y(t) \to y^*\)</span>.</p>
 <div class="remark proof">
@@ -278,7 +278,7 @@ z(t) = e^{\Delta t} P^{-1}(y_0-y^*).
 </div>
 
 
-<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="refs" class="references csl-bib-body" role="doc-bibliography" style="display: none">
 <div id="ref-BellmanStab" class="csl-entry" role="doc-biblioentry">
 <div class="csl-left-margin">[1] </div><div class="csl-right-inline">Bellman Richard Ernest, <em>Stability theory of differential equations /</em>. New York : McGraw-Hill, 1953.</div>
 </div>

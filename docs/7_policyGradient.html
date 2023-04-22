@@ -274,7 +274,7 @@ r(c_{10}) = \begin{cases}
 <li><p>A challenge that we are faced with is the poor model of state transition. Choosing such a linear policy allow us to find some relations between the states.</p></li>
 </ul>
 <div class="remark proof">
-<p><span class="proof-title"><em>Remark</em>. </span>Approximation is usually done using neural networks, building on the universal approximation theorem(<span class="citation" data-cites="HORNIK1989359"><a href="#ref-HORNIK1989359" role="doc-biblioref">[1]</a></span>). In our case, a linear approximation is used.</p>
+<p><span class="proof-title"><em>Remark</em>. </span>Approximation is usually done using neural networks, building on the universal approximation theorem(<span class="citation" data-cites="HORNIK1989359"><a href="10_references.html#ref-HORNIK1989359" role="doc-biblioref">[1]</a></span>). In our case, a linear approximation is used.</p>
 </div>
 </section>
 <section id="policy-gradient-methods." class="level2" data-number="6.5">
@@ -299,7 +299,7 @@ J(\theta) = \overline{v_\pi(S)} = \frac{1}{|\mathcal{S}|}\sum_{s\in S}v_\pi(s)
 </section>
 <section id="policy-gradient-theorem" class="level3" data-number="6.5.2">
 <h3 data-number="6.5.2" class="anchored" data-anchor-id="policy-gradient-theorem"><span class="header-section-number">6.5.2</span> Policy gradient theorem</h3>
-<p>We prove, using the aforementioned assumptions the policy gradient theorem. This proof is adapted from <span class="citation" data-cites="Sutton1998"><a href="#ref-Sutton1998" role="doc-biblioref">[2]</a>,chap 13.2</span>.</p>
+<p>We prove, using the aforementioned assumptions the policy gradient theorem. This proof is adapted from <span class="citation" data-cites="Sutton1998"><a href="10_references.html#ref-Sutton1998" role="doc-biblioref">[2]</a>,chap 13.2</span>.</p>
 <p>Using the expression //TODO: REF, the expression for a specific state value can be written as</p>
 <p><span class="math display">\[
 v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a|s)q_\pi(a,s)
@@ -367,7 +367,7 @@ By using the identity <span class="math inline">\(\frac{\nabla f}{f} = \nabla \l
 \]</span></p>
 
 
-<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="refs" class="references csl-bib-body" role="doc-bibliography" style="display: none">
 <div id="ref-HORNIK1989359" class="csl-entry" role="doc-biblioentry">
 <div class="csl-left-margin">[1] </div><div class="csl-right-inline">K. Hornik, M. Stinchcombe, and H. White, <span>“Multilayer feedforward networks are universal approximators,”</span> <em>Neural Networks</em>, vol. 2, no. 5, pp. 359–366, 1989, doi: <a href="https://doi.org/10.1016/0893-6080(89)90020-8">https://doi.org/10.1016/0893-6080(89)90020-8</a>.</div>
 </div>

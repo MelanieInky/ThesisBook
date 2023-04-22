@@ -1,6 +1,5 @@
-# Preface {.unnumbered}
+# Abstract {.unnumbered}
 
-This is a Quarto book.
-tests
+Differential equations go brrrrrr
 
-To learn more about Quarto books visit <https://quarto.org/docs/books>.
+# Acknowledgement {.unnumbered}
