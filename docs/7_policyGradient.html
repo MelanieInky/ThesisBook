@@ -141,7 +141,7 @@ div.csl-indent {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./6_reinforcementBasic.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of reinforcement learning(RL).</span></a>
+  <a href="./6_reinforcementBasic.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of Reinforcement Learning(RL)</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -173,15 +173,14 @@ div.csl-indent {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-test-problem-in-a-rl-framework" id="toc-the-test-problem-in-a-rl-framework" class="nav-link active" data-scroll-target="#the-test-problem-in-a-rl-framework"><span class="toc-section-number">6.1</span>  The test problem, in a RL framework</a></li>
-  <li><a href="#computing-the-reward." id="toc-computing-the-reward." class="nav-link" data-scroll-target="#computing-the-reward."><span class="toc-section-number">6.2</span>  Computing the reward.</a></li>
-  <li><a href="#model-based-model-free" id="toc-model-based-model-free" class="nav-link" data-scroll-target="#model-based-model-free"><span class="toc-section-number">6.3</span>  Model based, model free</a></li>
-  <li><a href="#dealing-with-a-large-state-action-space." id="toc-dealing-with-a-large-state-action-space." class="nav-link" data-scroll-target="#dealing-with-a-large-state-action-space."><span class="toc-section-number">6.4</span>  Dealing with a large state-action space.</a></li>
-  <li><a href="#policy-gradient-methods." id="toc-policy-gradient-methods." class="nav-link" data-scroll-target="#policy-gradient-methods."><span class="toc-section-number">6.5</span>  Policy gradient methods.</a>
+  <li><a href="#computing-the-reward." id="toc-computing-the-reward." class="nav-link active" data-scroll-target="#computing-the-reward."><span class="toc-section-number">6.1</span>  Computing the reward.</a></li>
+  <li><a href="#model-based-model-free" id="toc-model-based-model-free" class="nav-link" data-scroll-target="#model-based-model-free"><span class="toc-section-number">6.2</span>  Model based, model free</a></li>
+  <li><a href="#dealing-with-a-large-state-action-space." id="toc-dealing-with-a-large-state-action-space." class="nav-link" data-scroll-target="#dealing-with-a-large-state-action-space."><span class="toc-section-number">6.3</span>  Dealing with a large state-action space.</a></li>
+  <li><a href="#policy-gradient-methods." id="toc-policy-gradient-methods." class="nav-link" data-scroll-target="#policy-gradient-methods."><span class="toc-section-number">6.4</span>  Policy gradient methods.</a>
   <ul class="collapse">
-  <li><a href="#objective-function." id="toc-objective-function." class="nav-link" data-scroll-target="#objective-function."><span class="toc-section-number">6.5.1</span>  Objective function.</a></li>
-  <li><a href="#policy-gradient-theorem" id="toc-policy-gradient-theorem" class="nav-link" data-scroll-target="#policy-gradient-theorem"><span class="toc-section-number">6.5.2</span>  Policy gradient theorem</a></li>
-  <li><a href="#reinforce-algorithm" id="toc-reinforce-algorithm" class="nav-link" data-scroll-target="#reinforce-algorithm"><span class="toc-section-number">6.5.3</span>  REINFORCE algorithm</a></li>
+  <li><a href="#objective-function." id="toc-objective-function." class="nav-link" data-scroll-target="#objective-function."><span class="toc-section-number">6.4.1</span>  Objective function.</a></li>
+  <li><a href="#policy-gradient-theorem" id="toc-policy-gradient-theorem" class="nav-link" data-scroll-target="#policy-gradient-theorem"><span class="toc-section-number">6.4.2</span>  Policy gradient theorem</a></li>
+  <li><a href="#reinforce-algorithm" id="toc-reinforce-algorithm" class="nav-link" data-scroll-target="#reinforce-algorithm"><span class="toc-section-number">6.4.3</span>  REINFORCE algorithm</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -212,9 +211,7 @@ div.csl-indent {
 
 </header>
 
-<p>We introduce policy based method in this chapter.</p>
-<section id="the-test-problem-in-a-rl-framework" class="level2" data-number="6.1">
-<h2 data-number="6.1" class="anchored" data-anchor-id="the-test-problem-in-a-rl-framework"><span class="header-section-number">6.1</span> The test problem, in a RL framework</h2>
+<p>Now that we have access to the main definitions used in RL, we can now translate the problem we had at the end of chapter 4. ## Translating the Test Problem</p>
 <p>As a reminder, we have a test problem with the following problem parameters:</p>
 <ul>
 <li><p>a parameter <span class="math inline">\(b \in [0,1]\)</span> in the steady-state convection diffusion equation, and</p></li>
@@ -238,10 +235,9 @@ div.csl-indent {
 <li>In our problem, the State-Action space is continuous. We previously assumed finite spaces.</li>
 <li>In the definition of a MDP, the reward is a modeled random variable. This is not the case here, as we do not know in advance how the solver will behave.</li>
 </ul>
-<p>The first challenge is inherent to the way we defined the problem. We answer the last two challenges in the next sections.</p>
-</section>
-<section id="computing-the-reward." class="level2" data-number="6.2">
-<h2 data-number="6.2" class="anchored" data-anchor-id="computing-the-reward."><span class="header-section-number">6.2</span> Computing the reward.</h2>
+<p>The first challenge is inherent to the way we translated the problem. We answer the last two challenges in the next sections.</p>
+<section id="computing-the-reward." class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="computing-the-reward."><span class="header-section-number">6.1</span> Computing the reward.</h2>
 <p>Once a state and action is chosen, the reward need to be computed. We said before that, for each state and action, we compute the residual ratio after 10 iterations <span class="math inline">\(c_{10}\)</span>. With that ratio, we need to define an appropriate reward metrics. We design the reward such that:</p>
 <ul>
 <li>The lower the ratio <span class="math inline">\(c_{10}\)</span>, the better the convergence rate and the better the reward should be.</li>
@@ -257,13 +253,13 @@ r(c_{10}) = \begin{cases}
 <p>When <span class="math inline">\(c_{10}&lt;1\)</span>, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. Because the ratio tends to be very close to <span class="math inline">\(1\)</span>, we multiply everything by <span class="math inline">\(100\)</span>, adding more contrast to the rewards.</p>
 <p>When, on the other hand <span class="math inline">\(c_{10}\geq 1\)</span>, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at <span class="math inline">\(-10\)</span>.</p>
 </section>
-<section id="model-based-model-free" class="level2" data-number="6.3">
-<h2 data-number="6.3" class="anchored" data-anchor-id="model-based-model-free"><span class="header-section-number">6.3</span> Model based, model free</h2>
+<section id="model-based-model-free" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="model-based-model-free"><span class="header-section-number">6.2</span> Model based, model free</h2>
 <p>One problem we are faced with is the problem of the model. In the last section, we assume that both <span class="math inline">\(p(s'|s,a)\)</span> and <span class="math inline">\(p(r|s,a)\)</span> are known. Depending on the problem, this is not straightforward to define. Thankfully, the model can be empirically estimated via Monte Carlo methods.</p>
 <p>In particular, we often have to compute expectation of random variables. The most basic method is simply to sample the desired random variable and to use the empirical mean as an estimator of the desired expectation. Stochastic estimation is also used in numerous reinforcement learning algorithm.</p>
 </section>
-<section id="dealing-with-a-large-state-action-space." class="level2" data-number="6.4">
-<h2 data-number="6.4" class="anchored" data-anchor-id="dealing-with-a-large-state-action-space."><span class="header-section-number">6.4</span> Dealing with a large state-action space.</h2>
+<section id="dealing-with-a-large-state-action-space." class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="dealing-with-a-large-state-action-space."><span class="header-section-number">6.3</span> Dealing with a large state-action space.</h2>
 <p>In the last chapter, we made the assumption that the every space, be it state, action, or reward is finite. However, this is in practice not always the case, as some state may be continuously defined for example. Even if those spaces are discrete, the <em>curse of dimensionality</em> (TODO, should something be cited) may not allow us to efficiently represent every state or action.</p>
 <p>We take our problem as formulated before. The state is defined as the problem parameters, that is <span class="math inline">\(b\in[0,1]\)</span> and <span class="math inline">\(n = 1 , 2, \dots\)</span>. Without any adjustment, the state space is of the form <span class="math inline">\([0,1] \times \mathbb{N}\)</span>, and is not finite.</p>
 <p>Similarly, the policy is defined by choosing the values <span class="math inline">\((\alpha,\Delta t) \in [0,1]\times \mathbb{R}^+\)</span>, depending on the state. Once again, the action space is continuous.</p>
@@ -277,10 +273,10 @@ r(c_{10}) = \begin{cases}
 <p><span class="proof-title"><em>Remark</em>. </span>Approximation is usually done using neural networks, building on the universal approximation theorem(<span class="citation" data-cites="HORNIK1989359"><a href="10_references.html#ref-HORNIK1989359" role="doc-biblioref">[1]</a></span>). In our case, a linear approximation is used.</p>
 </div>
 </section>
-<section id="policy-gradient-methods." class="level2" data-number="6.5">
-<h2 data-number="6.5" class="anchored" data-anchor-id="policy-gradient-methods."><span class="header-section-number">6.5</span> Policy gradient methods.</h2>
-<section id="objective-function." class="level3" data-number="6.5.1">
-<h3 data-number="6.5.1" class="anchored" data-anchor-id="objective-function."><span class="header-section-number">6.5.1</span> Objective function.</h3>
+<section id="policy-gradient-methods." class="level2" data-number="6.4">
+<h2 data-number="6.4" class="anchored" data-anchor-id="policy-gradient-methods."><span class="header-section-number">6.4</span> Policy gradient methods.</h2>
+<section id="objective-function." class="level3" data-number="6.4.1">
+<h3 data-number="6.4.1" class="anchored" data-anchor-id="objective-function."><span class="header-section-number">6.4.1</span> Objective function.</h3>
 <p>We apply a policy gradient method to our problem. Let <span class="math inline">\(\theta \in \mathbb{R}^d\)</span> be a parameter vector and <span class="math inline">\(\pi(a|s,\theta) = p(A_t = a | S_t = s , \theta)\)</span> an approximate policy that is derivable w.r.t <span class="math inline">\(\theta\)</span>. We want to define an objective function <span class="math inline">\(J(\theta)\)</span> that we want to maximize in order to find the best value of <span class="math inline">\(\theta\)</span>.</p>
 <p>To this end, we make the following assumptions, which are specific to our problem. For simplicity, we restrict ourselves to the discrete case.</p>
 <ul>
@@ -297,8 +293,8 @@ J(\theta) = \overline{v_\pi(S)} = \frac{1}{|\mathcal{S}|}\sum_{s\in S}v_\pi(s)
 \tag{6.1}\]</span></span></p>
 <p>We are faced with the immediate issue that the algorithm requires knowing the gradient of the objective function.</p>
 </section>
-<section id="policy-gradient-theorem" class="level3" data-number="6.5.2">
-<h3 data-number="6.5.2" class="anchored" data-anchor-id="policy-gradient-theorem"><span class="header-section-number">6.5.2</span> Policy gradient theorem</h3>
+<section id="policy-gradient-theorem" class="level3" data-number="6.4.2">
+<h3 data-number="6.4.2" class="anchored" data-anchor-id="policy-gradient-theorem"><span class="header-section-number">6.4.2</span> Policy gradient theorem</h3>
 <p>We prove, using the aforementioned assumptions the policy gradient theorem. This proof is adapted from <span class="citation" data-cites="Sutton1998"><a href="10_references.html#ref-Sutton1998" role="doc-biblioref">[2]</a>,chap 13.2</span>.</p>
 <p>Using the expression //TODO: REF, the expression for a specific state value can be written as</p>
 <p><span class="math display">\[
@@ -350,8 +346,8 @@ v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a|s)q_\pi(a,s)
 </div>
 <p>The policy gradient theorem is powerful in the sense that we can derive the gradient of the objective function, something that is tied to the environment, to establishing the gradient of the parametrized policy function, which we have more control over.</p>
 </section>
-<section id="reinforce-algorithm" class="level3" data-number="6.5.3">
-<h3 data-number="6.5.3" class="anchored" data-anchor-id="reinforce-algorithm"><span class="header-section-number">6.5.3</span> REINFORCE algorithm</h3>
+<section id="reinforce-algorithm" class="level3" data-number="6.4.3">
+<h3 data-number="6.4.3" class="anchored" data-anchor-id="reinforce-algorithm"><span class="header-section-number">6.4.3</span> REINFORCE algorithm</h3>
 <p>Here, we introduce reinforce the classic REINFORCE algorithm <span class="citation" data-cites="Williams1992"><a href="10_references.html#ref-Williams1992" role="doc-biblioref">[3]</a></span>. Even with the policy gradient theorem, we are still faced with the problem of estimating the action values <span class="math inline">\(q_\pi\)</span>. But we remark that the formula in the policy gradient is an expectation.</p>
 <p><span class="math display">\[
 \nabla J(\theta) \propto E_{S_\pi}\left[\sum_a q_\pi(a,S)\nabla \pi(a|S)\right]
@@ -574,7 +570,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="./6_reinforcementBasic.html" class="pagination-link">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of reinforcement learning(RL).</span></span>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of Reinforcement Learning(RL)</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

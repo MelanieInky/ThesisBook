@@ -6,9 +6,8 @@ jupyter: python3
 
 # Policy gradient methods
 
-We introduce policy based method in this chapter.
-
-## The test problem, in a RL framework
+Now that we have access to the main definitions used in RL, we can now translate the problem we had at the end of chapter 4.
+## Translating the Test Problem
 
 As a reminder, we have a test problem with the following problem parameters:
 
@@ -40,7 +39,7 @@ There are still several challenges that need to be addressed.
 - In our problem, the State-Action space is continuous. We previously assumed finite spaces.
 - In the definition of a MDP, the reward is a modeled random variable. This is not the case here, as we do not know in advance how the solver will behave.
 
-The first challenge is inherent to the way we defined the problem. We answer the last two challenges in the next sections. 
+The first challenge is inherent to the way we translated the problem. We answer the last two challenges in the next sections. 
 
 ## Computing the reward.
 

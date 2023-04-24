@@ -11,39 +11,39 @@ format:
 jupyter: python3
 ---
 
-# Basics of reinforcement learning(RL).
-In this section, we outline the main ideas behind reinforcement learning and how they can be applied in the context of this thesis. 
+# Basics of Reinforcement Learning(RL)
+In this section, we outline the main ideas behind reinforcement learning and how they can be applied in the context of this thesis. The reader familiar with the material may skip this section. 
 
 
 
-## A non mathematical, but delicious example.
+## A non mathematical, but delicious example
 
-Suppose we want to cook a delicious meal. At any point in time, we are making decisions such as
+In Reinforcement Learning tasks, we have are training *agent* that interact with its *environment* by taking decisions. In this example, we are the agent, and the environment is the kitchen. Suppose we want to cook a delicious meal. At any point in time, we are making decisions such as
 
 - which ingredients we use. Do we use tofu or seitan? Do we add spice more chili pepper? When do we incorporate the sauce?
 - which cookware we use? Cast iron, or non-stick pan?
-- whether to stir or not. It may stick and burn at the bottom of the pan if we don't, but we are lazy and our laziness has to be weighted in.
+- whether to put the oven to $200^\circ$ C or $220^\circ$ C
 - Or simply do nothing!
 
-All of these decisions, which we will call *actions* from now on, are taken in reaction to the current *state* of the cooking process, following a certain *policy*, which is shaped by our previous cooking experience. 
+All of these decisions, which we will call *actions* from now on, are taken based on the current *state* of the cooking process, following a certain *policy*, which is shaped by our previous cooking experience. 
 
 After each action, the cooking process get to a new *state* and we get a *reward* that depend on how we did. Maybe the food started to burn in which case we get a negative reward, or maybe we made the food better, in which case we get a positive reward. In this example, there is also a terminal state, in which we finished cooking and get to eat the meal. 
 
-But how do we learn how to cook, that is, how do we learn the *policy*? We learn it by trying to make the food as good as possible, which is defined by the *reward* we get after each action. Some of those rewards are immediate. For example, if we add some spices to our food and it tastes better, we may be inclined to do it again the next time we cook a meal.  We want to have a *policy* that maximize the total *rewards* we get, which also mean that we have to balance our decision between the immediate reward and the future rewards. Adding a spice may make the meal taste better in the short term, but it may clash later when we add other ingredients, leading to a worse meal and bad *rewards*.
+But how do we learn how to cook, that is, how do we learn the *policy*? We learn it by trying to make the food as good as possible, which is defined by the *reward* we get after each action. Some of those rewards are immediate. For example, if we add some spices to our food and it tastes better, we may be inclined to do it again the next time we cook a meal.  We want to have a *policy* that maximize the total *rewards* we get, which also mean that we have to balance our decision between the immediate reward and the future rewards. Adding a spice may make the meal taste better in the short term, but it may clash later when we add other ingredients, leading to a worse meal and bad *rewards* down the line.
 
-Each time we cook, we learn what works and what doesn't, and remember that for the future time we cook. But, if we want to get better at cooking, we must not just repeat the *actions* that worked! We also have to take some risks, and *explore* the potential actions we can take at each state! On the other hand, we still need to rely and *exploit* what we know, so there is a balance between *exploitation* and *exploration* to find so we can learn as fast as possible.
+Each time we cook, we learn what works and what doesn't, and remember that for any future time we cook. But, if we want to get better at cooking, we must not just repeat the *actions* that worked! We also have to take some risks, and *explore* the potential actions we can take at each state! On the other hand, we still need to rely and *exploit* what we know, so there is a balance between *exploitation* and *exploration* to find so we can learn as fast as possible.
+
+
 
 ## Finite Markov decision process
 
-Before introducing reinforcement learning, we first need to define a Markov decision process (MDP).
-
-
+We formalize the above example by defining a Markov decision process (MDP) @reinforcementBookShiyuZhao , @Sutton1998.
 
 
 
 :::{#def-Markov_decision_process}
 (Markov decision process). 
-A finite Markov decision process is defined as a discrete time process, where we have
+A finite Markov decision process(MDP) is defined as a discrete time process, where we have
 
 - a state set $\mathbfcal{S}$,
 - an action set $\mathcal{A}$, containing all possible actions,
@@ -51,10 +51,10 @@ A finite Markov decision process is defined as a discrete time process, where we
 
 A Markov decision process has a model, which consist of 
 
-- the probability of getting from state $s$ to the state $s'$ by taking action $a$, which we call the state transition probability $p(s'|s,a) = P(S_{t+1} = s' | s_t = s, a_t = a)$.
-- the probability of getting reward $r$ by taking the action $a$ at a state $s$ $p(r|s,a) = P(R_{t+1} = r | S_t = s, A_t = a)$. 
+- the probability of getting from state $s$ to the state $s'$ by taking action $a$, which we call the state transition probability $p(s'|s,a) = \Pr(S_{t+1} = s' | s_t = s, a_t = a)$.
+- the probability of getting reward $r$ by taking the action $a$ at a state $s$ $p(r|s,a) = \Pr(R_{t+1} = r | S_t = s, A_t = a)$. 
 
-Furthermore, a policy function is also given that governs for a given state $s\in\mathcal{S}$, the probability of taking action $a\in\mathcal{A}$, that probability is $\pi(a|s) = Pr(A_{t+1} = a|S_t = s)$.
+Furthermore, a MDP has a policy function that governs, for any state $s\in\mathcal{S}$, the probability of taking action $a\in\mathcal{A}$, that probability is $\pi(a|s) = \Pr(A_{t+1} = a|S_t = s)$.
 
 :::
 
@@ -74,30 +74,22 @@ We have implicitly defined the random variables designing the state, action, rew
 
 The state space $\mathcal{S}$ and the action space $\mathcal{A}$ can be finite or not. We only consider the case of finite Markov decision process to make matter easier, with generalization only if necessary. This also mean that the model is finite. 
 
-The model in a MDP can be in practice impossible to define in advance. This is remedied by using so called *model free* reinforcement learning algorithms.
-
+The model in a MDP is often impossible to define in advance. This problem is remedied by using *model free* algorithms.
 :::
 
 :::{.remark}
-Markov property applies, in particular lack of memory. (TODO) 
+A fundamental property of the MDP is Markov property, or lack of memory, that is to say that the action taken at instant t $A_t$ is only dependent on the state $S_t$ and not the state before. Mathematically $p(A_t|S_t, S_{t-1}, \dots , S_0) = p(A_t|S_t)$.
 :::
 
-:::{#exm-fmdpex}
+:::{#exm-mdpex}
 (A more mathematical example, adorable)
 
 (More or less a gridworld example to write about)
 
 :::
 
-At this point, we may be able to roughly define how to translate the problem (TODO, should formulate it better so I can reference it). 
 
-- The state space is defined by the problem parameters $(b,n)$. A simplification that could be possible would be to discretize the state space. 
-- Actions would be choosing the solver parameters $(\Delta t, \alpha)$. This can also be discretized. 
-- Reward can be defined to be proportional to convergence rate after a certain number of iterations, where better convergence rate leads to better rewards.
-- The model can be partially described, in the sense that while we can't model rewards, we can define the state transition probabilities by simply choosing a new state at random.
-
-
-### Bellman equation
+## State Value and Bellman Equation
 
 We first define a trajectory. We note as $S_t$ the state of an agent at instant $t$. Then, according to the policy, this agent takes the action $A_t$. After taking this action, the agent is now at the state $S_{t+1}$, and it gets the rewards $R_{t+1}$. Then the agent takes action $A_{t+1}$, and gets to a new state $S_{t+2}$ with reward $R_{t+2}$. This can continues indefinitely. We define the trajectory of an agent with starting state $S_t = s$ as the states-rewards pairs ${(S_{t+1},A_{t+1}),(S_{t+2},A_{t+2} ),\dots}$.
 
@@ -109,24 +101,37 @@ from IPython.display import Image
 Image('images/helpful_diagram.jpg')
 ```
 
+:::{.remark}
+In some environments, it is natural for the agent to have a task that has a starting state and a finishing states (for example, beginning a cooking session and finishing it, or starting a game and winning/losing at it.) We call these tasks *episodic tasks* and in these cases, a finite trajectory $S_0,A_0 \to \dots \to S_T$ is also called an *episode*.
+
+In the cases where the task is such that no such state can be defined, a trajectory is not finite and we call these tasks *continuing taks*, which will be the case in this thesis.
+
+:::
+
 
 Ideally, we would like to chose a policy that aim to maximize rewards along any trajectory, given any starting state. This is the goal of any reinforcement learning algorithm. 
 We now define the discounted return along a trajectory. 
 
 
 :::{#def-discount}
-Let $t = 0, 1, \dots$. The discounted return along the trajectory ${(S_{t+1},A_{t+1}),(S_{t+2},A_{t+2} ),\dots}$ is the random variable given by
+Let $t = 0, 1, \dots$. The (discounted) return along the trajectory $S_t,A_t \to S_{t+1},A_{t+1} \to S_{t+2},A_{t+2} \to \dots$ is the random variable given by
 
 $$
-G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots
+G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots = \sum_{t=0}^{+\infty}\gamma^t R_{t+1}
 $$
 
 where $\gamma \in (0,1)$ is called the discount rate. 
 :::
 
-The discounted return is thus the sum of rewards along a trajectory. The discount rate is chosen depending on whether we want the agent to favor short term rewards, in which case a discount rate closer to $0$ can be chosen, or long term rewards, with a discount rate closer to $1$.
+:::{.remark}
+It is apparent that the discount rate should be $<1$ in continuing tasks to make sure that the discounted return is well defined in the case of bounded rewards, as otherwise the sum can diverge. 
+:::
+
+The discounted return is thus the sum of rewards along a trajectory, with a penalty for rewards far in the future. The discount rate is chosen depending on whether we want the agent to favor short term rewards, in which case a discount rate closer to $0$ can be chosen, or long term rewards, with a discount rate closer to $1$.
 
 Since the discount rate is a random variable, we can look at its expectation, in particular, we are interested in its conditional expectation, given a starting state $S_t = s$. This expectation is called the state value.
+
+
 
 
 :::{#def-state_value}
@@ -137,8 +142,6 @@ v_\pi(s) = E[G_t|S_t = s] = E[R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dot
 $$
 
 where $\pi$ is a given policy. 
-
-
 :::
 
 :::{.remark}
@@ -168,7 +171,7 @@ $$
 The first term is the expectation of immediate reward, following a certain policy $\pi$, the second is the expectation of future rewards. Let us expand on that formula a bit more. We use the law of total expectation on the first part of the RHS to get
 
 $$
-E[R_{t+1}| S_t = s] = E[E[R_{t+1}|S,A]] = \sum_{a\in\mathcal{A}}\pi(a,s)\sum_{r\in\mathcal{R}}rp(r|s,a)
+E[R_{t+1}| S_t = s] = E\big[E[R_{t+1}|S_t,A_t]\big] = \sum_{a\in\mathcal{A}}\pi(a,s)\sum_{r\in\mathcal{R}}rp(r|s,a)
 $$
 
 where $\mathcal{R} = \mathcal{R}(s,a)$ is the set of possible rewards one can get by taking action $a$ at state $s$. 
@@ -184,30 +187,50 @@ $$
 E[G_{t+1} | S_t = s] = \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A}}v_\pi(s')\pi(a|s)p(s'|s,a).
 $$
 
-Putting everything together, we get a first form of Bellman equation for (finite) MDP.
+Putting everything together, we get a first form of Bellman equation.
 
 $$
 v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)\left[\sum_{r\in\mathcal{R}}rp(r|s,a) + \gamma\sum_{s'\in\mathcal{S}}v_\pi(s')p(s'|s,a) \right]
+$$ {#eq-Bellman}
+
+:::{.remark}
+The Bellman equation gives a recursive relation for the state values. Solving this equation is called policy evaluation and involves fixed point iterations, which we will not get into details here.
+
+This equation is dependent on the given policy. 
+:::
+
+
+
+
+## Action Value
+
+The state value gives information about a specific state, however, we are also interested in knowing how much we stand to gain by taking a particular action at a particular state. This lead to the definition of the action value.
+
+
+:::{#def-action_value}
+The action value is defined as 
+
+$$
+q_\pi(a,s) = E\left[G_t|A_t=a,S_t=s\right]
+$$
+:::
+
+
+We also have, from @def-state_value, and the law of total expectation
+
+$$
+v_\pi(s) = E[G_t|S_t = s] = E\left[E[G_t|S_t = s, A_t = a]\right]
 $$
 
-Some remarks
-
-- The Bellman equation gives a recursive relation for the state values. Solving this equation is called policy evaluation and involves fixed point iterations, which we will not get into details here.
-- This equation is valid for a given policy. 
-
-
-The expression between the brackets is called the action value $q_\pi(s,a)$. Bellman's equation is then simply
-
+then 
 $$
-v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)q_\pi(s,a) = E_\pi[q] 
+v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)E\left[G_t|S_t=s,A_t =a\right]
 $$
 
-(///TODO)
+and we get the relation between state value and action value
+
+$$
+v_\pi(s) = \sum_{a\in\mathcal{A}} \pi(a,s)q_\pi(a,s).
+$${#eq-state_value_action_relation}
 
 
-## Bellman optimality equation
-
-Given some state value, one may ask the fundamental question. 
-
-
-(test @reinforcementBookShiyuZhao , @Sutton1998 , @Williams1992, @lillicrap2019continuous). 

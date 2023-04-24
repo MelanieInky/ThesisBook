@@ -8,7 +8,7 @@
 
 <meta name="author" content="Mélanie Fournier">
 
-<title>Bachelor thesis - Reinforcement learning for something. - 5&nbsp; Basics of reinforcement learning(RL).</title>
+<title>Bachelor thesis - Reinforcement learning for something. - 5&nbsp; Basics of Reinforcement Learning(RL)</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -91,7 +91,7 @@ div.csl-indent {
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
     <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of reinforcement learning(RL).</span></h1>
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of Reinforcement Learning(RL)</span></h1>
       <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
         <i class="bi bi-chevron-right"></i>
       </button>
@@ -141,7 +141,7 @@ div.csl-indent {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./6_reinforcementBasic.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of reinforcement learning(RL).</span></a>
+  <a href="./6_reinforcementBasic.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of Reinforcement Learning(RL)</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -173,12 +173,10 @@ div.csl-indent {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#a-non-mathematical-but-delicious-example." id="toc-a-non-mathematical-but-delicious-example." class="nav-link active" data-scroll-target="#a-non-mathematical-but-delicious-example."><span class="toc-section-number">5.1</span>  A non mathematical, but delicious example.</a></li>
-  <li><a href="#finite-markov-decision-process" id="toc-finite-markov-decision-process" class="nav-link" data-scroll-target="#finite-markov-decision-process"><span class="toc-section-number">5.2</span>  Finite Markov decision process</a>
-  <ul class="collapse">
-  <li><a href="#bellman-equation" id="toc-bellman-equation" class="nav-link" data-scroll-target="#bellman-equation"><span class="toc-section-number">5.2.1</span>  Bellman equation</a></li>
-  </ul></li>
-  <li><a href="#bellman-optimality-equation" id="toc-bellman-optimality-equation" class="nav-link" data-scroll-target="#bellman-optimality-equation"><span class="toc-section-number">5.3</span>  Bellman optimality equation</a></li>
+  <li><a href="#a-non-mathematical-but-delicious-example" id="toc-a-non-mathematical-but-delicious-example" class="nav-link active" data-scroll-target="#a-non-mathematical-but-delicious-example"><span class="toc-section-number">5.1</span>  A non mathematical, but delicious example</a></li>
+  <li><a href="#finite-markov-decision-process" id="toc-finite-markov-decision-process" class="nav-link" data-scroll-target="#finite-markov-decision-process"><span class="toc-section-number">5.2</span>  Finite Markov decision process</a></li>
+  <li><a href="#state-value-and-bellman-equation" id="toc-state-value-and-bellman-equation" class="nav-link" data-scroll-target="#state-value-and-bellman-equation"><span class="toc-section-number">5.3</span>  State Value and Bellman Equation</a></li>
+  <li><a href="#action-value" id="toc-action-value" class="nav-link" data-scroll-target="#action-value"><span class="toc-section-number">5.4</span>  Action Value</a></li>
   </ul>
 </nav>
     </div>
@@ -187,7 +185,7 @@ div.csl-indent {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of reinforcement learning(RL).</span></h1>
+<h1 class="title d-none d-lg-block"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of Reinforcement Learning(RL)</span></h1>
 </div>
 
 
@@ -208,26 +206,26 @@ div.csl-indent {
 
 </header>
 
-<p>In this section, we outline the main ideas behind reinforcement learning and how they can be applied in the context of this thesis.</p>
-<section id="a-non-mathematical-but-delicious-example." class="level2" data-number="5.1">
-<h2 data-number="5.1" class="anchored" data-anchor-id="a-non-mathematical-but-delicious-example."><span class="header-section-number">5.1</span> A non mathematical, but delicious example.</h2>
-<p>Suppose we want to cook a delicious meal. At any point in time, we are making decisions such as</p>
+<p>In this section, we outline the main ideas behind reinforcement learning and how they can be applied in the context of this thesis. The reader familiar with the material may skip this section.</p>
+<section id="a-non-mathematical-but-delicious-example" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="a-non-mathematical-but-delicious-example"><span class="header-section-number">5.1</span> A non mathematical, but delicious example</h2>
+<p>In Reinforcement Learning tasks, we have are training <em>agent</em> that interact with its <em>environment</em> by taking decisions. In this example, we are the agent, and the environment is the kitchen. Suppose we want to cook a delicious meal. At any point in time, we are making decisions such as</p>
 <ul>
 <li>which ingredients we use. Do we use tofu or seitan? Do we add spice more chili pepper? When do we incorporate the sauce?</li>
 <li>which cookware we use? Cast iron, or non-stick pan?</li>
-<li>whether to stir or not. It may stick and burn at the bottom of the pan if we don’t, but we are lazy and our laziness has to be weighted in.</li>
+<li>whether to put the oven to <span class="math inline">\(200^\circ\)</span> C or <span class="math inline">\(220^\circ\)</span> C</li>
 <li>Or simply do nothing!</li>
 </ul>
-<p>All of these decisions, which we will call <em>actions</em> from now on, are taken in reaction to the current <em>state</em> of the cooking process, following a certain <em>policy</em>, which is shaped by our previous cooking experience.</p>
+<p>All of these decisions, which we will call <em>actions</em> from now on, are taken based on the current <em>state</em> of the cooking process, following a certain <em>policy</em>, which is shaped by our previous cooking experience.</p>
 <p>After each action, the cooking process get to a new <em>state</em> and we get a <em>reward</em> that depend on how we did. Maybe the food started to burn in which case we get a negative reward, or maybe we made the food better, in which case we get a positive reward. In this example, there is also a terminal state, in which we finished cooking and get to eat the meal.</p>
-<p>But how do we learn how to cook, that is, how do we learn the <em>policy</em>? We learn it by trying to make the food as good as possible, which is defined by the <em>reward</em> we get after each action. Some of those rewards are immediate. For example, if we add some spices to our food and it tastes better, we may be inclined to do it again the next time we cook a meal. We want to have a <em>policy</em> that maximize the total <em>rewards</em> we get, which also mean that we have to balance our decision between the immediate reward and the future rewards. Adding a spice may make the meal taste better in the short term, but it may clash later when we add other ingredients, leading to a worse meal and bad <em>rewards</em>.</p>
-<p>Each time we cook, we learn what works and what doesn’t, and remember that for the future time we cook. But, if we want to get better at cooking, we must not just repeat the <em>actions</em> that worked! We also have to take some risks, and <em>explore</em> the potential actions we can take at each state! On the other hand, we still need to rely and <em>exploit</em> what we know, so there is a balance between <em>exploitation</em> and <em>exploration</em> to find so we can learn as fast as possible.</p>
+<p>But how do we learn how to cook, that is, how do we learn the <em>policy</em>? We learn it by trying to make the food as good as possible, which is defined by the <em>reward</em> we get after each action. Some of those rewards are immediate. For example, if we add some spices to our food and it tastes better, we may be inclined to do it again the next time we cook a meal. We want to have a <em>policy</em> that maximize the total <em>rewards</em> we get, which also mean that we have to balance our decision between the immediate reward and the future rewards. Adding a spice may make the meal taste better in the short term, but it may clash later when we add other ingredients, leading to a worse meal and bad <em>rewards</em> down the line.</p>
+<p>Each time we cook, we learn what works and what doesn’t, and remember that for any future time we cook. But, if we want to get better at cooking, we must not just repeat the <em>actions</em> that worked! We also have to take some risks, and <em>explore</em> the potential actions we can take at each state! On the other hand, we still need to rely and <em>exploit</em> what we know, so there is a balance between <em>exploitation</em> and <em>exploration</em> to find so we can learn as fast as possible.</p>
 </section>
 <section id="finite-markov-decision-process" class="level2" data-number="5.2">
 <h2 data-number="5.2" class="anchored" data-anchor-id="finite-markov-decision-process"><span class="header-section-number">5.2</span> Finite Markov decision process</h2>
-<p>Before introducing reinforcement learning, we first need to define a Markov decision process (MDP).</p>
+<p>We formalize the above example by defining a Markov decision process (MDP) <span class="citation" data-cites="reinforcementBookShiyuZhao"><a href="10_references.html#ref-reinforcementBookShiyuZhao" role="doc-biblioref">[1]</a></span> , <span class="citation" data-cites="Sutton1998"><a href="10_references.html#ref-Sutton1998" role="doc-biblioref">[2]</a></span>.</p>
 <div id="def-Markov_decision_process" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 5.1 </strong></span>(Markov decision process). A finite Markov decision process is defined as a discrete time process, where we have</p>
+<p><span class="theorem-title"><strong>Definition 5.1 </strong></span>(Markov decision process). A finite Markov decision process(MDP) is defined as a discrete time process, where we have</p>
 <ul>
 <li>a state set <span class="math inline">\(\mathbfcal{S}\)</span>,</li>
 <li>an action set <span class="math inline">\(\mathcal{A}\)</span>, containing all possible actions,</li>
@@ -235,10 +233,10 @@ div.csl-indent {
 </ul>
 <p>A Markov decision process has a model, which consist of</p>
 <ul>
-<li>the probability of getting from state <span class="math inline">\(s\)</span> to the state <span class="math inline">\(s'\)</span> by taking action <span class="math inline">\(a\)</span>, which we call the state transition probability <span class="math inline">\(p(s'|s,a) = P(S_{t+1} = s' | s_t = s, a_t = a)\)</span>.</li>
-<li>the probability of getting reward <span class="math inline">\(r\)</span> by taking the action <span class="math inline">\(a\)</span> at a state <span class="math inline">\(s\)</span> <span class="math inline">\(p(r|s,a) = P(R_{t+1} = r | S_t = s, A_t = a)\)</span>.</li>
+<li>the probability of getting from state <span class="math inline">\(s\)</span> to the state <span class="math inline">\(s'\)</span> by taking action <span class="math inline">\(a\)</span>, which we call the state transition probability <span class="math inline">\(p(s'|s,a) = \Pr(S_{t+1} = s' | s_t = s, a_t = a)\)</span>.</li>
+<li>the probability of getting reward <span class="math inline">\(r\)</span> by taking the action <span class="math inline">\(a\)</span> at a state <span class="math inline">\(s\)</span> <span class="math inline">\(p(r|s,a) = \Pr(R_{t+1} = r | S_t = s, A_t = a)\)</span>.</li>
 </ul>
-<p>Furthermore, a policy function is also given that governs for a given state <span class="math inline">\(s\in\mathcal{S}\)</span>, the probability of taking action <span class="math inline">\(a\in\mathcal{A}\)</span>, that probability is <span class="math inline">\(\pi(a|s) = Pr(A_{t+1} = a|S_t = s)\)</span>.</p>
+<p>Furthermore, a MDP has a policy function that governs, for any state <span class="math inline">\(s\in\mathcal{S}\)</span>, the probability of taking action <span class="math inline">\(a\in\mathcal{A}\)</span>, that probability is <span class="math inline">\(\pi(a|s) = \Pr(A_{t+1} = a|S_t = s)\)</span>.</p>
 </div>
 <div class="remark proof">
 <p><span class="proof-title"><em>Remark</em>. </span>We have implicitly defined the random variables designing the state, action, reward at a time <span class="math inline">\(t\)</span>, those are respectively <span class="math inline">\(S_t,A_t,R_t\)</span>. A diagram of the process is as follow</p>
@@ -246,24 +244,18 @@ div.csl-indent {
 <p>(Here is a shiny diagram, I should learn tikz..)</p>
 <div class="remark proof">
 <p><span class="proof-title"><em>Remark</em>. </span>The state space <span class="math inline">\(\mathcal{S}\)</span> and the action space <span class="math inline">\(\mathcal{A}\)</span> can be finite or not. We only consider the case of finite Markov decision process to make matter easier, with generalization only if necessary. This also mean that the model is finite.</p>
-<p>The model in a MDP can be in practice impossible to define in advance. This is remedied by using so called <em>model free</em> reinforcement learning algorithms.</p>
+<p>The model in a MDP is often impossible to define in advance. This problem is remedied by using <em>model free</em> algorithms.</p>
 </div>
 <div class="remark proof">
-<p><span class="proof-title"><em>Remark</em>. </span>Markov property applies, in particular lack of memory. (TODO)</p>
+<p><span class="proof-title"><em>Remark</em>. </span>A fundamental property of the MDP is Markov property, or lack of memory, that is to say that the action taken at instant t <span class="math inline">\(A_t\)</span> is only dependent on the state <span class="math inline">\(S_t\)</span> and not the state before. Mathematically <span class="math inline">\(p(A_t|S_t, S_{t-1}, \dots , S_0) = p(A_t|S_t)\)</span>.</p>
 </div>
-<div id="exm-fmdpex" class="theorem example">
+<div id="exm-mdpex" class="theorem example">
 <p><span class="theorem-title"><strong>Example 5.1 </strong></span>(A more mathematical example, adorable)</p>
 <p>(More or less a gridworld example to write about)</p>
 </div>
-<p>At this point, we may be able to roughly define how to translate the problem (TODO, should formulate it better so I can reference it).</p>
-<ul>
-<li>The state space is defined by the problem parameters <span class="math inline">\((b,n)\)</span>. A simplification that could be possible would be to discretize the state space.</li>
-<li>Actions would be choosing the solver parameters <span class="math inline">\((\Delta t, \alpha)\)</span>. This can also be discretized.</li>
-<li>Reward can be defined to be proportional to convergence rate after a certain number of iterations, where better convergence rate leads to better rewards.</li>
-<li>The model can be partially described, in the sense that while we can’t model rewards, we can define the state transition probabilities by simply choosing a new state at random.</li>
-</ul>
-<section id="bellman-equation" class="level3" data-number="5.2.1">
-<h3 data-number="5.2.1" class="anchored" data-anchor-id="bellman-equation"><span class="header-section-number">5.2.1</span> Bellman equation</h3>
+</section>
+<section id="state-value-and-bellman-equation" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="state-value-and-bellman-equation"><span class="header-section-number">5.3</span> State Value and Bellman Equation</h2>
 <p>We first define a trajectory. We note as <span class="math inline">\(S_t\)</span> the state of an agent at instant <span class="math inline">\(t\)</span>. Then, according to the policy, this agent takes the action <span class="math inline">\(A_t\)</span>. After taking this action, the agent is now at the state <span class="math inline">\(S_{t+1}\)</span>, and it gets the rewards <span class="math inline">\(R_{t+1}\)</span>. Then the agent takes action <span class="math inline">\(A_{t+1}\)</span>, and gets to a new state <span class="math inline">\(S_{t+2}\)</span> with reward <span class="math inline">\(R_{t+2}\)</span>. This can continues indefinitely. We define the trajectory of an agent with starting state <span class="math inline">\(S_t = s\)</span> as the states-rewards pairs <span class="math inline">\({(S_{t+1},A_{t+1}),(S_{t+2},A_{t+2} ),\dots}\)</span>.</p>
 <div class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display" data-execution_count="1">
@@ -275,15 +267,22 @@ div.csl-indent {
 </div>
 </div>
 </div>
+<div class="remark proof">
+<p><span class="proof-title"><em>Remark</em>. </span>In some environments, it is natural for the agent to have a task that has a starting state and a finishing states (for example, beginning a cooking session and finishing it, or starting a game and winning/losing at it.) We call these tasks <em>episodic tasks</em> and in these cases, a finite trajectory <span class="math inline">\(S_0,A_0 \to \dots \to S_T\)</span> is also called an <em>episode</em>.</p>
+<p>In the cases where the task is such that no such state can be defined, a trajectory is not finite and we call these tasks <em>continuing taks</em>, which will be the case in this thesis.</p>
+</div>
 <p>Ideally, we would like to chose a policy that aim to maximize rewards along any trajectory, given any starting state. This is the goal of any reinforcement learning algorithm. We now define the discounted return along a trajectory.</p>
 <div id="def-discount" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 5.2 </strong></span>Let <span class="math inline">\(t = 0, 1, \dots\)</span>. The discounted return along the trajectory <span class="math inline">\({(S_{t+1},A_{t+1}),(S_{t+2},A_{t+2} ),\dots}\)</span> is the random variable given by</p>
+<p><span class="theorem-title"><strong>Definition 5.2 </strong></span>Let <span class="math inline">\(t = 0, 1, \dots\)</span>. The (discounted) return along the trajectory <span class="math inline">\(S_t,A_t \to S_{t+1},A_{t+1} \to S_{t+2},A_{t+2} \to \dots\)</span> is the random variable given by</p>
 <p><span class="math display">\[
-G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots
+G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots = \sum_{t=0}^{+\infty}\gamma^t R_{t+1}
 \]</span></p>
 <p>where <span class="math inline">\(\gamma \in (0,1)\)</span> is called the discount rate.</p>
 </div>
-<p>The discounted return is thus the sum of rewards along a trajectory. The discount rate is chosen depending on whether we want the agent to favor short term rewards, in which case a discount rate closer to <span class="math inline">\(0\)</span> can be chosen, or long term rewards, with a discount rate closer to <span class="math inline">\(1\)</span>.</p>
+<div class="remark proof">
+<p><span class="proof-title"><em>Remark</em>. </span>It is apparent that the discount rate should be <span class="math inline">\(&lt;1\)</span> in continuing tasks to make sure that the discounted return is well defined in the case of bounded rewards, as otherwise the sum can diverge.</p>
+</div>
+<p>The discounted return is thus the sum of rewards along a trajectory, with a penalty for rewards far in the future. The discount rate is chosen depending on whether we want the agent to favor short term rewards, in which case a discount rate closer to <span class="math inline">\(0\)</span> can be chosen, or long term rewards, with a discount rate closer to <span class="math inline">\(1\)</span>.</p>
 <p>Since the discount rate is a random variable, we can look at its expectation, in particular, we are interested in its conditional expectation, given a starting state <span class="math inline">\(S_t = s\)</span>. This expectation is called the state value.</p>
 <div id="def-state_value" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 5.3 </strong></span>(State value) The state value of a state <span class="math inline">\(s\)</span> is the function, defined for any <span class="math inline">\(s\in\mathcal{S}\)</span> as</p>
@@ -308,7 +307,7 @@ v_\pi(s) = E[G_t|S_t = s]= E[R_{t+1}| S_t = s] + \gamma E[G_{t+1} | S_t = s]
 \]</span></p>
 <p>The first term is the expectation of immediate reward, following a certain policy <span class="math inline">\(\pi\)</span>, the second is the expectation of future rewards. Let us expand on that formula a bit more. We use the law of total expectation on the first part of the RHS to get</p>
 <p><span class="math display">\[
-E[R_{t+1}| S_t = s] = E[E[R_{t+1}|S,A]] = \sum_{a\in\mathcal{A}}\pi(a,s)\sum_{r\in\mathcal{R}}rp(r|s,a)
+E[R_{t+1}| S_t = s] = E\big[E[R_{t+1}|S_t,A_t]\big] = \sum_{a\in\mathcal{A}}\pi(a,s)\sum_{r\in\mathcal{R}}rp(r|s,a)
 \]</span></p>
 <p>where <span class="math inline">\(\mathcal{R} = \mathcal{R}(s,a)\)</span> is the set of possible rewards one can get by taking action <span class="math inline">\(a\)</span> at state <span class="math inline">\(s\)</span>.</p>
 <p>We now develop the second part of the RHS of the equation to get,</p>
@@ -318,26 +317,35 @@ E[G_{t+1} | S_t = s] = E[E[G_{t+1} | S_t = s , S_{t+1}]] = \sum_{s'\in\mathcal{S
 <p>where <span class="math inline">\(p(s'|s) = \sum_{a\in\mathcal{A}} p(s'|s,a)\pi(a,s)\)</span> is the probability of the next state being <span class="math inline">\(s'\)</span> if the current state is <span class="math inline">\(s\)</span>. Because of the Markov property of the MDP, we can remove the conditioning <span class="math inline">\(S_t = s\)</span> and thus, <span class="math inline">\(E[G_{t+1}|S_t = s, S_{t+1} = s'] = E[G_{t+1}|S_{t+1} = s] = v_\pi(s')\)</span>. Then <span class="math display">\[
 E[G_{t+1} | S_t = s] = \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A}}v_\pi(s')\pi(a|s)p(s'|s,a).
 \]</span></p>
-<p>Putting everything together, we get a first form of Bellman equation for (finite) MDP.</p>
-<p><span class="math display">\[
+<p>Putting everything together, we get a first form of Bellman equation.</p>
+<p><span id="eq-Bellman"><span class="math display">\[
 v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)\left[\sum_{r\in\mathcal{R}}rp(r|s,a) + \gamma\sum_{s'\in\mathcal{S}}v_\pi(s')p(s'|s,a) \right]
-\]</span></p>
-<p>Some remarks</p>
-<ul>
-<li>The Bellman equation gives a recursive relation for the state values. Solving this equation is called policy evaluation and involves fixed point iterations, which we will not get into details here.</li>
-<li>This equation is valid for a given policy.</li>
-</ul>
-<p>The expression between the brackets is called the action value <span class="math inline">\(q_\pi(s,a)\)</span>. Bellman’s equation is then simply</p>
+\tag{5.1}\]</span></span></p>
+<div class="remark proof">
+<p><span class="proof-title"><em>Remark</em>. </span>The Bellman equation gives a recursive relation for the state values. Solving this equation is called policy evaluation and involves fixed point iterations, which we will not get into details here.</p>
+<p>This equation is dependent on the given policy.</p>
+</div>
+</section>
+<section id="action-value" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="action-value"><span class="header-section-number">5.4</span> Action Value</h2>
+<p>The state value gives information about a specific state, however, we are also interested in knowing how much we stand to gain by taking a particular action at a particular state. This lead to the definition of the action value.</p>
+<div id="def-action_value" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition 5.4 </strong></span>The action value is defined as</p>
 <p><span class="math display">\[
-v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)q_\pi(s,a) = E_\pi[q]
+q_\pi(a,s) = E\left[G_t|A_t=a,S_t=s\right]
 \]</span></p>
-<p>(///TODO)</p>
-</section>
-</section>
-<section id="bellman-optimality-equation" class="level2" data-number="5.3">
-<h2 data-number="5.3" class="anchored" data-anchor-id="bellman-optimality-equation"><span class="header-section-number">5.3</span> Bellman optimality equation</h2>
-<p>Given some state value, one may ask the fundamental question.</p>
-<p>(test <span class="citation" data-cites="reinforcementBookShiyuZhao"><a href="10_references.html#ref-reinforcementBookShiyuZhao" role="doc-biblioref">[1]</a></span> , <span class="citation" data-cites="Sutton1998"><a href="10_references.html#ref-Sutton1998" role="doc-biblioref">[2]</a></span> , <span class="citation" data-cites="Williams1992"><a href="10_references.html#ref-Williams1992" role="doc-biblioref">[3]</a></span>, <span class="citation" data-cites="lillicrap2019continuous"><a href="10_references.html#ref-lillicrap2019continuous" role="doc-biblioref">[4]</a></span>).</p>
+</div>
+<p>We also have, from <a href="#def-state_value">Definition&nbsp;<span>5.3</span></a>, and the law of total expectation</p>
+<p><span class="math display">\[
+v_\pi(s) = E[G_t|S_t = s] = E\left[E[G_t|S_t = s, A_t = a]\right]
+\]</span></p>
+<p>then <span class="math display">\[
+v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)E\left[G_t|S_t=s,A_t =a\right]
+\]</span></p>
+<p>and we get the relation between state value and action value</p>
+<p><span id="eq-state_value_action_relation"><span class="math display">\[
+v_\pi(s) = \sum_{a\in\mathcal{A}} \pi(a,s)q_\pi(a,s).
+\tag{5.2}\]</span></span></p>
 
 
 <div id="refs" class="references csl-bib-body" role="doc-bibliography" style="display: none">
@@ -346,12 +354,6 @@ v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)q_\pi(s,a) = E_\pi[q]
 </div>
 <div id="ref-Sutton1998" class="csl-entry" role="doc-biblioentry">
 <div class="csl-left-margin">[2] </div><div class="csl-right-inline">R. S. Sutton and A. G. Barto, <em>Reinforcement learning: An introduction</em>, Second. The MIT Press, 2018. Available: <a href="http://incompleteideas.net/book/the-book-2nd.html">http://incompleteideas.net/book/the-book-2nd.html</a></div>
-</div>
-<div id="ref-Williams1992" class="csl-entry" role="doc-biblioentry">
-<div class="csl-left-margin">[3] </div><div class="csl-right-inline">R. J. Williams, <span>“Simple statistical gradient-following algorithms for connectionist reinforcement learning,”</span> <em>Machine Learning</em>, vol. 8, no. 3, pp. 229–256, May 1992, doi: <a href="https://doi.org/10.1007/BF00992696">10.1007/BF00992696</a>.</div>
-</div>
-<div id="ref-lillicrap2019continuous" class="csl-entry" role="doc-biblioentry">
-<div class="csl-left-margin">[4] </div><div class="csl-right-inline">T. P. Lillicrap <em>et al.</em>, <span>“Continuous control with deep reinforcement learning.”</span> 2019. Available: <a href="https://arxiv.org/abs/1509.02971">https://arxiv.org/abs/1509.02971</a></div>
 </div>
 </div>
 </section>
