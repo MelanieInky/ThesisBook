@@ -308,8 +308,10 @@ Note that we compute the log-policy gradient and update it directly after estima
 
 On the other hand, a low episode length also introduces bias in estimated returns, especially with discount rate $\gamma \approx 1$. 
 
-A good balance must therefore be found. 
+A balance must therefore be found for episode length in continuing cases, which is the case in this thesis. 
 :::
+
+
 
 
 
