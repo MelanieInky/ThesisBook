@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 book:
-  title: "ThesisBook"
+  title: "Bachelor thesis - Reinforcement learning for something."
   author: "Mélanie"
   date: "3/15/2023"
   chapters:
@@ -26,10 +26,13 @@ format:
     theme: cosmo
   pdf:
     documentclass: scrreprt
-    pdf-engine: xelatex
     geometry: 
     - top=30mm
     - left=20mm
+    pdf-engine: lualatex
     number-sections: true
+    include-in-header:
+      text: 
+        \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
 
 

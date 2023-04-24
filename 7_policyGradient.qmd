@@ -1,14 +1,7 @@
 ---
 author: "Mélanie Fournier"
-format: 
-    html:
-        code-fold: true
-    pdf:
-        geometry: 
-        - top=30mm
-        - left=20mm
-        number-sections: true
 jupyter: python3
+
 ---
 
 # Policy gradient methods
@@ -126,7 +119,7 @@ We want to maximize this objective function. To this end, we use a gradient asce
 
 $$
 \theta_{t+1} = \theta_t + \alpha \nabla_\theta J(\theta).
-$$
+$${#eq-gradient_ascent_algorithm}
 
 We are faced with the immediate issue that the algorithm requires knowing the gradient of the objective function.  
 
@@ -196,14 +189,15 @@ We state the policy gradient theorem in a more general form
 :::{#thm-policyGradient}
 (Policy gradient theorem)
 
-Given an appropriate objective function $J(\theta)$, the gradient of the metric is given by the proportional relationship
+Given an appropriate objective function $J(\theta)$, the gradient of the metric is proportional to the weighted sum
 
 $$
 \nabla J(\theta) \propto \sum_s \mu(s) \sum_a q_\pi(a,s)\nabla \pi(a|s)
 $$
 
-where $\mu(s)$ is the stationary distribution of the Markov process on policy $\pi$. 
+where $\sum_s\mu(s) = 1$ . The weights depends on how the problem is formulated. In the case of continuing problems, that is, problems where there exist no end states, $\mu(s)$ can be, for example the probability of being in state $s$, following the stationary distribution of the Markov process on policy $\pi$. 
 :::
+
 
 
 :::{.remark}
@@ -219,7 +213,7 @@ The policy gradient theorem is powerful in the sense that we can derive the grad
 ### REINFORCE algorithm 
 
 
-Here, we introduce reinforce the classic REINFORCE algorithm@Williams1992. Even with the policy gradient theorem, we are still faced with the problem of estimating the action values $q_\pi$. But we remark that the formula in the policy gradient is an expectation. 
+Here, we introduce reinforce the classic REINFORCE algorithm @Williams1992. Even with the policy gradient theorem, we are still faced with the problem of estimating the action values $q_\pi$. But we remark that the formula in the policy gradient is an expectation. 
 
 $$
 \nabla J(\theta) \propto E_{S_\pi}\left[\sum_a q_\pi(a,S)\nabla \pi(a|S)\right]
@@ -237,3 +231,107 @@ which is also an expectation, and thus
 $$
 \nabla J(\theta) \propto E_{S\sim S_\pi, A\sim A_\pi}\left[q_\pi(A,S)\nabla \ln \pi(A|S)\right].
 $$
+
+
+We also know from before that the action value is also an expectation of the return $G_t = E[q_\pi(S_t,A_t)]$. Therefore, 
+
+
+$$
+\nabla J(\theta) \propto E_{S_t,A_t,G_t}\left[G_t\nabla \ln \pi(A_t|S_t)\right].
+$${#eq-policy_gradient_expectation}
+
+Since this is an expectation, we can estimate it by using samples. The $k$'th, which we note as $e_k$ have to be chosen as follow.
+
+- Chose a state $S_t = s$ at random, following its stationary distribution.
+- Chose an action $A_t = a$ according to the policy $\pi(A_t = a|S_t = s)$.
+- Compute the log policy gradient. Then, get the return $G_t = g$ for the state-action pair $(a,s)$. The sample is then $e_k = g\nabla \ln \pi(a,s)$.
+
+Then, the estimator for the RHS in @eq-policy_gradient_expectation is given by 
+
+$$
+\hat{E}_n = \frac{1}{n}\sum_{k=1}^n e_k
+$$
+
+where $n$ is the amount of samples we gathered. Using the gradient ascent algorithm in @eq-gradient_ascent_algorithm, we can update the parameters $\theta$. 
+
+$$
+\theta_{t+1} = \theta_t + \alpha\frac{1}{n}\sum_{k=1}^n e_k
+$$
+
+One of the problem of this approach is the low sample efficiency. Indeed, to compute the return of a specific state action pair, we have to generate a sufficiently long trajectory starting from that state. This mean that any information we get about the state visited along the trajectory is discarded. However, suppose we have an episode 
+
+$$
+S_t,A_t \to S_{t+1}, A_{t+1} \to S_{t+2},A_{t+2} \dots 
+$$
+
+Then, we can estimate the return $G_t$, but we also have access to the trajectory 
+
+$$
+S_{t+1}, A_{t+1} \to S_{t+2},A_{t+2} \dots
+$$
+
+and thus we can also estimate the return $G_{t+1}$! Therefore, we can use a single episode to estimate multiple samples! Using this idea, we can generate an episode 
+
+$$
+S_0,A_0 \to S_1,A_1,R_1 \to S_2,A_2,R_2 \to \dots \to S_{T+1}, R_{T+1}
+$$
+
+then, for any $t = 0,\dots ,T$, the estimated return can be defined as 
+
+$$
+\hat{G}_t = \sum_{k=t}^T \gamma^{t-k}R_{k+1}.
+$$
+
+
+We can now state the REINFORCE algorithm, in pseudo code format
+
+---
+
+| **REINFORCE algorithm pseudocode**
+| **INPUT:** A parameter vector $\theta \in\mathbb{R}^d$, and a parametrized policy $\pi(a|s,\theta)$ with derivable gradient $\nabla_\theta \pi(a|s,\theta)$. Hyperpararameters 
+| - Learning rate $\alpha$
+| - Discount rate $\gamma$
+| - Episode length $T+2$;  
+| **OUTPUT:** The updated $\theta$ parameters ;  
+| 
+| **FOR** any number of episode:  
+|       Compute an episode, following $\pi(a|s,\theta)$, of length T+2 the form  $S_0,A_0 \to S_1,A_1,R_1 \to S_2,A_2,R_2 \to \dots \to S_{T+1}, R_{T+1}$;
+|       **FOR** t=0 ... T
+|           Compute the estimated return $G_t = \sum_{k=t}^T \gamma^{t-k}R_{k+1}$;  
+|           Compute the log gradient $\nabla \ln \pi(A_t|S_t,\theta)$;  
+|           Update $\theta \leftarrow \theta + \alpha G_t \nabla \ln \pi(A_t|S_t,\theta)$;
+|
+
+---
+:::{.remark}
+Note that we compute the log-policy gradient and update it directly after estimating the return $G_t$. This mean that except for the first estimated return, we estimate the return using an outdated policy, introducing bias unless we generate new episodes often. 
+
+On the other hand, a low episode length also introduces bias in estimated returns, especially with discount rate $\gamma \approx 1$. 
+
+A good balance must therefore be found. 
+:::
+
+
+
+
+
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\SetAlgoLined
+\KwResult{Write here the result}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{Write here the input}
+\Output{Write here the output}
+\BlankLine
+\While{While condition}{
+    instructions\;
+    \eIf{condition}{
+        instructions1\;
+        instructions2\;
+    }{
+        instructions3\;
+    }
+}
+\caption{While loop with If/Else condition}
+\end{algorithm} 
+
