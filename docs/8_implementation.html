@@ -381,7 +381,11 @@ y_t
 <p><span class="math display">\[
 \theta \leftarrow \theta + \alpha_{\text{var}} \odot \nabla_\theta \pi(a|s,\theta)
 \]</span></p>
-<p>where <span class="math inline">\(\alpha_{\text{var}} = (\alpha_{\theta_0}, \alpha_{\theta_1}, \dots , \alpha_{\theta_5})'\)</span> and <span class="math inline">\(\odot\)</span> represent the termwise vector multiplication. One problem is that if we look at the gradient directions, how steep they are depend on the problem parameters. And since <span class="math inline">\(n\)</span> can vary between 5 and 300, this make for a muuuuuch steeper gradient than the direction associated with <span class="math inline">\(b\)</span>, which only varies between 0 and 1. As a result, the direction associated with <span class="math inline">\(n\)</span> tend to converge but not the other. This can be remedied by applying varying learning rate in each direction. It actually works quite well! ’</p>
+<p>where <span class="math inline">\(\alpha_{\text{var}} = (\alpha_{0}, \alpha_{1}, \dots , \alpha_{5})'\)</span> and <span class="math inline">\(\odot\)</span> represent the termwise vector multiplication. Based on this, we set</p>
+<p><span class="math display">\[
+\alpha_{\text{var}} = (\alpha_0,\alpha_1, \dots, \alpha_5)' = (1,1/50,1,1/50,1,1)
+\]</span></p>
+<p>so as to slow down the learning of the parameters “dependent” on <span class="math inline">\(n\)</span>. The</p>
 </section>
 </section>
 </section>
