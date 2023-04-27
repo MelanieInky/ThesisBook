@@ -11,10 +11,10 @@ from plotnine import *
 gamma = 0.1
 exploration_rate = 0.1
 episode_length = 20
-learning_rate = 1e-6
-learning_mult = np.array([1,1/100,1,1/100,0.5,0.5])
-initial_theta = np.array([0., 0., 0., 0.,0., 0.])
-n_episodes = 300000 #Number of episodes to train for
+learning_rate = 2e-8
+learning_mult = np.array([50,1,50,1,50,50])
+initial_theta = np.array([0., 0., 0., 0.,0.3, 2.])
+n_episodes = 200000 #Number of episodes to train for
 #############
 
 

@@ -178,11 +178,11 @@ div.csl-indent {
   <li><a href="#implementation-of-the-reinforce-algorithm." id="toc-implementation-of-the-reinforce-algorithm." class="nav-link" data-scroll-target="#implementation-of-the-reinforce-algorithm."><span class="toc-section-number">7.4</span>  Implementation of the REINFORCE algorithm.</a>
   <ul class="collapse">
   <li><a href="#a-first-experiment" id="toc-a-first-experiment" class="nav-link" data-scroll-target="#a-first-experiment"><span class="toc-section-number">7.4.1</span>  A first experiment</a></li>
+  <li><a href="#gradient-ascent-with-different-learning-parameters." id="toc-gradient-ascent-with-different-learning-parameters." class="nav-link" data-scroll-target="#gradient-ascent-with-different-learning-parameters."><span class="toc-section-number">7.4.2</span>  Gradient ascent with different learning parameters.</a></li>
   </ul></li>
-  <li><a href="#gradient-ascent-with-different-learning-parameters." id="toc-gradient-ascent-with-different-learning-parameters." class="nav-link" data-scroll-target="#gradient-ascent-with-different-learning-parameters."><span class="toc-section-number">7.5</span>  Gradient ascent with different learning parameters.</a></li>
-  <li><a href="#exploration-vs-exploitation-tradeoff." id="toc-exploration-vs-exploitation-tradeoff." class="nav-link" data-scroll-target="#exploration-vs-exploitation-tradeoff."><span class="toc-section-number">7.6</span>  Exploration vs exploitation tradeoff.</a></li>
-  <li><a href="#impact-of-initial-condition." id="toc-impact-of-initial-condition." class="nav-link" data-scroll-target="#impact-of-initial-condition."><span class="toc-section-number">7.7</span>  Impact of initial condition.</a></li>
-  <li><a href="#moving-beyond-the-basics." id="toc-moving-beyond-the-basics." class="nav-link" data-scroll-target="#moving-beyond-the-basics."><span class="toc-section-number">7.8</span>  Moving beyond the basics.</a></li>
+  <li><a href="#exploration-vs-exploitation-tradeoff." id="toc-exploration-vs-exploitation-tradeoff." class="nav-link" data-scroll-target="#exploration-vs-exploitation-tradeoff."><span class="toc-section-number">7.5</span>  Exploration vs exploitation tradeoff.</a></li>
+  <li><a href="#impact-of-initial-condition." id="toc-impact-of-initial-condition." class="nav-link" data-scroll-target="#impact-of-initial-condition."><span class="toc-section-number">7.6</span>  Impact of initial condition.</a></li>
+  <li><a href="#moving-beyond-the-basics." id="toc-moving-beyond-the-basics." class="nav-link" data-scroll-target="#moving-beyond-the-basics."><span class="toc-section-number">7.7</span>  Moving beyond the basics.</a></li>
   </ul>
 </nav>
     </div>
@@ -244,18 +244,18 @@ f_2(\Delta t) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\Delta t - \theta_2
 \ln(f_1(\alpha)) = \ln(\frac{1}{\sqrt{2\pi}\sigma}) - \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2}
 \]</span>.</p>
 <p>We now take the gradient w.r.t <span class="math inline">\(\theta\)</span> to get</p>
-<p><span class="math display">\[
+<p><span id="eq-nabla_xi_alpha"><span class="math display">\[
 \nabla_\theta \ln(f_1(\alpha)) = \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T
-\]</span></p>
+\tag{7.1}\]</span></span></p>
 <p>where <span class="math inline">\(\xi_\alpha = \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)}{\sigma^2}\)</span>.</p>
 <p>Doing a similar thing with <span class="math inline">\(\Delta t\)</span>, we get the gradient,</p>
-<p><span class="math display">\[
+<p><span id="eq-nabla_xi_delta_t"><span class="math display">\[
 \nabla_\theta \ln(f_2(\Delta t)) = \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^T.
-\]</span></p>
+\tag{7.2}\]</span></span></p>
 <p>where <span class="math inline">\(\xi_{\Delta t} = \frac{(\Delta t - \theta_2b-\theta_3n-\theta_5)}{\sigma^2}\)</span> We now add both gradients together to we get the gradient of the policy, for a specific action <span class="math inline">\(a = (\alpha, \Delta t)\)</span> and state <span class="math inline">\(s=(b,n)\)</span>,</p>
 <p><span id="eq-policyGradient"><span class="math display">\[
 \nabla_\theta \ln\pi(a|s,\theta) =  \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T+ \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^T.
-\tag{7.1}\]</span></span></p>
+\tag{7.3}\]</span></span></p>
 <p>We used here the standard notation. That is, <span class="math inline">\(\pi(a|s,\theta) = f(\alpha,\Delta t)\)</span>.</p>
 <div class="remark proof">
 <p><span class="proof-title"><em>Remark</em>. </span>One may remark that the REINFORCE algorithm uses a discrete policy space. This is not an issue. Instead of using the probability mass function of the policy, we will instead use the probability density function as a substitute(<span class="citation" data-cites="lillicrap2019continuous"><a href="10_references.html#ref-lillicrap2019continuous" role="doc-biblioref">[1]</a></span>). The fact that the pdf admits values <span class="math inline">\(&gt;1\)</span> is not an issue as we adjust the learning rate accordingly.</p>
@@ -300,7 +300,7 @@ r(c_{10}) = \begin{cases}
 <li>The standard deviation of the policy parameters is set to <span class="math inline">\(\sigma = 0.1\)</span>.</li>
 </ul>
 <p>This leaves the choice of the initial value for <span class="math inline">\(\theta\)</span>. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In <a href="5_solverExploration.html#fig-resratio10">Figure&nbsp;<span>4.1</span></a>, it seems that a policy of <span class="math inline">\(\alpha = 0.3\)</span> and <span class="math inline">\(\Delta t = 2\)</span> is reasonable. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter <span class="math inline">\(\theta_4 = 0.2\)</span>, and <span class="math inline">\(\theta_5=2\)</span>, the other parameters are set to 0.</p>
-<p>The algorithm is run for 40000 episode, and we observe the evolutions of the theta parameters(<a href="#fig-experimentreward">Figure&nbsp;<span>7.2</span></a>) as well as the average episode reward(<a href="#fig-experimenttheta">Figure&nbsp;<span>7.1</span></a>). Note that in the latter plot, the rolling average of the average reward over the last <span class="math inline">\(k=1000\)</span> episodes is used.</p>
+<p>The algorithm is run for 40000 episodes, and we observe the evolution of the theta parameters(<a href="#fig-experimentreward">Figure&nbsp;<span>7.2</span></a>). The objective function <span class="math inline">\(J(\theta)\)</span> can not be observed. We have access, however to the average reward over an episode in <a href="#fig-experimenttheta">Figure&nbsp;<span>7.1</span></a>. Note that in the latter plot, the rolling average of the average reward over the last <span class="math inline">\(k=1000\)</span> episodes is used as a smoother.</p>
 <div class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display">
 <div id="fig-experimenttheta" class="quarto-figure quarto-figure-center anchored">
@@ -321,29 +321,80 @@ r(c_{10}) = \begin{cases}
 </div>
 </div>
 </div>
-<p>there are problem with the results</p>
+<p>The reward in <a href="#fig-experimentreward">Figure&nbsp;<span>7.2</span></a> is trending upward, which is the intended behavior of the algorithm. However, there are certain problems that have been made apparent.</p>
 <ul>
-<li>The learning rate must be kept low, otherwise things explode nastily.</li>
-<li>The convergence is extremely slow, to the point were we may be wondering if it converges at all</li>
+<li>Despite running the algorithm for a long time(approximately 20 minutes on a typical computer), the <span class="math inline">\(\theta\)</span> parameters have not changed very much, and it is clear that we are far from any convergence of the reward function.</li>
+<li>Even with smoothing, it is apparent that the method has a high variance.</li>
+<li>It seems that <span class="math inline">\(\theta_1\)</span> and <span class="math inline">\(\theta_5\)</span> varies quite a bit over time whereas the other parameters have a steady rate of change.</li>
 </ul>
-<p>(The next sections are things I’ve done to mitigate these problem, with varying degrees of successes, the log are there, but also I need to clean up my code and rerun it for reproducibility sake as I was tinkering a lot at the time, the goal is to have a program were each hyperparameter can be chosen at the beginning/as environment variables, and making all the experiments easily reproducible).</p>
+<p>The slow apparent convergence rate can not be mitigated by a higher learning rate, as this empirically lead to divergences issues. The high variance is typical of reinforcement learning tasks, as well as Monte Carlo based methods, which REINFORCE is a part of. That being said, there exists much better methods that can reduce this variance, at the expense of introducing some bias, such as for example actor-critics methods <span class="citation" data-cites="Sutton1998"><a href="10_references.html#ref-Sutton1998" role="doc-biblioref">[2, Ch. 13.5]</a></span>, or proximal policy optimization(PPO) <span class="citation" data-cites="DBLP:journals/corr/SchulmanWDRK17"><a href="10_references.html#ref-DBLP:journals/corr/SchulmanWDRK17" role="doc-biblioref">[3]</a></span>. Both of these methods are not explored in this thesis.</p>
+</section>
+<section id="gradient-ascent-with-different-learning-parameters." class="level3" data-number="7.4.2">
+<h3 data-number="7.4.2" class="anchored" data-anchor-id="gradient-ascent-with-different-learning-parameters."><span class="header-section-number">7.4.2</span> Gradient ascent with different learning parameters.</h3>
+<section id="an-example-of-gradient-descent." class="level4" data-number="7.4.2.1">
+<h4 data-number="7.4.2.1" class="anchored" data-anchor-id="an-example-of-gradient-descent."><span class="header-section-number">7.4.2.1</span> An example of gradient descent.</h4>
+<p>Consider the objective function <span class="math inline">\(f(x,y) = x^2 + 3y^2\)</span>. The function admits a global minimum at <span class="math inline">\(x = y = 0\)</span>, and its gradient is</p>
+<p><span class="math display">\[
+\nabla f(x,y) = (2x,6y)'
+\]</span></p>
+<p>Therefore, the gradient descent iteration, with learning rate <span class="math inline">\(\alpha&gt;0\)</span> is the iteration</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+x_{t+1}\\
+y_{t+1}
+\end{pmatrix} = \begin{pmatrix}
+x_t\\
+y_t
+\end{pmatrix} - \alpha \begin{pmatrix}
+2x_t\\
+6y_t
+\end{pmatrix}
+\]</span>.</p>
+<p>That is <span class="math inline">\(x_{t+1} = (1-2\alpha)x_t\)</span> and <span class="math inline">\(y_{t+1} = (1-6\alpha)y_t\)</span>. The algorithms converge to <span class="math inline">\(x=y=0\)</span> if and only if <span class="math inline">\(\alpha&lt;1/3\)</span>. If however, <span class="math inline">\(\frac{1}{3}&lt;\alpha&lt;1\)</span>, we will have convergence for <span class="math inline">\(x\)</span>, but not for <span class="math inline">\(y\)</span>.</p>
+<p>The reason for this is that the gradient is steeper in the <span class="math inline">\(y\)</span> direction than the <span class="math inline">\(x\)</span> direction, which leads to comparatively bigger change in <span class="math inline">\(y\)</span> than <span class="math inline">\(x\)</span> in the gradient descent iterations.</p>
+<p>To remedy this, we can set a variable learning rate that is different depending on the direction. Set <span class="math inline">\(\alpha_x&gt;0\)</span> and <span class="math inline">\(\alpha_y&gt;0\)</span> as the learning rate in the respective gradient direction <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>. The gradient ascent iteration is then defined as</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+x_{t+1}\\
+y_{t+1}
+\end{pmatrix} = \begin{pmatrix}
+x_t\\
+y_t
+\end{pmatrix} - \begin{pmatrix}
+\alpha_x &amp; 0\\
+0 &amp; \alpha_y
+\end{pmatrix}
+\begin{pmatrix}
+2x_t\\
+6y_t
+\end{pmatrix}.
+\]</span></p>
+<p>That is, <span class="math inline">\(x_{t+1} = (1-2\alpha_x)x_t\)</span> and <span class="math inline">\(y_{t+1} = (1-6\alpha_y)y_t\)</span>. With <span class="math inline">\(\alpha_x = \frac{1}{2}\)</span> and <span class="math inline">\(\alpha_y = \frac{1}{6}\)</span>, the gradient descent algorithm can now converge to <span class="math inline">\(0\)</span> in a single iteration!</p>
+</section>
+<section id="implementation." class="level4" data-number="7.4.2.2">
+<h4 data-number="7.4.2.2" class="anchored" data-anchor-id="implementation."><span class="header-section-number">7.4.2.2</span> Implementation.</h4>
+<p>We have an expression for the policy of the gradient of the policy in <a href="#eq-policyGradient">Equation&nbsp;<span>7.3</span></a>. In particular, in <a href="#eq-nabla_xi_alpha">Equation&nbsp;<span>7.1</span></a> and <a href="#eq-nabla_xi_delta_t">Equation&nbsp;<span>7.2</span></a>, we remark that the gradient value in the directions of <span class="math inline">\(\theta_1\)</span> and <span class="math inline">\(\theta_3\)</span> have a similar expression. Namely, it depends strongly on <span class="math inline">\(n\)</span>. Similarly, <span class="math inline">\(\theta_0\)</span> and <span class="math inline">\(\theta_2\)</span> depends on <span class="math inline">\(b\)</span>, and <span class="math inline">\(\theta_4\)</span> and <span class="math inline">\(\theta_5\)</span> depend on neither. However, <span class="math inline">\(b\)</span> can only take values between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>, which motivates the idea that the gradient may be in practice way steeper in the <span class="math inline">\(\theta_1\)</span> and <span class="math inline">\(\theta_3\)</span> directions than the other one. This idea would also explain the oscillations that happen in <a href="#fig-experimenttheta">Figure&nbsp;<span>7.1</span></a>. Therefore, we decide to add a variable learning rate depending on the direction. The update step in REINFORCE algorithm with fixed learning rate is</p>
+<p><span class="math display">\[
+\theta \leftarrow \theta + \alpha \nabla_\theta \pi(a|s,\theta).
+\]</span></p>
+<p>We change this update operation to</p>
+<p><span class="math display">\[
+\theta \leftarrow \theta + \alpha_{\text{var}} \odot \nabla_\theta \pi(a|s,\theta)
+\]</span></p>
+<p>where <span class="math inline">\(\alpha_{\text{var}} = (\alpha_{\theta_0}, \alpha_{\theta_1}, \dots , \alpha_{\theta_5})'\)</span> and <span class="math inline">\(\odot\)</span> represent the termwise vector multiplication. One problem is that if we look at the gradient directions, how steep they are depend on the problem parameters. And since <span class="math inline">\(n\)</span> can vary between 5 and 300, this make for a muuuuuch steeper gradient than the direction associated with <span class="math inline">\(b\)</span>, which only varies between 0 and 1. As a result, the direction associated with <span class="math inline">\(n\)</span> tend to converge but not the other. This can be remedied by applying varying learning rate in each direction. It actually works quite well! ’</p>
 </section>
 </section>
-<section id="gradient-ascent-with-different-learning-parameters." class="level2" data-number="7.5">
-<h2 data-number="7.5" class="anchored" data-anchor-id="gradient-ascent-with-different-learning-parameters."><span class="header-section-number">7.5</span> Gradient ascent with different learning parameters.</h2>
-<p>Here is how we can get better convergence by changing the learning parameters.</p>
-<p>One problem is that if we look at the gradient directions, how steep they are depend on the problem parameters. And since <span class="math inline">\(n\)</span> can vary between 5 and 300, this make for a muuuuuch steeper gradient than the direction associated with <span class="math inline">\(b\)</span>, which only varies between 0 and 1. As a result, the direction associated with <span class="math inline">\(n\)</span> tend to converge but not the other. This can be remedied by applying varying learning rate in each direction. It actually works quite well! ’</p>
 </section>
-<section id="exploration-vs-exploitation-tradeoff." class="level2" data-number="7.6">
-<h2 data-number="7.6" class="anchored" data-anchor-id="exploration-vs-exploitation-tradeoff."><span class="header-section-number">7.6</span> Exploration vs exploitation tradeoff.</h2>
+<section id="exploration-vs-exploitation-tradeoff." class="level2" data-number="7.5">
+<h2 data-number="7.5" class="anchored" data-anchor-id="exploration-vs-exploitation-tradeoff."><span class="header-section-number">7.5</span> Exploration vs exploitation tradeoff.</h2>
 <p>Changing <span class="math inline">\(\sigma^2\)</span> to a higher value makes for a flatter gradient, so not only are we taking more risks, we can actually afford a higher learning rate without exploding!</p>
 </section>
-<section id="impact-of-initial-condition." class="level2" data-number="7.7">
-<h2 data-number="7.7" class="anchored" data-anchor-id="impact-of-initial-condition."><span class="header-section-number">7.7</span> Impact of initial condition.</h2>
+<section id="impact-of-initial-condition." class="level2" data-number="7.6">
+<h2 data-number="7.6" class="anchored" data-anchor-id="impact-of-initial-condition."><span class="header-section-number">7.6</span> Impact of initial condition.</h2>
 <p>Gradient based algorithm have a tendency to converge to local minima. (in our case maxima, but same thing really), therefore, it would be interesting to see how initial policy impacts the learned policy now that we have convergence. (Not done yet, but I suspect some nasty surprises!)</p>
 </section>
-<section id="moving-beyond-the-basics." class="level2" data-number="7.8">
-<h2 data-number="7.8" class="anchored" data-anchor-id="moving-beyond-the-basics."><span class="header-section-number">7.8</span> Moving beyond the basics.</h2>
+<section id="moving-beyond-the-basics." class="level2" data-number="7.7">
+<h2 data-number="7.7" class="anchored" data-anchor-id="moving-beyond-the-basics."><span class="header-section-number">7.7</span> Moving beyond the basics.</h2>
 <p>(Some discussion on what to do next, etc… ) Example include.</p>
 <ul>
 <li>Better algorithm, with less sample variance and more sample efficiency.</li>
@@ -356,6 +407,12 @@ r(c_{10}) = \begin{cases}
 <div id="refs" class="references csl-bib-body" role="doc-bibliography" style="display: none">
 <div id="ref-lillicrap2019continuous" class="csl-entry" role="doc-biblioentry">
 <div class="csl-left-margin">[1] </div><div class="csl-right-inline">T. P. Lillicrap <em>et al.</em>, <span>“Continuous control with deep reinforcement learning.”</span> 2019. Available: <a href="https://arxiv.org/abs/1509.02971">https://arxiv.org/abs/1509.02971</a></div>
+</div>
+<div id="ref-Sutton1998" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">R. S. Sutton and A. G. Barto, <em>Reinforcement learning: An introduction</em>, Second. The MIT Press, 2018. Available: <a href="http://incompleteideas.net/book/the-book-2nd.html">http://incompleteideas.net/book/the-book-2nd.html</a></div>
+</div>
+<div id="ref-DBLP:journals/corr/SchulmanWDRK17" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, <span>“Proximal policy optimization algorithms,”</span> <em>CoRR</em>, vol. abs/1707.06347, 2017, Available: <a href="http://arxiv.org/abs/1707.06347">http://arxiv.org/abs/1707.06347</a></div>
 </div>
 </div>
 </section>

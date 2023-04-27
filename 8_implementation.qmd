@@ -60,7 +60,7 @@ We now take the gradient w.r.t $\theta$ to get
 
 $$
 \nabla_\theta \ln(f_1(\alpha)) = \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T
-$$
+$${#eq-nabla_xi_alpha}
 
 where $\xi_\alpha = \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)}{\sigma^2}$.
 
@@ -68,7 +68,7 @@ Doing a similar thing with $\Delta t$, we get the gradient,
 
 $$
 \nabla_\theta \ln(f_2(\Delta t)) = \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^T.
-$$
+$${#eq-nabla_xi_delta_t}
 
 where $\xi_{\Delta t} = \frac{(\Delta t - \theta_2b-\theta_3n-\theta_5)}{\sigma^2}$
 We now add both gradients together to we get the gradient of the policy, for a specific action $a = (\alpha, \Delta t)$ and state $s=(b,n)$,
@@ -134,7 +134,7 @@ We implement the REINFORCE algorithm to the test problem. There are a few hyperp
 
 This leaves the choice of the initial value for $\theta$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-resratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is reasonable. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.2$, and $\theta_5=2$, the other parameters are set to 0.
 
-The algorithm is run for 40000 episode, and we observe the evolutions of the theta parameters(@fig-experimentreward) as well as the average episode reward(@fig-experimenttheta). Note that in the latter plot, the rolling average of the average reward over the last $k=1000$ episodes is used.
+The algorithm is run for 40000 episodes, and we observe the evolution of the theta parameters(@fig-experimentreward). The objective function $J(\theta)$ can not be observed. We have access, however to the average reward over an episode in @fig-experimenttheta. Note that in the latter plot, the rolling average of the average reward over the last $k=1000$ episodes is used as a smoother.
 
 ```{python}
 #| label: fig-experimenttheta
@@ -193,19 +193,89 @@ fig = p2.draw()
 fig.show()
 ```
 
-there are problem with the results
 
-- The learning rate must be kept low, otherwise things explode nastily.
-- The convergence is extremely slow, to the point were we may be wondering if it converges at all
+The reward in @fig-experimentreward is trending upward, which is the intended behavior of the algorithm. However, there are certain problems that have been made apparent.
 
-(The next sections are things I've done to mitigate these problem, with varying degrees of successes, the log are there, but also I need to clean up my code and rerun it for reproducibility sake as I was tinkering a lot at the time, the goal is to have a program were each hyperparameter can be chosen at the beginning/as environment variables, and making all the experiments easily reproducible).
+- Despite running the algorithm for a long time(approximately 20 minutes on a typical computer), the $\theta$ parameters have not changed very much, and it is clear that we are far from any convergence of the reward function. 
+- Even with smoothing, it is apparent that the method has a high variance.
+- It seems that $\theta_1$ and $\theta_5$ varies quite a bit over time whereas the other parameters have a steady rate of change.
 
-## Gradient ascent with different learning parameters. 
+The slow apparent convergence rate can not be mitigated by a higher learning rate, as this empirically lead to divergences issues. The high variance is typical of reinforcement learning tasks, as well as Monte Carlo based methods, which REINFORCE is a part of. That being said, there exists much better methods that can reduce this variance, at the expense of introducing some bias, such as for example actor-critics methods [@Sutton1998, chap. 13.5], or proximal policy optimization(PPO) @DBLP:journals/corr/SchulmanWDRK17. Both of these methods are not explored in this thesis.
 
-Here is how we can get better convergence by changing the learning parameters.
 
-One problem is that if we look at the gradient directions, how steep they are depend on the problem parameters. And since $n$ can vary between 5 and 300, this make for a muuuuuch steeper gradient than the direction associated with $b$, which only varies between 0 and 1. As a result, the direction associated with $n$ tend to converge but not the other. This can be remedied by applying varying learning rate in each direction. It actually works quite well!
-'
+
+### Gradient ascent with different learning parameters. 
+
+#### An example of gradient descent. 
+
+Consider the objective function $f(x,y) = x^2 + 3y^2$. The function admits a global minimum at $x = y = 0$, and its gradient is 
+
+$$
+\nabla f(x,y) = (2x,6y)'
+$$
+
+Therefore, the gradient descent iteration, with learning rate $\alpha>0$ is the iteration
+
+$$
+\begin{pmatrix}
+x_{t+1}\\
+y_{t+1}
+\end{pmatrix} = \begin{pmatrix}
+x_t\\
+y_t
+\end{pmatrix} - \alpha \begin{pmatrix}
+2x_t\\
+6y_t
+\end{pmatrix}
+$$.
+
+That is $x_{t+1} = (1-2\alpha)x_t$ and $y_{t+1} = (1-6\alpha)y_t$. The algorithms converge to $x=y=0$ if and only if $\alpha<1/3$. If however, $\frac{1}{3}<\alpha<1$, we will have convergence for $x$, but not for $y$.
+
+The reason for this is that the gradient is steeper in the $y$ direction than the $x$ direction, which leads to comparatively bigger change in $y$ than $x$ in the gradient descent iterations.
+
+To remedy this, we can set a variable learning rate that is different depending on the direction. Set $\alpha_x>0$ and $\alpha_y>0$ as the learning rate in the respective gradient direction $x$ and $y$. The gradient ascent iteration is then defined as
+
+$$
+\begin{pmatrix}
+x_{t+1}\\
+y_{t+1}
+\end{pmatrix} = \begin{pmatrix}
+x_t\\
+y_t
+\end{pmatrix} - \begin{pmatrix}
+\alpha_x & 0\\
+0 & \alpha_y
+\end{pmatrix}
+\begin{pmatrix}
+2x_t\\
+6y_t
+\end{pmatrix}.
+$$
+
+That is, $x_{t+1} = (1-2\alpha_x)x_t$ and $y_{t+1} = (1-6\alpha_y)y_t$. With $\alpha_x = \frac{1}{2}$ and $\alpha_y = \frac{1}{6}$, the gradient descent algorithm can now converge to $0$ in a single iteration!
+
+#### Implementation.
+
+We have an expression for the policy of the gradient of the policy in @eq-policyGradient. In particular, in @eq-nabla_xi_alpha and @eq-nabla_xi_delta_t, we remark that the gradient value in the directions of $\theta_1$ and $\theta_3$ have a similar expression. Namely, it depends strongly on $n$. Similarly, $\theta_0$ and $\theta_2$ depends on $b$, and $\theta_4$ and $\theta_5$ depend on neither. However, $b$ can only take values between $0$ and $1$, which motivates the idea that the gradient may be in practice way steeper in the $\theta_1$ and $\theta_3$ directions than the other one. This idea would also explain the oscillations that happen in @fig-experimenttheta. Therefore, we decide to add a variable learning rate depending on the direction. The update step in REINFORCE algorithm with fixed learning rate is
+
+$$
+\theta \leftarrow \theta + \alpha \nabla_\theta \pi(a|s,\theta).
+$$
+
+
+We change this update operation to 
+
+$$
+\theta \leftarrow \theta + \alpha_{\text{var}} \odot \nabla_\theta \pi(a|s,\theta)
+$$
+
+where $\alpha_{\text{var}} = (\alpha_{0}, \alpha_{1}, \dots , \alpha_{5})'$ and $\odot$ represent the termwise vector multiplication. Based on this, we set 
+
+$$
+\alpha_{\text{var}} = (\alpha_0,\alpha_1, \dots, \alpha_5)' = (1,1/50,1,1/50,1,1)
+$$
+
+so as to slow down the learning of the parameters "dependent" on $n$. The 
 
 ## Exploration vs exploitation tradeoff.
 
