@@ -46,14 +46,14 @@ class TestProblem:
         """
         return self.e - self.M@y
 
-    def _one_step_smoother(self, y, t, deltaT, alpha):
+    def _one_step_smoother(self, y, t, delta_t, alpha):
         """
-        Perform one pseudo time step deltaT of the solver for the diff eq
+        Perform one pseudo time step delta_t of the solver for the diff eq
         y' = e - My = f(y). .
         """
         k1 = self.f(y)
-        k2 = self.f(y + alpha*deltaT*k1)
-        yNext = y + deltaT*k2
+        k2 = self.f(y + alpha*delta_t*k1)
+        yNext = y + delta_t*k2
         return yNext
 
     def update(self, b, n):
@@ -74,10 +74,10 @@ class TestProblem:
         resNorm = np.linalg.norm(self.M@y-self.e)
         lastResNorm = resNorm
         # Finding the parameters according to current Policy
-        alpha, deltaT = self.pol(self.b, self.n)
+        alpha, delta_t = self.pol(self.b, self.n)
         for i in range(n_iter):
-            y = self._one_step_smoother(y, t, deltaT, alpha)
-            t += deltaT
+            y = self._one_step_smoother(y, t, delta_t, alpha)
+            t += delta_t
             newResNorm = np.linalg.norm(self.M@y - self.e)
             # Check for overflow!
             if np.isinf(newResNorm) or np.isnan(newResNorm):
@@ -88,7 +88,7 @@ class TestProblem:
             resNorm = newResNorm
         return y, resNorm, lastResNorm
 
-    def main_solver2(self, alpha, deltaT, n_iter=10):
+    def main_solver2(self, alpha, delta_t, n_iter=10):
         """ Like the main solver, except we give 
         the parameters explicitely """
         res_norm_list = np.zeros(n_iter+1)
@@ -98,8 +98,8 @@ class TestProblem:
         res_norm_list[0] = np.linalg.norm(self.M@y-self.e, 2)
         # For now, we use our best guess
         for i in range(n_iter):
-            y = self._one_step_smoother(y, t, deltaT, alpha)
-            t += deltaT
+            y = self._one_step_smoother(y, t, delta_t, alpha)
+            t += delta_t
             resNorm = np.linalg.norm(self.M@y - self.e, 2)
             res_norm_list[i+1] = resNorm
         return y, res_norm_list
@@ -116,16 +116,16 @@ class TestProblem:
         resNorm = np.linalg.norm(self.M@y-self.e)
         lastResNorm = resNorm
         # Finding the parameters according to current Policy
-        alpha, deltaT = self.pol(self.b, self.n)
+        alpha, delta_t = self.pol(self.b, self.n)
         for i in range(n_iter):
-            y = self._one_step_smoother(y, t, deltaT, alpha)
-            t += deltaT
+            y = self._one_step_smoother(y, t, delta_t, alpha)
+            t += delta_t
             newResNorm = np.linalg.norm(self.M@y - self.e)
             # Check for overflow!
             if np.isinf(newResNorm) or np.isnan(newResNorm) or newResNorm > 1e20:
                 print("Divering greatly! Capping the reward at -10")
                 ratio = resNorm / lastResNorm
-                return alpha, deltaT, -10
+                return alpha, delta_t, -3
             lastResNorm = resNorm
             resNorm = newResNorm
         ratio = resNorm / lastResNorm
@@ -133,33 +133,33 @@ class TestProblem:
         if (ratio <= 1):
             reward = 500*(1-ratio)
         else:
-            reward = max(-10, 1-ratio)
-        return alpha, deltaT, reward
+            reward = max(-3, 1-ratio)
+        return alpha, delta_t, reward
 
     def _generate_episode(self, length=5):
         """Given the current Policy, generate an episode of fixed length"""
-        bHistory = np.zeros(length)
-        nHistory = np.zeros(length)
-        alphaHistory = np.zeros(length)
-        deltaTHistory = np.zeros(length)
-        rewardHistory = np.zeros(length)
+        b_history = np.zeros(length)
+        n_history = np.zeros(length)
+        alpha_history = np.zeros(length)
+        delta_t_history = np.zeros(length)
+        reward_history = np.zeros(length)
         for i in range(length):
-            bHistory[i] = self.b
-            nHistory[i] = self.n
+            b_history[i] = self.b
+            n_history[i] = self.n
             # Compute action and reward
-            alpha, deltaT, reward = self._get_action_and_reward()
-            alphaHistory[i] = alpha
-            deltaTHistory[i] = deltaT
-            rewardHistory[i] = reward
-            # gradient = self.pol.log_pdf_gradient(self.b,self.n,alpha,deltaT)
+            alpha, delta_t, reward = self._get_action_and_reward()
+            alpha_history[i] = alpha
+            delta_t_history[i] = delta_t
+            reward_history[i] = reward
+            # gradient = self.pol.log_pdf_gradient(self.b,self.n,alpha,delta_t)
 
             # Then jump to a new state, at random
             newb = np.random.uniform(0, 1)
             newn = np.random.randint(5, 200)
             self.update(newb, newn)
 
-        myEpisode = Episode(bHistory, nHistory, alphaHistory,
-                            deltaTHistory, rewardHistory)
+        myEpisode = Episode(b_history, n_history, alpha_history,
+                            delta_t_history, reward_history)
         return myEpisode
 
     def _learn_one_episode(self, ep_length=100):
@@ -175,14 +175,14 @@ class TestProblem:
             Gt = 0
             for i in range(t, ep_length):
                 # Return on the trajectory
-                Gt += myEpisode.rewardHist[i] * (gamma**(i-t))
+                Gt += myEpisode.reward_hist[i] * (gamma**(i-t))
 
-            b = myEpisode.bHist[t]
-            n = myEpisode.nHist[t]
-            alpha = myEpisode.alphaHist[t]
-            deltaT = myEpisode.deltaTHist[t]
+            b = myEpisode.b_hist[t]
+            n = myEpisode.n_hist[t]
+            alpha = myEpisode.alpha_hist[t]
+            delta_t = myEpisode.delta_t_hist[t]
             # Calculate the log likelihood gradient, for the current Policy
-            log_pdf_grad = self.pol.log_pdf_gradient(b, n, alpha, deltaT)
+            log_pdf_grad = self.pol.log_pdf_gradient(b, n, alpha, delta_t)
             #Update the Policy parameters
             self.pol.theta += learning_rate*self.learning_mult*log_pdf_grad*Gt
         return myEpisode
@@ -207,12 +207,12 @@ class TestProblem:
             ###########################################################
             ### Section for logging and printing stuff.
             #Get the average reward in the episode.
-            mean_episode_rewards[i] = np.mean(ep.rewardHist)
+            mean_episode_rewards[i] = np.mean(ep.reward_hist)
             # Printing progress
-            if (i % 50 == 0 and i != 0):
+            if (i % 200 == 0 and i != 0):
                 print('episode number ', i, ' done.')
-                mean_rew = np.mean(mean_episode_rewards[i-50:i])
-                print('mean reward of the last 50 episodes : ', mean_rew)
+                mean_rew = np.mean(mean_episode_rewards[i-200:i])
+                print('mean reward of the last 200 episodes : ', mean_rew)
             # Logging
             if (log):
                 to_write1 = '%d,%f,' % (i, mean_episode_rewards[i])
@@ -235,21 +235,21 @@ class Episode:
     Then alpha[t] is the action taken at instant t
     reward[t] is the reward we get AFTER taking action A_t at state S_t!
     """
-    def __init__(self, b, n, alpha, deltaT, reward):
-        self.bHist = b
-        self.nHist = n
-        self.alphaHist = alpha
-        self.deltaTHist = deltaT
-        self.rewardHist = reward
+    def __init__(self, b, n, alpha, delta_t, reward):
+        self.b_hist = b
+        self.n_hist = n
+        self.alpha_hist = alpha
+        self.delta_t_hist = delta_t
+        self.reward_hist = reward
 
     def length(self):
-        return len(self.bHist)
+        return len(self.b_hist)
 
-    def logStr(self, k):
+    def log_str(self, k):
         # Log the state-action-reward-etc at time k.
-        logStr = "%s , %s , %s , %s , %s , %s" % (
-            k, self.bHist[k], self.nHist[k], self.alphaHist[k], self.deltaTHist[k], self.rewardHist[k])
-        return logStr
+        log_str = "%s , %s , %s , %s , %s , %s" % (
+            k, self.b_hist[k], self.n_hist[k], self.alpha_hist[k], self.delta_t_hist[k], self.reward_hist[k])
+        return log_str
 
 
 class Policy:
@@ -263,40 +263,47 @@ class Policy:
     def set_theta(self, theta):
         self.theta = theta
 
-    def __call__(self, b, n):
-        """ Evaluate the Policy and return the alpha, deltaT parameters"""
+    def __call__(self, b, n, deterministic = False):
+        """ Evaluate the Policy and return the alpha, delta_t parameters,
+        if deterministic = True, return the mean parameters instead of adding noise.  
+        """
         theta = self.theta
         alpha_mean = theta[0]*b + theta[1] * n + theta[4]
         delta_t_mean = theta[2]*b + theta[3]*n + theta[5]
         alpha = np.random.normal(alpha_mean, self.stdDev)
-        deltaT = np.random.normal(delta_t_mean, self.stdDev)
-        return alpha, deltaT
+        delta_t = np.random.normal(delta_t_mean, self.stdDev)
+        if(deterministic):
+            return alpha_mean , delta_t_mean
+        return alpha, delta_t
 
     def __str__(self) -> str:
         """Overload for the print"""
         D = np.reshape(self.theta[:4], (2, 2))
-        part1 = "Policy function, of the form [alpha , deltaT] = D*[b,n]' + bias, with D = \n"
+        part1 = "Policy function, of the form [alpha , delta_t] = D*[b,n]' + bias, with D = \n"
         part2 = D.__str__()
         part3 = "\nand b = " + self.theta[4:].__str__()
         part4 = "\nwith common std dev of " + str(self.stdDev) + "."
         return part1 + part2 + part3 + part4
 
-    def log_pdf_gradient(self, b, n, alpha, deltaT):
+    def log_pdf_gradient(self, b, n, alpha, delta_t):
         """ Get the gradient of log pdf, for each parameters"""
         theta = self.theta
         xi1 = (alpha - theta[0] * b - theta[1] *
                n - theta[4])/(self.stdDev**2)
-        xi2 = (deltaT - theta[2] * b - theta[3]
+        xi2 = (delta_t - theta[2] * b - theta[3]
                * n - theta[5])/(self.stdDev**2)
-        gradTheta = np.zeros(6)
-        gradTheta[0] = b*xi1
-        gradTheta[1] = n*xi1
-        gradTheta[4] = xi1
-        gradTheta[2] = b*xi2
-        gradTheta[3] = n*xi2
-        gradTheta[5] = xi2
-        self.gradient = gradTheta
-        return gradTheta
+        grad_theta = np.zeros(6)
+        grad_theta[0] = b*xi1
+        grad_theta[1] = n*xi1
+        grad_theta[4] = xi1
+        grad_theta[2] = b*xi2
+        grad_theta[3] = n*xi2
+        grad_theta[5] = xi2
+        self.gradient = grad_theta
+        return grad_theta
+    
+    
+
 
 
 

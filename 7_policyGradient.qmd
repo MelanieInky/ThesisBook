@@ -1,12 +1,9 @@
----
-author: "Mélanie Fournier"
-jupyter: python3
 
----
 
 # Policy gradient methods
 
 Now that we have access to the main definitions used in RL, we can now translate the problem we had at the end of chapter 4.
+
 ## Translating the Test Problem
 
 As a reminder, we have a test problem with the following problem parameters:
@@ -40,26 +37,6 @@ There are still several challenges that need to be addressed.
 - In the definition of a MDP, the reward is a modeled random variable. This is not the case here, as we do not know in advance how the solver will behave.
 
 The first challenge is inherent to the way we translated the problem. We answer the last two challenges in the next sections. 
-
-## Computing the reward.
-
-Once a state and action is chosen, the reward need to be computed. We said before that, for each state and action, we compute the residual ratio after 10 iterations $c_{10}$. With that ratio, we need to define an appropriate reward metrics. We design the reward such that:
-
-- The lower the ratio $c_{10}$, the better the convergence rate and the better the reward should be.
-- It appears natural to have a positive reward when $c_{10}<1$, which implies convergence, and a negative reward otherwise.
-
- The reward is 
-
-$$
-r(c_{10}) = \begin{cases}
-100\times (1-c_{10}) \;\;\;\;\;\qquad \text{ if } c_{10}<1\\
-\max(-10,1 - c_{10}) \qquad \text{ if } c_{10}\geq1
-\end{cases}
-$$
-
-When $c_{10}<1$, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. Because the ratio tends to be very close to $1$, we multiply everything by $100$, adding more contrast to the rewards. 
-
-When, on the other hand $c_{10}\geq 1$, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at $-10$.
 
 
 

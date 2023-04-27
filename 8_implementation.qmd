@@ -1,20 +1,13 @@
 ---
-author: "Mélanie Fournier"
-format: 
-    html:
-        code-fold: true
-    pdf:
-        geometry: 
-        - top=30mm
-        - left=20mm
-        number-sections: true
 jupyter: python3
 ---
 
 
 # Implementation
 
-## A linear approximation of the policy.
+
+
+## A Linear Approximation of the Policy
 
 
 We want to have a policy of the form $(\Delta t, \alpha) =A(b,n)' + \text{c}$, where $A$ is a two by two matrix and $c$ a 2-vector.
@@ -95,75 +88,117 @@ We used here the standard notation. That is, $\pi(a|s,\theta) = f(\alpha,\Delta 
 One may remark that the REINFORCE algorithm uses a discrete policy space. This is not an issue. Instead of using the probability mass function of the policy, we will instead use the probability density function as a substitute(@lillicrap2019continuous). The fact that the pdf admits values $>1$ is not an issue as we adjust the learning rate accordingly.
 :::
 
+## State Space
+
+In the test problem, the $b$ parameter is a physical parameter and can take any value in $[0,1]$, while the value of $n$ depends on the discretization of the differential equation, and can be any integer value. As the value of $n$ get bigger, computation of a single time step in the RK solver can take quite a bit more time, and we will be doing a lot of those computations in the coming section! Therefore, we decide to limit the value of $n$ to an arbitrary maximum of $200$. We also cap the minimum value of $n$ to an arbitrary minimum of $5$ as those values are simply too low to get a acceptable discretization error, and we do not want to train an agent to solve theses states. 
+
+In the last chapter, we wrote that the state transitions were random, more precisely, this now means that a state transition is defined as
+
+- choosing a new value of $b\sim \mathcal{U}(0,1)$, and 
+- choosing a new value of $n$ randomly, between $5$ and $200$.  
+
+## Computing the reward.
+
+Once a state and action is chosen, the reward need to be computed. We said before that, for each state and action, we compute the residual ratio after 10 iterations $c_{10}$. With that ratio, we need to define an appropriate reward metrics. We design the reward such that:
+
+- The lower the ratio $c_{10}$, the better the convergence rate and the better the reward should be.
+- It appears natural to have a positive reward when $c_{10}<1$, which implies convergence, and a negative reward otherwise.
+
+ The reward is 
+
+$$
+r(c_{10}) = \begin{cases}
+500\times (1-c_{10}) \;\;\;\;\;\qquad \text{ if } c_{10}<1\\
+\max(-3,1 - c_{10}) \qquad \text{ if } c_{10}\geq1
+\end{cases}
+$$
+
+When $c_{10}<1$, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. Because the ratio tends to be very close to $1$, we multiply everything by $500$, adding more contrast to the rewards. 
+
+When, on the other hand $c_{10}\geq 1$, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at $-3$.
 
 
 
-## Application of the REINFORCE algorithm.
+## Implementation of the REINFORCE algorithm.
 
+Now that everything as been defined, the REINFORCE algorithm can be applied to find an optimal policy.
 
+### A first experiment
 
+We implement the REINFORCE algorithm to the test problem. There are a few hyperparameters to set.
 
-The Reinforce algorithm is used in 
-Here are the results, (Experiments will be rerun, those are placeholder graph)
+- The learning rate is set to $\alpha=2\times10^{-8}$.
+- The discount rate is set to a low value of $\gamma = 0.1$, as the state transitions are completely random, there is no reason to prefer long term rewards.
+- Because the discount rate is so low, the episodes length is set to $20$ as we want to use the updated policy as often as possible.
+- The standard deviation of the policy parameters is set to $\sigma = 0.1$.
+
+This leaves the choice of the initial value for $\theta$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-resratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is reasonable. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.2$, and $\theta_5=2$, the other parameters are set to 0.
+
+The algorithm is run for 40000 episode, and we observe the evolutions of the theta parameters(@fig-experimentreward) as well as the average episode reward(@fig-experimenttheta). Note that in the latter plot, the rolling average of the average reward over the last $k=1000$ episodes is used.
 
 ```{python}
+#| label: fig-experimenttheta
 #| echo: false
-#| fig-cap: Evolution of the theta parameters with episode number. The hyperparameters are sigma=0.1, learning rate 5e-6....
+#| fig-cap: Evolution of the theta parameters with episode number. The hyperparameters are $\sigma$=0.1, learning rate 2e-8.
+#| warning: false
 
 import polars as pl
 import matplotlib.pyplot as plt
 
 import polars as pl
 import seaborn as sns
+from plotnine import *
 
 
-fileName = 'Log/07Apr-17h24m40s/log.csv'
+
+fileName = 'experiment_data/exp1/log.csv'
 df = pl.read_csv(fileName)
+df2 = df.melt( 
+    id_vars=['ep_number','avg_ep_reward'], 
+    value_vars=['theta_0', 'theta_1', 'theta_2', 'theta_3', 'theta_4', 'theta_5']
+    ).with_columns(
+        (pl.col('ep_number')/1000).alias('episode_no_1000')
+    )
 
-plt.plot(df.select(pl.col('theta_5')), label = 'Theta 5')
-plt.plot(df.select(pl.col('theta_4')), label = 'Theta 4')
-plt.plot(df.select(pl.col('theta_3')),label = 'Theta 3')
-plt.plot(df.select(pl.col('theta_2')),label = 'Theta 2')
-plt.plot(df.select(pl.col('theta_1')),label = 'Theta 1')
-plt.plot(df.select(pl.col('theta_0')),label = 'Theta 0')
-plt.legend()
-plt.xlabel('Episode number')
-plt.ylabel('Theta')
-plt.show()
+df3 = df.select('ep_number', 'avg_ep_reward').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=1000).alias('rolling reward'))
 
 
+
+p1 = (ggplot(df2, aes('episode_no_1000','value'))
++ geom_line()
++ facet_wrap('~variable', scales='free_y')
++ theme_bw()
++ theme(panel_spacing_x= 0.7)
++ xlab('Episode no. / 1000')
++ ylab('Theta')
+)
+
+fig = p1.draw()
+fig.show()
 ```
 
 ```{python}
+#| label: fig-experimentreward
 #| echo: false
-#| fig-cap: Evolution of the average reward inside the episode with episode number. The hyperparameters are sigma=0.1, learning rate 5e-6.... The variance is high! The trendline is a polynomial fit not to be trusted too much.
-import numpy as np
+#| fig-cap: Evolution of the rolling average (k=1000) of the average episode reward.
+#| warning: false
 
-reward = df.select(pl.col('avg_ep_reward')).to_numpy().reshape(30000)
-ep_number = np.arange(0,30000)
-fit = np.polyfit(ep_number,reward,5)
-p = np.poly1d(fit)
 
-plt.plot(reward)
-plt.plot(ep_number,p(ep_number))
-plt.xlabel('Episode number')
-plt.ylabel('Average reward of the episode.')
-plt.show()
+p2 = (ggplot(df3, aes('ep_number','rolling reward'))
++ geom_line()
++ theme_bw()
++ xlab('Episode number'))
+
+fig = p2.draw()
+fig.show()
 ```
 
-there are problem with the results, namely
+there are problem with the results
 
 - The learning rate must be kept low, otherwise things explode nastily.
 - The convergence is extremely slow, to the point were we may be wondering if it converges at all
 
 (The next sections are things I've done to mitigate these problem, with varying degrees of successes, the log are there, but also I need to clean up my code and rerun it for reproducibility sake as I was tinkering a lot at the time, the goal is to have a program were each hyperparameter can be chosen at the beginning/as environment variables, and making all the experiments easily reproducible).
-
-
-
-## Exploration vs exploitation tradeoff.
-
-Changing $\sigma^2$ to a higher value makes for a flatter gradient, so not only are we taking more risks, we can actually afford a higher learning rate without exploding!
-
 
 ## Gradient ascent with different learning parameters. 
 
@@ -171,6 +206,13 @@ Here is how we can get better convergence by changing the learning parameters.
 
 One problem is that if we look at the gradient directions, how steep they are depend on the problem parameters. And since $n$ can vary between 5 and 300, this make for a muuuuuch steeper gradient than the direction associated with $b$, which only varies between 0 and 1. As a result, the direction associated with $n$ tend to converge but not the other. This can be remedied by applying varying learning rate in each direction. It actually works quite well!
 '
+
+## Exploration vs exploitation tradeoff.
+
+Changing $\sigma^2$ to a higher value makes for a flatter gradient, so not only are we taking more risks, we can actually afford a higher learning rate without exploding!
+
+
+
 
 ## Impact of initial condition.
 

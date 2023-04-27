@@ -6,7 +6,6 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Mélanie Fournier">
 
 <title>Bachelor thesis - Reinforcement learning for something. - 7&nbsp; Implementation</title>
 <style>
@@ -141,7 +140,7 @@ div.csl-indent {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./6_reinforcementBasic.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of Reinforcement Learning(RL).</span></a>
+  <a href="./6_reinforcementBasic.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Basics of Reinforcement Learning(RL)</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -173,12 +172,17 @@ div.csl-indent {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#a-linear-approximation-of-the-policy." id="toc-a-linear-approximation-of-the-policy." class="nav-link active" data-scroll-target="#a-linear-approximation-of-the-policy."><span class="toc-section-number">7.1</span>  A linear approximation of the policy.</a></li>
-  <li><a href="#application-of-the-reinforce-algorithm." id="toc-application-of-the-reinforce-algorithm." class="nav-link" data-scroll-target="#application-of-the-reinforce-algorithm."><span class="toc-section-number">7.2</span>  Application of the REINFORCE algorithm.</a></li>
-  <li><a href="#exploration-vs-exploitation-tradeoff." id="toc-exploration-vs-exploitation-tradeoff." class="nav-link" data-scroll-target="#exploration-vs-exploitation-tradeoff."><span class="toc-section-number">7.3</span>  Exploration vs exploitation tradeoff.</a></li>
-  <li><a href="#gradient-ascent-with-different-learning-parameters." id="toc-gradient-ascent-with-different-learning-parameters." class="nav-link" data-scroll-target="#gradient-ascent-with-different-learning-parameters."><span class="toc-section-number">7.4</span>  Gradient ascent with different learning parameters.</a></li>
-  <li><a href="#impact-of-initial-condition." id="toc-impact-of-initial-condition." class="nav-link" data-scroll-target="#impact-of-initial-condition."><span class="toc-section-number">7.5</span>  Impact of initial condition.</a></li>
-  <li><a href="#moving-beyond-the-basics." id="toc-moving-beyond-the-basics." class="nav-link" data-scroll-target="#moving-beyond-the-basics."><span class="toc-section-number">7.6</span>  Moving beyond the basics.</a></li>
+  <li><a href="#a-linear-approximation-of-the-policy" id="toc-a-linear-approximation-of-the-policy" class="nav-link active" data-scroll-target="#a-linear-approximation-of-the-policy"><span class="toc-section-number">7.1</span>  A Linear Approximation of the Policy</a></li>
+  <li><a href="#state-space" id="toc-state-space" class="nav-link" data-scroll-target="#state-space"><span class="toc-section-number">7.2</span>  State Space</a></li>
+  <li><a href="#computing-the-reward." id="toc-computing-the-reward." class="nav-link" data-scroll-target="#computing-the-reward."><span class="toc-section-number">7.3</span>  Computing the reward.</a></li>
+  <li><a href="#implementation-of-the-reinforce-algorithm." id="toc-implementation-of-the-reinforce-algorithm." class="nav-link" data-scroll-target="#implementation-of-the-reinforce-algorithm."><span class="toc-section-number">7.4</span>  Implementation of the REINFORCE algorithm.</a>
+  <ul class="collapse">
+  <li><a href="#a-first-experiment" id="toc-a-first-experiment" class="nav-link" data-scroll-target="#a-first-experiment"><span class="toc-section-number">7.4.1</span>  A first experiment</a></li>
+  </ul></li>
+  <li><a href="#gradient-ascent-with-different-learning-parameters." id="toc-gradient-ascent-with-different-learning-parameters." class="nav-link" data-scroll-target="#gradient-ascent-with-different-learning-parameters."><span class="toc-section-number">7.5</span>  Gradient ascent with different learning parameters.</a></li>
+  <li><a href="#exploration-vs-exploitation-tradeoff." id="toc-exploration-vs-exploitation-tradeoff." class="nav-link" data-scroll-target="#exploration-vs-exploitation-tradeoff."><span class="toc-section-number">7.6</span>  Exploration vs exploitation tradeoff.</a></li>
+  <li><a href="#impact-of-initial-condition." id="toc-impact-of-initial-condition." class="nav-link" data-scroll-target="#impact-of-initial-condition."><span class="toc-section-number">7.7</span>  Impact of initial condition.</a></li>
+  <li><a href="#moving-beyond-the-basics." id="toc-moving-beyond-the-basics." class="nav-link" data-scroll-target="#moving-beyond-the-basics."><span class="toc-section-number">7.8</span>  Moving beyond the basics.</a></li>
   </ul>
 </nav>
     </div>
@@ -194,12 +198,6 @@ div.csl-indent {
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Mélanie Fournier </p>
-          </div>
-  </div>
     
   
     
@@ -208,8 +206,8 @@ div.csl-indent {
 
 </header>
 
-<section id="a-linear-approximation-of-the-policy." class="level2" data-number="7.1">
-<h2 data-number="7.1" class="anchored" data-anchor-id="a-linear-approximation-of-the-policy."><span class="header-section-number">7.1</span> A linear approximation of the policy.</h2>
+<section id="a-linear-approximation-of-the-policy" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="a-linear-approximation-of-the-policy"><span class="header-section-number">7.1</span> A Linear Approximation of the Policy</h2>
 <p>We want to have a policy of the form <span class="math inline">\((\Delta t, \alpha) =A(b,n)' + \text{c}\)</span>, where <span class="math inline">\(A\)</span> is a two by two matrix and <span class="math inline">\(c\)</span> a 2-vector.</p>
 <p>We define the following stochastic policy, define first</p>
 <p><span class="math display">\[
@@ -263,51 +261,89 @@ f_2(\Delta t) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\Delta t - \theta_2
 <p><span class="proof-title"><em>Remark</em>. </span>One may remark that the REINFORCE algorithm uses a discrete policy space. This is not an issue. Instead of using the probability mass function of the policy, we will instead use the probability density function as a substitute(<span class="citation" data-cites="lillicrap2019continuous"><a href="10_references.html#ref-lillicrap2019continuous" role="doc-biblioref">[1]</a></span>). The fact that the pdf admits values <span class="math inline">\(&gt;1\)</span> is not an issue as we adjust the learning rate accordingly.</p>
 </div>
 </section>
-<section id="application-of-the-reinforce-algorithm." class="level2" data-number="7.2">
-<h2 data-number="7.2" class="anchored" data-anchor-id="application-of-the-reinforce-algorithm."><span class="header-section-number">7.2</span> Application of the REINFORCE algorithm.</h2>
-<p>The Reinforce algorithm is used in Here are the results, (Experiments will be rerun, those are placeholder graph)</p>
+<section id="state-space" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="state-space"><span class="header-section-number">7.2</span> State Space</h2>
+<p>In the test problem, the <span class="math inline">\(b\)</span> parameter is a physical parameter and can take any value in <span class="math inline">\([0,1]\)</span>, while the value of <span class="math inline">\(n\)</span> depends on the discretization of the differential equation, and can be any integer value. As the value of <span class="math inline">\(n\)</span> get bigger, computation of a single time step in the RK solver can take quite a bit more time, and we will be doing a lot of those computations in the coming section! Therefore, we decide to limit the value of <span class="math inline">\(n\)</span> to an arbitrary maximum of <span class="math inline">\(200\)</span>. We also cap the minimum value of <span class="math inline">\(n\)</span> to an arbitrary minimum of <span class="math inline">\(5\)</span> as those values are simply too low to get a acceptable discretization error, and we do not want to train an agent to solve theses states.</p>
+<p>In the last chapter, we wrote that the state transitions were random, more precisely, this now means that a state transition is defined as</p>
+<ul>
+<li>choosing a new value of <span class="math inline">\(b\sim \mathcal{U}(0,1)\)</span>, and</li>
+<li>choosing a new value of <span class="math inline">\(n\)</span> randomly, between <span class="math inline">\(5\)</span> and <span class="math inline">\(200\)</span>.</li>
+</ul>
+</section>
+<section id="computing-the-reward." class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="computing-the-reward."><span class="header-section-number">7.3</span> Computing the reward.</h2>
+<p>Once a state and action is chosen, the reward need to be computed. We said before that, for each state and action, we compute the residual ratio after 10 iterations <span class="math inline">\(c_{10}\)</span>. With that ratio, we need to define an appropriate reward metrics. We design the reward such that:</p>
+<ul>
+<li>The lower the ratio <span class="math inline">\(c_{10}\)</span>, the better the convergence rate and the better the reward should be.</li>
+<li>It appears natural to have a positive reward when <span class="math inline">\(c_{10}&lt;1\)</span>, which implies convergence, and a negative reward otherwise.</li>
+</ul>
+<p>The reward is</p>
+<p><span class="math display">\[
+r(c_{10}) = \begin{cases}
+500\times (1-c_{10}) \;\;\;\;\;\qquad \text{ if } c_{10}&lt;1\\
+\max(-3,1 - c_{10}) \qquad \text{ if } c_{10}\geq1
+\end{cases}
+\]</span></p>
+<p>When <span class="math inline">\(c_{10}&lt;1\)</span>, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. Because the ratio tends to be very close to <span class="math inline">\(1\)</span>, we multiply everything by <span class="math inline">\(500\)</span>, adding more contrast to the rewards.</p>
+<p>When, on the other hand <span class="math inline">\(c_{10}\geq 1\)</span>, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at <span class="math inline">\(-3\)</span>.</p>
+</section>
+<section id="implementation-of-the-reinforce-algorithm." class="level2" data-number="7.4">
+<h2 data-number="7.4" class="anchored" data-anchor-id="implementation-of-the-reinforce-algorithm."><span class="header-section-number">7.4</span> Implementation of the REINFORCE algorithm.</h2>
+<p>Now that everything as been defined, the REINFORCE algorithm can be applied to find an optimal policy.</p>
+<section id="a-first-experiment" class="level3" data-number="7.4.1">
+<h3 data-number="7.4.1" class="anchored" data-anchor-id="a-first-experiment"><span class="header-section-number">7.4.1</span> A first experiment</h3>
+<p>We implement the REINFORCE algorithm to the test problem. There are a few hyperparameters to set.</p>
+<ul>
+<li>The learning rate is set to <span class="math inline">\(\alpha=2\times10^{-8}\)</span>.</li>
+<li>The discount rate is set to a low value of <span class="math inline">\(\gamma = 0.1\)</span>, as the state transitions are completely random, there is no reason to prefer long term rewards.</li>
+<li>Because the discount rate is so low, the episodes length is set to <span class="math inline">\(20\)</span> as we want to use the updated policy as often as possible.</li>
+<li>The standard deviation of the policy parameters is set to <span class="math inline">\(\sigma = 0.1\)</span>.</li>
+</ul>
+<p>This leaves the choice of the initial value for <span class="math inline">\(\theta\)</span>. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In <a href="5_solverExploration.html#fig-resratio10">Figure&nbsp;<span>4.1</span></a>, it seems that a policy of <span class="math inline">\(\alpha = 0.3\)</span> and <span class="math inline">\(\Delta t = 2\)</span> is reasonable. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter <span class="math inline">\(\theta_4 = 0.2\)</span>, and <span class="math inline">\(\theta_5=2\)</span>, the other parameters are set to 0.</p>
+<p>The algorithm is run for 40000 episode, and we observe the evolutions of the theta parameters(<a href="#fig-experimentreward">Figure&nbsp;<span>7.2</span></a>) as well as the average episode reward(<a href="#fig-experimenttheta">Figure&nbsp;<span>7.1</span></a>). Note that in the latter plot, the rolling average of the average reward over the last <span class="math inline">\(k=1000\)</span> episodes is used.</p>
 <div class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display">
-<div class="quarto-figure quarto-figure-center">
+<div id="fig-experimenttheta" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><img src="8_implementation_files/figure-html/cell-2-output-1.png" width="589" height="429" class="figure-img"></p>
-<p></p><figcaption class="figure-caption">Evolution of the theta parameters with episode number. The hyperparameters are sigma=0.1, learning rate 5e-6….</figcaption><p></p>
+<p><img src="8_implementation_files/figure-html/fig-experimenttheta-output-1.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;7.1: Evolution of the theta parameters with episode number. The hyperparameters are <span class="math inline">\(\sigma\)</span>=0.1, learning rate 2e-8.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
 <div class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
-<div class="quarto-figure quarto-figure-center">
+<div id="fig-experimentreward" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><img src="8_implementation_files/figure-html/cell-3-output-1.png" width="587" height="429" class="figure-img"></p>
-<p></p><figcaption class="figure-caption">Evolution of the average reward inside the episode with episode number. The hyperparameters are sigma=0.1, learning rate 5e-6…. The variance is high! The trendline is a polynomial fit not to be trusted too much.</figcaption><p></p>
+<p><img src="8_implementation_files/figure-html/fig-experimentreward-output-1.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;7.2: Evolution of the rolling average (k=1000) of the average episode reward.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-<p>there are problem with the results, namely</p>
+<p>there are problem with the results</p>
 <ul>
 <li>The learning rate must be kept low, otherwise things explode nastily.</li>
 <li>The convergence is extremely slow, to the point were we may be wondering if it converges at all</li>
 </ul>
 <p>(The next sections are things I’ve done to mitigate these problem, with varying degrees of successes, the log are there, but also I need to clean up my code and rerun it for reproducibility sake as I was tinkering a lot at the time, the goal is to have a program were each hyperparameter can be chosen at the beginning/as environment variables, and making all the experiments easily reproducible).</p>
 </section>
-<section id="exploration-vs-exploitation-tradeoff." class="level2" data-number="7.3">
-<h2 data-number="7.3" class="anchored" data-anchor-id="exploration-vs-exploitation-tradeoff."><span class="header-section-number">7.3</span> Exploration vs exploitation tradeoff.</h2>
-<p>Changing <span class="math inline">\(\sigma^2\)</span> to a higher value makes for a flatter gradient, so not only are we taking more risks, we can actually afford a higher learning rate without exploding!</p>
 </section>
-<section id="gradient-ascent-with-different-learning-parameters." class="level2" data-number="7.4">
-<h2 data-number="7.4" class="anchored" data-anchor-id="gradient-ascent-with-different-learning-parameters."><span class="header-section-number">7.4</span> Gradient ascent with different learning parameters.</h2>
+<section id="gradient-ascent-with-different-learning-parameters." class="level2" data-number="7.5">
+<h2 data-number="7.5" class="anchored" data-anchor-id="gradient-ascent-with-different-learning-parameters."><span class="header-section-number">7.5</span> Gradient ascent with different learning parameters.</h2>
 <p>Here is how we can get better convergence by changing the learning parameters.</p>
 <p>One problem is that if we look at the gradient directions, how steep they are depend on the problem parameters. And since <span class="math inline">\(n\)</span> can vary between 5 and 300, this make for a muuuuuch steeper gradient than the direction associated with <span class="math inline">\(b\)</span>, which only varies between 0 and 1. As a result, the direction associated with <span class="math inline">\(n\)</span> tend to converge but not the other. This can be remedied by applying varying learning rate in each direction. It actually works quite well! ’</p>
 </section>
-<section id="impact-of-initial-condition." class="level2" data-number="7.5">
-<h2 data-number="7.5" class="anchored" data-anchor-id="impact-of-initial-condition."><span class="header-section-number">7.5</span> Impact of initial condition.</h2>
+<section id="exploration-vs-exploitation-tradeoff." class="level2" data-number="7.6">
+<h2 data-number="7.6" class="anchored" data-anchor-id="exploration-vs-exploitation-tradeoff."><span class="header-section-number">7.6</span> Exploration vs exploitation tradeoff.</h2>
+<p>Changing <span class="math inline">\(\sigma^2\)</span> to a higher value makes for a flatter gradient, so not only are we taking more risks, we can actually afford a higher learning rate without exploding!</p>
+</section>
+<section id="impact-of-initial-condition." class="level2" data-number="7.7">
+<h2 data-number="7.7" class="anchored" data-anchor-id="impact-of-initial-condition."><span class="header-section-number">7.7</span> Impact of initial condition.</h2>
 <p>Gradient based algorithm have a tendency to converge to local minima. (in our case maxima, but same thing really), therefore, it would be interesting to see how initial policy impacts the learned policy now that we have convergence. (Not done yet, but I suspect some nasty surprises!)</p>
 </section>
-<section id="moving-beyond-the-basics." class="level2" data-number="7.6">
-<h2 data-number="7.6" class="anchored" data-anchor-id="moving-beyond-the-basics."><span class="header-section-number">7.6</span> Moving beyond the basics.</h2>
+<section id="moving-beyond-the-basics." class="level2" data-number="7.8">
+<h2 data-number="7.8" class="anchored" data-anchor-id="moving-beyond-the-basics."><span class="header-section-number">7.8</span> Moving beyond the basics.</h2>
 <p>(Some discussion on what to do next, etc… ) Example include.</p>
 <ul>
 <li>Better algorithm, with less sample variance and more sample efficiency.</li>

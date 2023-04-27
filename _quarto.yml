@@ -4,7 +4,7 @@ project:
 
 book:
   title: "Bachelor thesis - Reinforcement learning for something."
-  author: "Mélanie"
+  author: "Mélanie Fournier"
   date: "3/15/2023"
   chapters:
     - index.qmd

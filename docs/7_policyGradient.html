@@ -6,7 +6,6 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Mélanie Fournier">
 
 <title>Bachelor thesis - Reinforcement learning for something. - 6&nbsp; Policy gradient methods</title>
 <style>
@@ -173,7 +172,7 @@ div.csl-indent {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#computing-the-reward." id="toc-computing-the-reward." class="nav-link active" data-scroll-target="#computing-the-reward."><span class="toc-section-number">6.1</span>  Computing the reward.</a></li>
+  <li><a href="#translating-the-test-problem" id="toc-translating-the-test-problem" class="nav-link active" data-scroll-target="#translating-the-test-problem"><span class="toc-section-number">6.1</span>  Translating the Test Problem</a></li>
   <li><a href="#model-based-model-free" id="toc-model-based-model-free" class="nav-link" data-scroll-target="#model-based-model-free"><span class="toc-section-number">6.2</span>  Model based, model free</a></li>
   <li><a href="#dealing-with-a-large-state-action-space." id="toc-dealing-with-a-large-state-action-space." class="nav-link" data-scroll-target="#dealing-with-a-large-state-action-space."><span class="toc-section-number">6.3</span>  Dealing with a large state-action space.</a></li>
   <li><a href="#policy-gradient-methods." id="toc-policy-gradient-methods." class="nav-link" data-scroll-target="#policy-gradient-methods."><span class="toc-section-number">6.4</span>  Policy gradient methods.</a>
@@ -197,12 +196,6 @@ div.csl-indent {
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Mélanie Fournier </p>
-          </div>
-  </div>
     
   
     
@@ -211,7 +204,9 @@ div.csl-indent {
 
 </header>
 
-<p>Now that we have access to the main definitions used in RL, we can now translate the problem we had at the end of chapter 4. ## Translating the Test Problem</p>
+<p>Now that we have access to the main definitions used in RL, we can now translate the problem we had at the end of chapter 4.</p>
+<section id="translating-the-test-problem" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="translating-the-test-problem"><span class="header-section-number">6.1</span> Translating the Test Problem</h2>
 <p>As a reminder, we have a test problem with the following problem parameters:</p>
 <ul>
 <li><p>a parameter <span class="math inline">\(b \in [0,1]\)</span> in the steady-state convection diffusion equation, and</p></li>
@@ -236,22 +231,6 @@ div.csl-indent {
 <li>In the definition of a MDP, the reward is a modeled random variable. This is not the case here, as we do not know in advance how the solver will behave.</li>
 </ul>
 <p>The first challenge is inherent to the way we translated the problem. We answer the last two challenges in the next sections.</p>
-<section id="computing-the-reward." class="level2" data-number="6.1">
-<h2 data-number="6.1" class="anchored" data-anchor-id="computing-the-reward."><span class="header-section-number">6.1</span> Computing the reward.</h2>
-<p>Once a state and action is chosen, the reward need to be computed. We said before that, for each state and action, we compute the residual ratio after 10 iterations <span class="math inline">\(c_{10}\)</span>. With that ratio, we need to define an appropriate reward metrics. We design the reward such that:</p>
-<ul>
-<li>The lower the ratio <span class="math inline">\(c_{10}\)</span>, the better the convergence rate and the better the reward should be.</li>
-<li>It appears natural to have a positive reward when <span class="math inline">\(c_{10}&lt;1\)</span>, which implies convergence, and a negative reward otherwise.</li>
-</ul>
-<p>The reward is</p>
-<p><span class="math display">\[
-r(c_{10}) = \begin{cases}
-100\times (1-c_{10}) \;\;\;\;\;\qquad \text{ if } c_{10}&lt;1\\
-\max(-10,1 - c_{10}) \qquad \text{ if } c_{10}\geq1
-\end{cases}
-\]</span></p>
-<p>When <span class="math inline">\(c_{10}&lt;1\)</span>, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. Because the ratio tends to be very close to <span class="math inline">\(1\)</span>, we multiply everything by <span class="math inline">\(100\)</span>, adding more contrast to the rewards.</p>
-<p>When, on the other hand <span class="math inline">\(c_{10}\geq 1\)</span>, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at <span class="math inline">\(-10\)</span>.</p>
 </section>
 <section id="model-based-model-free" class="level2" data-number="6.2">
 <h2 data-number="6.2" class="anchored" data-anchor-id="model-based-model-free"><span class="header-section-number">6.2</span> Model based, model free</h2>

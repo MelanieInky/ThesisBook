@@ -4,17 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 import os
-
+from plotnine import *
 
 
 #########HYPERPARAMETERS
 gamma = 0.1
-exploration_rate = 0.5
-episode_length = 50
+exploration_rate = 0.1
+episode_length = 20
 learning_rate = 1e-6
-learning_mult = np.array([1,1/20,1,1/20,1,1])
-initial_theta = np.array([0., 0., 0., 0., 0., 0.])
-n_episodes = 40000 #Number of episodes to train for
+learning_mult = np.array([1,1/100,1,1/100,0.5,0.5])
+initial_theta = np.array([0., 0., 0., 0.,0., 0.])
+n_episodes = 300000 #Number of episodes to train for
 #############
 
 
@@ -51,7 +51,41 @@ problem.learn(length=n_episodes, fileName=fileName)
 
 df = pl.read_csv(fileName)
 
-plt.plot(df.select(pl.col('theta_5')))
-plt.show()
-plt.plot(df.select(pl.col('avg_ep_reward')))
-plt.show()
+
+
+df2 = df.melt( 
+    id_vars=['ep_number','avg_ep_reward'], 
+    value_vars=['theta_0', 'theta_1', 'theta_2', 'theta_3', 'theta_4', 'theta_5']
+    ).with_columns(
+        (pl.col('ep_number')/1000).alias('episode_no_1000')
+    )
+
+df3 = df.select('ep_number', 'avg_ep_reward').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=1000).alias('rolling reward'))
+
+
+
+p = (ggplot(df2, aes('episode_no_1000','value'))
++ geom_line()
++ facet_wrap('~variable', scales='free_y')
++ theme_bw()
++ theme(panel_spacing_x= 0.7)
++ xlab('Episode no. / 1000')
++ ylab('Theta')
+)
+
+
+p.draw()
+
+(ggplot(df3, aes('ep_number','rolling reward'))
++ geom_line()
++ theme_bw()
++ xlab('Episode number'))
+
+
+
+###### Some values that seems okay
+#[-9.24809711e-03,  3.23655991e-04,  1.24970436e-01, -3.84203665e-03,
+#        2.26767152e-01,  1.49379107e+00])
+
+######
+
