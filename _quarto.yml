@@ -25,7 +25,7 @@ format:
   html:
     theme: cosmo
   pdf:
-    documentclass: scrreprt
+    documentclass: report
     geometry: 
     - top=30mm
     - left=20mm

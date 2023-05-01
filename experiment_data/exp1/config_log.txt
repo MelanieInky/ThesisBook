@@ -4,4 +4,4 @@ Learning Rate: 2e-08
 Exploration rate/Std_dev: 0.1
 Episode length: 20
 Initial theta: [0. ,0. ,0. ,0. ,0.3,2. ]
-Learning multiplier: [1,1,1,1,1,1]
+Learning multiplier: [10. , 0.1,10. , 0.1,10. ,10. ]

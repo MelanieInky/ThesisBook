@@ -1,20 +1,23 @@
 from testProblemClass import TestProblem
 import polars as pl
 import numpy as np
-import matplotlib.pyplot as plt
 from datetime import datetime
 import os
 from plotnine import *
 
 
 #########HYPERPARAMETERS
+slowpoke=1000
+slowerpoke = 1*slowpoke
+sahnic=0.25
+
 gamma = 0.1
 exploration_rate = 0.1
 episode_length = 20
-learning_rate = 2e-8
-learning_mult = np.array([50,1,50,1,50,50])
-initial_theta = np.array([0., 0., 0., 0.,0.3, 2.])
-n_episodes = 200000 #Number of episodes to train for
+learning_rate = 1e-8
+learning_mult = np.array([slowpoke,sahnic,slowerpoke,sahnic,slowpoke,slowpoke])
+initial_theta = np.array([0,0,0,0,0.3,2])
+n_episodes = 500000 #Number of episodes to train for
 #############
 
 
@@ -76,12 +79,12 @@ p = (ggplot(df2, aes('episode_no_1000','value'))
 
 p.draw()
 
-(ggplot(df3, aes('ep_number','rolling reward'))
+p2 = (ggplot(df3, aes('ep_number','rolling reward'))
 + geom_line()
 + theme_bw()
 + xlab('Episode number'))
 
-
+p2.draw()
 
 ###### Some values that seems okay
 #[-9.24809711e-03,  3.23655991e-04,  1.24970436e-01, -3.84203665e-03,

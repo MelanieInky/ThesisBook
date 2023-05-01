@@ -3,19 +3,96 @@ author: "Mélanie Fournier"
 jupyter: python3
 ---
 
-# Runge-Kutta solver applied to the test problem
+# Runge-Kutta method and application to the test problem
 
+## Explicit Runge-Kutta method
 
-We now have to solve the ODE $u' = b - Nu$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, where $n$ is the chosen number of subdivisions of $[0,1]$. Since we are only interested on the asymptotic behavior of $u$, we only need to care about the stability of the numerical solver we wish to use. We consider the following RK scheme with two stages.
-
-
-blablbal
-
-
-This solver has two parameters $\Delta t$ and $\alpha$. The objective is for the solver to converge to a steady state solution as fast as possible. Set $u_0 = u(0) = e$ as an initial value. We define the relative residual after $k$ steps as 
+This section aim to introduce explicit Runge-Kutta methods[@NumDiffEqBook, chap. 3], and the particular Runge-Kutta method used in this thesis. We consider solving a generic initial value problem of the form
 
 $$
-r_k = ||Nu_k - b||/ ||b||.
+y'(t) = f(t,y(t)), \quad y(0) = y_0.
+$$
+
+If we know, for an instant $t_n$ the value for $y(t_n)$, we can compute the value of $y$ at instant $t_{n+1} = t_n +\Delta t$ by integrating
+
+$$
+y(t_{n+1}) = y(t_n) + \int_{t_n}^{t_{n+1}}f(u,y(u))\; du
+$$
+
+and with the change of variable $u = t_n + \Delta t\tau$, we have
+
+$$
+y(t_{n+1}) = y(t_n) + \Delta t\int_0^1f(t_n+h\tau,y(t_n+h\tau)) \; d\tau
+$$
+The problem is finding a suitable way to compute the integral above. An elementary approach is to use the current value of $f(t_n,y(t_n))$ and to treat $f$ as constant, thus defining the sequence
+
+$$
+y_{n+1} = y_n + \Delta tf(t_n,y_n)
+$$
+
+where $y_{n} \approx y(t_{n})$, $y_0 = y(0)$. This is the explicit Euler's method. We now want to exploit quadrature formulas for integration. Let $c_j \in [0,1], j=1,2,\nu$ be the nodes in the quadrature formula, with their associated weight $b_j, j=1,2,\dots$. A quadrature formula for the integral is then of the form
+
+$$
+\int_0^1 f(t_n+h\tau,y(t_n+\Delta t\tau))\; d\tau = \sum_{j=1}^\nu b_j f(t_n + \Delta t c_j,y(t_n+\Delta t c_j)).
+$$
+
+This is all well and good, except that we have to know the values $y(t_n+hc_j)$, which we do not know. We can however, play pretend and compute an approximation of these values $\xi_j \approx y(t_n+\Delta t c_j), j=1,\dots, \nu$. The $\xi_j$ are called *stage values*. [@BirkenNotes], and we compute them using a linear combination of the values $f(t_n + \Delta t c_j, \xi_j)$. That is 
+
+$$
+\xi_i = y_n + \Delta t \sum_{j=1}^\nu a_{ij}f(t_n+\Delta t c_j, \xi_j),
+$$
+
+for $i = 1,\dots, \nu$, where the $a_{ij}$ are some well chosen values, which is not in scope of this thesis. To simplify notation, we note $A$ as the square array containing the $a_{ij}$ parameters, that is $A_{ij} = a_{ij}$, $c = (c_1,\dots,c_\nu)^\intercal$ the vector of nodes, and $b = (b_1,\dots, b_\nu)^\intercal$ the vector of weights. A RK methods is then written in the form of the following array, also called Butcher tableau.  
+
+$$
+\renewcommand\arraystretch{1.2}
+\begin{array}
+{c|c}
+c & A\\
+\hline & b^\intercal
+\end{array}
+$$
+
+
+
+We remark that if, for for any $j\geq i$,  $a_{ij} \neq 0$, then we will need to know $\xi_j$ to compute $\xi_i$, which involves solving an equation, making the method *implicit*. We consider here *explicit* methods, where we can compute $\xi_{i+1}$ if we know $\xi_j, j = 1 , \dots , i-1$. Let $a_{11} = 0$ and $c_1 = 0$. An explicit RK method is then of the form 
+
+$$
+y_{n+1} = y_n + h\sum_{j=1}^\nu b_j f(t_n+\Delta t c_j,\xi_j),
+$$
+
+where the stage derivative $\xi_j$ are computed sequentially as follow
+
+
+\begin{align*}
+\xi_1 &= y_n\\
+\xi_2 &= y_n + \Delta t a_{2,1}f(t_n,\xi_1)\\
+\xi_3 &= y_n + \Delta t a_{3,1}f(t_n,\xi_1) +  \Delta t a_{3,2}f(t_n+\Delta t c_2,\xi_2)\\
+\vdots\\
+\xi_\nu &= y_n + \Delta t \sum_{j=1}^{\nu-1} a_{\nu,j}f(t_n + \Delta t c_j,\xi_j)
+\end{align*}
+
+
+
+## Implementation
+
+
+We now have to solve the ODE $u'(t) = e - Mu(t)$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, and $n$ is the chosen number of subdivisions of $[0,1]$. Since we are only interested on the asymptotic behavior of $u$, we only need to care about the stability of the numerical solver we wish to use. We consider in this thesis the following RK method with two stages.
+
+$$
+\begin{array}
+{c|cc}
+0 & &\\
+ \alpha & \alpha & \\
+\hline & 0 & 1
+\end{array}
+$$
+
+
+This solver has two parameters, namely the (pseudo) time step $\Delta t$ and $\alpha$. The goal is for the solver to converge to a steady state solution as fast as possible. Set $u_0 = u(0) = e$ as an initial value. We define the relative residual after $k$ steps as 
+
+$$
+r_k = ||M_su_k - e_s||/ ||e_s||.
 $$
 
 where $||.||$ is the 2-norm.
@@ -23,10 +100,12 @@ where $||.||$ is the 2-norm.
 If the solver we chose is stable, then $||r_k|| \to 0$ as $k \to \infty$. We define now the convergence at step $n$ to be the ratio of residual at step $k$ and $k-1$. That is 
 
 $$
-c_k = \frac{||r_k||}{||r_{k-1}||} = \frac{||Mu_k - e||}{||Mu_{k-1}-e||}
+\rho_k = \frac{||r_k||}{||r_{k-1}||} = \frac{||Mu_k - e||}{||Mu_{k-1}-e||}
 $$
 
 where $||.||$ is the 2-norm. 
+
+
 
 
 ```{python}
@@ -36,21 +115,29 @@ where $||.||$ is the 2-norm.
 import numpy as np
 import matplotlib.pyplot as plt
 from testProblemClass import TestProblem
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator
+import plotly.graph_objects as go
+import os
+
+if not os.path.exists("images"):
+    os.mkdir("images")
+
 ```
 
 
 
 ```{python}
-#| fig-cap: Evolution of the residual norm over iteration, with problem parameters $n = 100$ and $b = 0.05$, and RK parameters $\Delta t = 1.6$ and $\alpha = 0.3$. 
+#| fig-cap: Evolution of the residual norm over iteration, with problem parameters $n = 100$ and $b = 0.05$, and RK parameters $\Delta t = 1.5$ and $\alpha = 0.3$. 
 #| echo: false
 
-n = 100
+n = 50
 b = 0.05
-alpha = 0.3
-deltaT = 1.65
-problem = TestProblem(b,n)
+alpha = 0.2
+deltaT = 1
+problem = TestProblem(b = b,n = n)
 
-y ,  resNormList = problem.main_solver2(alpha,deltaT,2000)
+y ,  resNormList = problem.main_solver2(alpha,deltaT,500)
 
 e_norm = np.linalg.norm(problem.e,2)
 relRes = resNormList / e_norm
@@ -70,12 +157,11 @@ plt.show()
 ```
 
 
+## A small experiment
 
-## A small experiment.
+We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b, n)$. Since the residual ratio vary quite a bit depending on the number of iteration, we decide to investigate the residual ratio after 10 iterations and 100 iterations. So, for the problem parameters $b = 0.05$, and $n = 100$, we plot $\rho_{10 }= f(\Delta t, \alpha)$ and $\rho_{100} = g(\Delta t, \alpha)$. We wish to answer the following questions
 
-We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b, n)$. Since the residual ratio vary quite a bit depending on the number of iteration, we decide to investigate the residual ratio after 10 iterations and 100 iterations. So, for the problem parameters $b = 0.05$, and $n = 100$, we plot $c_{10 }= f(\Delta t, \alpha)$ and $c_{100} = g(\Delta t, \alpha)$. We wish to answer the following questions
-
-- Where are the optimal parameters for this specific problem, that is, the ones that minimize $c_{10}$ and $c_{100}$, and do they also depend on the iteration number or not. 
+- Where are the optimal parameters for this specific problem, that is, the ones that minimize $\rho_{10}$ and $\rho_{100}$, and do they also depend on the iteration number or not. 
 - What do these functions look like. In particular, we may be interested in the function convexity.
 
 
@@ -86,18 +172,19 @@ In both cases, we use a contour plot. In @fig-resRatio10 and @fig-resRatio100, t
 #| output: false
 #| eval: false
 
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator
-import plotly.graph_objects as go
 
 def resRatio(resNormList):
     return resNormList[-1] / resNormList[-2]
 
 
+b = 0.05
+n = 100
+## Remake the problem, just in case
+problem = TestProblem(b = b,n = n)
 
 ##Make an l*l grid to search in
 l = 100
-deltaTgrid = np.linspace(0.1,4.3,l)
+deltaTgrid = np.linspace(0.1,5,l)
 alphaGrid = np.linspace(0,1,l)
 
 deltaTgrid, alphaGrid = np.meshgrid(deltaTgrid,alphaGrid)
@@ -117,7 +204,17 @@ for i in range(l):
 
 ##VISUALISATION
 
-fig = go.Figure(data = 
+###Removing the margins
+layout = go.Layout(
+  margin=go.layout.Margin(
+        l=0, #left margin
+        r=0, #right margin
+        b=0, #bottom margin
+        t=0, #top margin
+    )
+)
+
+fig10 = go.Figure(data = 
     go.Contour(
         z = np.clip(resRatioGrid2,0.5,1),
         y = alphaGrid[:,0],
@@ -128,24 +225,16 @@ fig = go.Figure(data =
             titlefont=dict(
             size=14,
             family='Arial, sans-serif'))
-    ))
+    ), layout = layout)
 
-fig.update_layout(
+fig10 = fig10.update_layout(
     xaxis_title = 'Delta t',
     yaxis_title = 'alpha'
 )
 
 
-```
-
-
-```{python}
-#| echo: false
-#| eval: false
-
-
 ###NOT RUN because it takes a while to compile otherwise
-#Version 100
+#### Version 100 #####
 for i in range(l):
     for j in range(l):
         #Solve using the parameters
@@ -154,7 +243,7 @@ for i in range(l):
         #print('ratio', ratio)
         resRatioGrid2[j,i] = resRatio(resNormList)
 
-fig = go.Figure(data = 
+fig100 = go.Figure(data = 
     go.Contour(
         z = np.clip(resRatioGrid2,0.5,1),
         y = alphaGrid[:,0],
@@ -165,31 +254,28 @@ fig = go.Figure(data =
             titlefont=dict(
             size=14,
             family='Arial, sans-serif'))
-    ))
+    ), layout = layout)
 
-fig.update_layout(
+fig100.update_layout(
     xaxis_title = 'Delta t',
     yaxis_title = 'alpha'
 )
 
+#Saving
+fig10.write_image("images/res_ratio10.pdf", width = 350, height = 200)
+fig100.write_image("images/res_ratio100.pdf", width=350, height = 200)
 ```
 
-```{python}
-#| fig-cap: Residual ratio at 10 iterations, for problem parameters $b = 0.05$ and $n = 100$, and with varying solver parameters $\alpha$ and $\Delta t$
-#| label: fig-resRatio10
-#| echo: false
-from IPython.display import Image
-Image('images/c10.png')
 
-```
+::: {#fig-elephants layout-ncol=2}
 
-```{python}
-#| fig-cap: Residual ratio at 100 iterations, for problem parameters $b = 0.05$ and $n = 100$, and with varying solver parameters $\alpha$ and $\Delta t$
-#| label: fig-resRatio100
-#| echo: false
-Image('images/c100.png')
-```
+![Surus](images/res_ratio10.pdf){#fig-surus height=200}
 
+![Hanno](images/res_ratio100.pdf){#fig-hanno height=200}
+
+Famous Elephants
+
+:::
 
 
 

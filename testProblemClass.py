@@ -104,7 +104,7 @@ class TestProblem:
             res_norm_list[i+1] = resNorm
         return y, res_norm_list
 
-    def _get_action_and_reward(self, n_iter=10):
+    def _get_action_and_reward(self, n_iter=10, sarah=1):
         """Take an action, given the current problem parameters and Policy,
         then compute the reward. 
         (This is similar to the step function in gym environments.)
@@ -123,17 +123,17 @@ class TestProblem:
             newResNorm = np.linalg.norm(self.M@y - self.e)
             # Check for overflow!
             if np.isinf(newResNorm) or np.isnan(newResNorm) or newResNorm > 1e20:
-                print("Divering greatly! Capping the reward at -10")
+                print("Divering greatly! Capping the reward at -20")
                 ratio = resNorm / lastResNorm
-                return alpha, delta_t, -3
+                return alpha, delta_t, -20
             lastResNorm = resNorm
             resNorm = newResNorm
         ratio = resNorm / lastResNorm
-        # Compute reward
+        # Compute reward with the Sarah ratio
         if (ratio <= 1):
-            reward = 500*(1-ratio)
+            reward = sarah*(1-ratio)
         else:
-            reward = max(-3, 1-ratio)
+            reward =  1-ratio
         return alpha, delta_t, reward
 
     def _generate_episode(self, length=5):

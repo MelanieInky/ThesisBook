@@ -108,12 +108,12 @@ Once a state and action is chosen, the reward need to be computed. We said befor
 
 $$
 r(c_{10}) = \begin{cases}
-500\times (1-c_{10}) \;\;\;\;\;\qquad \text{ if } c_{10}<1\\
+s\times (1-c_{10}) \;\;\;\;\;\qquad \text{ if } c_{10}<1\\
 \max(-3,1 - c_{10}) \qquad \text{ if } c_{10}\geq1
 \end{cases}
 $$
 
-When $c_{10}<1$, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. Because the ratio tends to be very close to $1$, we multiply everything by $500$, adding more contrast to the rewards. 
+When $c_{10}<1$, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. The term $s$ is there t. 
 
 When, on the other hand $c_{10}\geq 1$, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at $-3$.
 
@@ -132,7 +132,7 @@ We implement the REINFORCE algorithm to the test problem. There are a few hyperp
 - Because the discount rate is so low, the episodes length is set to $20$ as we want to use the updated policy as often as possible.
 - The standard deviation of the policy parameters is set to $\sigma = 0.1$.
 
-This leaves the choice of the initial value for $\theta$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-resratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is reasonable. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.2$, and $\theta_5=2$, the other parameters are set to 0.
+This leaves the choice of the initial value for $\theta$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-resratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is reasonable. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.3$, and $\theta_5=2$, the other parameters are set to 0.
 
 The algorithm is run for 40000 episodes, and we observe the evolution of the theta parameters(@fig-experimentreward). The objective function $J(\theta)$ can not be observed. We have access, however to the average reward over an episode in @fig-experimenttheta. Note that in the latter plot, the rolling average of the average reward over the last $k=1000$ episodes is used as a smoother.
 
@@ -252,7 +252,7 @@ y_t
 \end{pmatrix}.
 $$
 
-That is, $x_{t+1} = (1-2\alpha_x)x_t$ and $y_{t+1} = (1-6\alpha_y)y_t$. With $\alpha_x = \frac{1}{2}$ and $\alpha_y = \frac{1}{6}$, the gradient descent algorithm can now converge to $0$ in a single iteration!
+That is, $x_{t+1} = (1-2\alpha_x)x_t$ and $y_{t+1} = (1-6\alpha_y)y_t$. With $\alpha_x = \frac{1}{2}$ and $\alpha_y = \frac{1}{6}$, the gradient descent algorithm can now converge to $0$ in a single iteration! 
 
 #### Implementation.
 
@@ -269,25 +269,92 @@ $$
 \theta \leftarrow \theta + \alpha_{\text{var}} \odot \nabla_\theta \pi(a|s,\theta)
 $$
 
-where $\alpha_{\text{var}} = (\alpha_{0}, \alpha_{1}, \dots , \alpha_{5})'$ and $\odot$ represent the termwise vector multiplication. Based on this, we set 
+where $\alpha_{\text{var}} = (\alpha_{0}, \alpha_{1}, \dots , \alpha_{5})^\intercal$ and $\odot$ represent the termwise vector multiplication. Based on this, we set 
 
 $$
-\alpha_{\text{var}} = (\alpha_0,\alpha_1, \dots, \alpha_5)' = (1,1/50,1,1/50,1,1)
+\alpha_{\text{var}} = (\alpha_0,\alpha_1, \dots, \alpha_5)^\intercal = 2\times 10^{-8}(70 , 0.3,50 , 0.3,70 ,50 )^\intercal.
 $$
 
-so as to slow down the learning of the parameters "dependent" on $n$. The 
+This learning rate is set partly based on the justification above, and is also found experimentally through trial and error so as to accelerate down the learning of the parameters not "dependent" on $n$. The results are in @fig-variable_learning_theta.
+
+
+```{python}
+#| echo: false
+#| warning: false
+#| fig-cap: Evolution of the theta parameters with episode number, with direction based learning rate. 
+#| label: fig-variable_learning_theta
+
+exp2_file = 'experiment_data/exp2/log.csv'
+exp1_file = 'experiment_data/exp1/log.csv'
+#lbjal
+df_exp1 = pl.read_csv(exp1_file)
+df_exp2 = pl.read_csv(exp2_file)
+
+## Add the experiment number
+df_exp1 = df_exp1.with_columns(pl.lit('1').alias('experiment_number'))
+df_exp2 = df_exp2.with_columns(pl.lit('2').alias('experiment_number'))
+
+df_exp = pl.concat([df_exp1,df_exp2],rechunk=True)
+
+#Make it tidy + ep/1000
+df_exp_tidy = df_exp.melt(
+    id_vars=['ep_number','avg_ep_reward','experiment_number'],
+    value_vars=['theta_0', 'theta_1', 'theta_2', 'theta_3', 'theta_4', 'theta_5']
+    ).with_columns(
+        (pl.col('ep_number')/1000).alias('episode_no_1000')
+    )
+
+
+p1 = (ggplot(df_exp_tidy, aes(x = 'episode_no_1000', y = 'value', colour = 'experiment_number'))
++ geom_line()
++ facet_wrap('~variable', scales='free_y')
++ theme_bw()
++ theme(panel_spacing_x= 0.7)
++ xlab('Episode no. / 1000')
++ ylab('Theta')
+)
+
+fig = p1.draw()
+fig.show()
+```
+
+Compared to the last thing, we get a much faster reward
+
+```{python}
+#| label: fig-experimentreward2
+#| echo: false
+#| fig-cap: Evolution of the rolling average (k=1000) of the average episode reward.
+#| warning: false
+
+
+
+
+df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','experiment_number').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=1000).alias('rolling reward'))
+
+
+
+p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = 'experiment_number'))
++ geom_line()
++ theme_bw()
++ xlab('Episode number'))
+
+fig = p2.draw()
+fig.show()
+```
+
+
+
 
 ## Exploration vs exploitation tradeoff.
 
-Changing $\sigma^2$ to a higher value makes for a flatter gradient, so not only are we taking more risks, we can actually afford a higher learning rate without exploding!
-
+In the algorithm that we used before, a single 
 
 
 
 ## Impact of initial condition.
 
-Gradient based algorithm have a tendency to converge to local minima. (in our case maxima, but same thing really), therefore, it would be interesting to see how initial policy impacts the learned policy now that we have convergence.
-(Not done yet, but I suspect some nasty surprises!)
+Gradient descent algorithm use the local information about a loss function $l(\theta)$ to compute the update $\theta \rightarrow \theta + \alpha \nabla l(\theta)$. When gradient descent converges, we can only be sure that the convergence is to a local minimum, but we can't be certain that this mimimum is a global mimimum. Therefore, it is interesting to test whether the algorithm converge  
+
 
 
 ## Moving beyond the basics.
