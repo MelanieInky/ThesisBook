@@ -5,14 +5,26 @@ jupyter: python3
 
 # Implementation
 
+```{python}
+#| echo: false
 
 
-## A Linear Approximation of the Policy
+##IMPORTS
+import polars as pl
+import matplotlib.pyplot as plt
+
+import polars as pl
+import seaborn as sns
+from plotnine import *
+```
+
+
+## A linear approximation of the policy {#sec-linear_policy}
 
 
 We want to have a policy of the form $(\Delta t, \alpha) =A(b,n)' + \text{c}$, where $A$ is a two by two matrix and $c$ a 2-vector.
 
-We define the following stochastic policy, define first
+We first define the deterministic policy 
 
 $$
 \begin{pmatrix}
@@ -33,7 +45,7 @@ n
 \end{pmatrix}
 $${#eq-policy_deterministic_part}
 
-Then we chose the random policy $\alpha \sim \mathcal{N}(\mu_\alpha,\sigma^2)$,and similarly $\Delta t \sim \mathcal{N}(\mu_{\Delta t}, \sigma^2)$. The term $\sigma^2$, which is the variance of the policy is chosen fixed, and will help us balance exploration vs exploitation. Since $\alpha$ and $\Delta t$ are chosen independently, the joint probability density of both parameters is the product of both marginal pdf, that is 
+As we need a stochastic policy in the REINFORCE algorithm, we add some Gaussian noise to the policy $\alpha \sim \mu_\alpha + \mathcal{N}(0,\sigma^2)$,and similarly $\Delta t \sim \mu_{\Delta t} +  \mathcal{N}(0, \sigma^2)$. The term $\sigma^2$, which is the variance of the policy is chosen fixed in this thesis. Since $\alpha$ and $\Delta t$ are chosen independently, the joint probability density of both parameters is the product of both marginal pdf, that is 
 
 $$
 f(\alpha,\Delta t) = f_{1}(\alpha)\cdot f_{2}(\Delta t)
@@ -85,7 +97,7 @@ We used here the standard notation. That is, $\pi(a|s,\theta) = f(\alpha,\Delta 
 
 
 :::{.remark}
-One may remark that the REINFORCE algorithm uses a discrete policy space. This is not an issue. Instead of using the probability mass function of the policy, we will instead use the probability density function as a substitute(@lillicrap2019continuous). The fact that the pdf admits values $>1$ is not an issue as we adjust the learning rate accordingly.
+One may remark that the REINFORCE algorithm uses a discrete policy space. This is not an issue. Instead of using the probability mass function of the policy, we will instead use the probability density function as a substitute(@lillicrap2019continuous). The fact that the probability density function admits values $>1$ is not an issue as we can adjust the learning rate accordingly. 
 :::
 
 ## State Space
@@ -125,29 +137,23 @@ Now that everything as been defined, the REINFORCE algorithm can be applied to f
 We implement the REINFORCE algorithm to the test problem. There are a few hyperparameters to set.
 
 - The learning rate is set to $\alpha=2\times10^{-8}$.
-- The discount rate is set to a low value of $\gamma = 0.1$, as the state transitions are completely random, there is no reason to prefer long term rewards.
+- The discount rate is set to a low value of $\gamma = 0$, as the state transitions are completely random, there is no reason to prefer long term rewards. This also mean that the approximated return in the REINFORCE algorithm is unbiaised!
 - Because the discount rate is so low, the episodes length is set to $20$ as we want to use the updated policy as often as possible.
 - The standard deviation of the policy parameters is set to $\sigma = 0.1$.
 
 This leaves the choice of the initial value for $\theta$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-resratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is reasonable. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.3$, and $\theta_5=2$, the other parameters are set to 0.
 
-The algorithm is run for 50000 episodes, and we observe the evolution of the theta parameters(@fig-experimentreward). The objective function $J(\theta)$ can not be observed. We have access, however to the average reward over an episode in @fig-experimenttheta. Note that in the latter plot, the rolling average of the average reward over the last $k=1000$ episodes is used as a smoother.
+The algorithm is run for 50000 episodes, and we observe the evolution of the theta parameters(@fig-experimentreward). 
+
+Since the discount rate is set to $0$, in any state, the return is the instant reward received by the agent over a single episode. So, for an episode of length $l$, we have the rewards $r_1, r_2, \dots, r_l$. Then, we can plot the average reward $r_{av} = \frac{r_1 + r_2 +\dots + r_l}{l}$ over each episode. Because the variance of $r_{av}$ is still high, we use the rolling average of $r_{av}$ over the last $k = 20$ episodes as a smoother. 
+
+
 
 ```{python}
-#| label: fig-experimenttheta
 #| echo: false
-#| fig-cap: Evolution of the theta parameters with episode number. The hyperparameters are $\sigma$=0.1, learning rate 2e-8.
-#| warning: false
-
-import polars as pl
-import matplotlib.pyplot as plt
-
-import polars as pl
-import seaborn as sns
-from plotnine import *
 
 
-
+#### Loading the data + wrangling
 fileName = 'experiment_data/exp1/log.csv'
 df = pl.read_csv(fileName)
 df2 = df.melt( 
@@ -157,8 +163,21 @@ df2 = df.melt(
         (pl.col('ep_number')/1000).alias('episode_no_1000')
     )
 
+
 df3 = df.select('ep_number', 'avg_ep_reward').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=50).alias('rolling reward'))
 
+
+```
+```{python}
+#| label: fig-experimenttheta
+#| echo: false
+#| fig-cap: Evolution of the theta parameters with episode number. The hyperparameters are $\sigma$=0.1, learning rate 2e-8.
+#| warning: false
+#| eval: false
+
+
+
+#####REMOVED FOR NOW ####
 
 
 p1 = (ggplot(df2, aes('episode_no_1000','value'))
@@ -172,6 +191,7 @@ p1 = (ggplot(df2, aes('episode_no_1000','value'))
 
 fig = p1.draw()
 fig.show()
+
 ```
 
 ```{python}
@@ -179,7 +199,6 @@ fig.show()
 #| echo: false
 #| fig-cap: Evolution of the rolling average (k=1000) of the average episode reward.
 #| warning: false
-
 
 p2 = (ggplot(df3, aes('ep_number','rolling reward'))
 + geom_line()
@@ -201,14 +220,14 @@ The slow apparent convergence rate can not be mitigated by a higher learning rat
 
 
 
-### Gradient ascent with different learning parameters. 
+### Scaling the parameters 
 
-#### An example of gradient descent. 
+#### An example of gradient descent
 
-Consider the objective function $f(x,y) = x^2 + 3y^2$. The function admits a global minimum at $x = y = 0$, and its gradient is 
+Consider the objective function $f(x,y) = x^2 + 9y^2$. The function admits a global minimum at $x = y = 0$, and its gradient is 
 
 $$
-\nabla f(x,y) = (2x,6y)'
+\nabla f(x,y) = (2x,18y)'
 $$
 
 Therefore, the gradient descent iteration, with learning rate $\alpha>0$ is the iteration
@@ -222,15 +241,15 @@ x_t\\
 y_t
 \end{pmatrix} - \alpha \begin{pmatrix}
 2x_t\\
-6y_t
+18y_t
 \end{pmatrix}
 $$.
 
-That is $x_{t+1} = (1-2\alpha)x_t$ and $y_{t+1} = (1-6\alpha)y_t$. The algorithms converge to $x=y=0$ if and only if $\alpha<1/3$. If however, $\frac{1}{3}<\alpha<1$, we will have convergence for $x$, but not for $y$.
+That is $x_{t+1} = (1-2\alpha)x_t$ and $y_{t+1} = (1-18\alpha)y_t$. The algorithms converge to $x=y=0$ if and only if $\alpha<1/9$. If however, $\frac{1}{9}<\alpha<1$, we will have convergence for $x$, but not for $y$.
 
 The reason for this is that the gradient is steeper in the $y$ direction than the $x$ direction, which leads to comparatively bigger change in $y$ than $x$ in the gradient descent iterations.
 
-To remedy this, we can set a variable learning rate that is different depending on the direction. Set $\alpha_x>0$ and $\alpha_y>0$ as the learning rate in the respective gradient direction $x$ and $y$. The gradient ascent iteration is then defined as
+To remedy this, we can use a change of variable $z = 3y$. Then $f(x,z) = x^2 + z^2$. The gradient descent iteration is then given by 
 
 $$
 \begin{pmatrix}
@@ -239,39 +258,50 @@ y_{t+1}
 \end{pmatrix} = \begin{pmatrix}
 x_t\\
 y_t
-\end{pmatrix} - \begin{pmatrix}
-\alpha_x & 0\\
-0 & \alpha_y
-\end{pmatrix}
+\end{pmatrix} - \alpha 
 \begin{pmatrix}
 2x_t\\
-6y_t
+2y_t
 \end{pmatrix}.
 $$
 
-That is, $x_{t+1} = (1-2\alpha_x)x_t$ and $y_{t+1} = (1-6\alpha_y)y_t$. With $\alpha_x = \frac{1}{2}$ and $\alpha_y = \frac{1}{6}$, the gradient descent algorithm can now converge to $0$ in a single iteration! 
+That is, $x_{t+1} = (1-2\alpha_x)x_t$ and $z_{t+1} = (1-2\alpha_y)y_t$. This converges to $0$ if and only if $0<\alpha<\frac{1}{2}$, which means we can affort a much bigger learning rate. With $\alpha = \frac{1}{2}$, the gradient descent algorithm can now converge to $0$ in a single iteration! 
 
-#### Implementation.
+#### Changing the variable.
 
-We have an expression for the policy of the gradient of the policy in @eq-policyGradient. In particular, in @eq-nabla_xi_alpha and @eq-nabla_xi_delta_t, we remark that the gradient value in the directions of $\theta_1$ and $\theta_3$ have a similar expression. Namely, it depends strongly on $n$. Similarly, $\theta_0$ and $\theta_2$ depends on $b$, and $\theta_4$ and $\theta_5$ depend on neither. However, $b$ can only take values between $0$ and $1$, which motivates the idea that the gradient may be in practice way steeper in the $\theta_1$ and $\theta_3$ directions than the other one. This idea would also explain the oscillations that happen in @fig-experimenttheta. Therefore, we decide to add a variable learning rate depending on the direction. The update step in REINFORCE algorithm with fixed learning rate is
+We have an expression for the policy of the gradient of the policy in @eq-policyGradient. In particular, in @eq-nabla_xi_alpha and @eq-nabla_xi_delta_t, we remark that the gradient value in the directions of $\theta_1$ and $\theta_3$ have a similar expression. Namely, it "depends" strongly on $n$, which can get up to values of $200$. Similarly, $\theta_0$ and $\theta_2$ depends on $b$, and $\theta_4$ and $\theta_5$ depend on neither. However, $b$ can only take values between $0$ and $1$. This motivates the idea that the gradient may be in practice way steeper in the $\theta_1$ and $\theta_3$ directions than the other one.
 
-$$
-\theta \leftarrow \theta + \alpha \nabla_\theta \pi(a|s,\theta).
-$$
-
-
-We change this update operation to 
+Therefore, instead of using $n$ directly, we implement the scaled variable
 
 $$
-\theta \leftarrow \theta + \alpha_{\text{var}} \odot \nabla_\theta \pi(a|s,\theta)
+n' = \frac{n-5}{200}
 $$
 
-where $\alpha_{\text{var}} = (\alpha_{0}, \alpha_{1}, \dots , \alpha_{5})^\intercal$ and $\odot$ represent the termwise vector multiplication. Based on this, and trial and error, we set 
+which can vary between $0$ and $1$. Everything then follows by simply replacing $n$ by $n'$ in @sec-linear_policy. The new deterministic policy is 
 
 $$
-\alpha_{\text{var}} = (\alpha_0,\alpha_1, \dots, \alpha_5)^\intercal = 2\times 10^{-8}(70 , 0.3,50 , 0.3,70 ,50 )^\intercal.
-$$
+\begin{pmatrix}
+\mu_\alpha \\
+\mu_{\Delta t}
+\end{pmatrix} = 
+\begin{pmatrix}
+\theta_0 & \theta_1\\
+\theta_2 & \theta_3
+\end{pmatrix} 
+\begin{pmatrix}
+b\\
+n'
+\end{pmatrix} +
+\begin{pmatrix}
+\theta_4\\
+\theta_5
+\end{pmatrix}
+$${#eq-policy2_deterministic_part}
 
+
+an expression of the gradient is unchanged, with the exception of replacing $n$ by $n'$ everywhere. 
+
+With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can now be set to $\alpha = 1\times 10^{-4}$ without divergence! The results are in 
 
 The results are in @fig-variable_learning_theta.
 
@@ -321,7 +351,7 @@ Compared to the last experiment, we get a much faster reward
 ```{python}
 #| label: fig-experimentreward2
 #| echo: false
-#| fig-cap: Evolution of the rolling average (k=50) of the average episode reward. Note that the 
+#| fig-cap: Evolution of the rolling average (k=50) of the average episode reward.
 #| warning: false
 
 
@@ -334,8 +364,8 @@ df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','experiment_number').
 p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = 'experiment_number'))
 + geom_line()
 + theme_seaborn()
-+ xlab('Episode number')
-+ coord_cartesian(ylim=(-0.1,0.01)))
++ xlab('Episode number'))
+# + coord_cartesian(ylim=(-0.1,0.01)))
 
 fig = p2.draw()
 fig.show()

@@ -5,8 +5,17 @@ import numpy as np
 
 class TestProblem:
     # Define it as
-    def __init__(self, gamma=0.1, learning_rate=0.0000005, episode_length=100, exploration_rate=0.1, learning_mult = np.ones(6),b=0.05, n=100) -> None:
-        """Generate a test problem, with some initial parameters"""
+    def __init__(self, gamma=0.1, learning_rate=0.0000005, episode_length=100, exploration_rate=0.1, learning_mult = np.ones(6),b=0.05, n=100, min_n = 5, max_n = 200, min_b = 0, max_b = 1) -> None:
+        """Generate a test problem, with some initial parameters
+        # Parameters
+        - gamma: learning rate, between 0 and 1
+        - learning_rate: the learning rate in the policy gradient algorithm
+        - episode_length: the length that each episode should have when training
+        - eploration_rate: standard deviation sigma for the policy
+        learning_mult: vector with multiplier in the learning rate, depending on the direction.  
+        - b, and n: Which problem parameters to set up initially.
+        - min_n, max_n, min_b, max_b: Minimum and maximum values that n and b can take when doing random state transitions. 
+        """
         self.n = n
         self.b = b
         self.delta_x = 1 / (n+1)
@@ -14,11 +23,16 @@ class TestProblem:
         self.e = self._build_e()
         # Get a Policy at random, or set it later
         self.exploration_rate = exploration_rate
-        self.pol = Policy(exploration_rate)
+        self.policy = Policy(exploration_rate)
         self.gamma = gamma
         self.learning_rate = learning_rate
         self.learning_mult = learning_mult #Multiplier for directions
         self.episode_length = episode_length
+        self.min_b = min_b
+        self.max_b = max_b
+        self.min_n = min_n
+        self.max_n = max_n
+
 
     def _build_M(self):
         """
@@ -64,33 +78,39 @@ class TestProblem:
         self.e = self._build_e()
         self.delta_x = 1 / (n+1)
 
-    def main_solver(self, n_iter=10):
+    def _state_transition(self):
+        """ Chose a new state at random, update the TestProblem class accordingly"""
+        new_b = np.random.uniform(self.min_b,self.max_b)
+        new_n = np.random.randint(self.min_n,self.max_n+1)
+        self.update(new_b, new_n)
+
+    def main_solver(self, n_iter=10, deterministic_policy = False):
         """ Main solver for the problem, 
         use the current Policy to calculate the approximated solution
         after n_iter pseudo time steps. """
         t = 0
         # Initial guess y = e
         y = np.copy(self.e)
-        resNorm = np.linalg.norm(self.M@y-self.e)
-        lastResNorm = resNorm
+        res_norm = np.linalg.norm(self.M@y-self.e)
+        last_res_norm = res_norm
         # Finding the parameters according to current Policy
-        alpha, delta_t = self.pol(self.b, self.n)
+        alpha, delta_t = self.policy(self.b, self.n, deterministic_policy)
         for i in range(n_iter):
             y = self._one_step_smoother(y, t, delta_t, alpha)
             t += delta_t
-            newResNorm = np.linalg.norm(self.M@y - self.e)
+            new_res_norm = np.linalg.norm(self.M@y - self.e)
             # Check for overflow!
-            if np.isinf(newResNorm) or np.isnan(newResNorm):
+            if np.isinf(new_res_norm) or np.isnan(new_res_norm):
                 print("Overflow while calculating residual!")
-                return y, resNorm, lastResNorm
-
-            lastResNorm = resNorm
-            resNorm = newResNorm
-        return y, resNorm, lastResNorm
+                res_ratio = res_norm / last_res_norm
+                return y, res_ratio
+            last_res_norm = res_norm
+            res_norm = new_res_norm
+        return y, res_ratio
 
     def main_solver2(self, alpha, delta_t, n_iter=10):
         """ Like the main solver, except we give 
-        the parameters explicitely """
+        the parameters explicitely, and also return the full list of residuals"""
         res_norm_list = np.zeros(n_iter+1)
         t = 0
         # Initial guess y = e
@@ -100,8 +120,8 @@ class TestProblem:
         for i in range(n_iter):
             y = self._one_step_smoother(y, t, delta_t, alpha)
             t += delta_t
-            resNorm = np.linalg.norm(self.M@y - self.e, 2)
-            res_norm_list[i+1] = resNorm
+            res_norm = np.linalg.norm(self.M@y - self.e, 2)
+            res_norm_list[i+1] = res_norm
         return y, res_norm_list
 
     def _get_action_and_reward(self, n_iter=10, sarah=1):
@@ -113,28 +133,31 @@ class TestProblem:
         t = 0
         # Initial guess y = e
         y = np.copy(self.e)
-        resNorm = np.linalg.norm(self.M@y-self.e)
-        lastResNorm = resNorm
+        #Initialize the 
+        res_norm = np.linalg.norm(self.M@y-self.e)
+        last_res_norm = res_norm
         # Finding the parameters according to current Policy
-        alpha, delta_t = self.pol(self.b, self.n)
+        alpha, delta_t = self.policy(self.b, self.n)
         for i in range(n_iter):
             y = self._one_step_smoother(y, t, delta_t, alpha)
             t += delta_t
-            newResNorm = np.linalg.norm(self.M@y - self.e)
+            new_res_norm = np.linalg.norm(self.M@y - self.e)
             # Check for overflow!
-            if np.isinf(newResNorm) or np.isnan(newResNorm) or newResNorm > 1e20:
+            if np.isinf(new_res_norm) or np.isnan(new_res_norm) or new_res_norm > 1e20:
                 print("Divering greatly! Capping the reward at -20")
-                ratio = resNorm / lastResNorm
+                ratio = res_norm / last_res_norm
                 return alpha, delta_t, -20
-            lastResNorm = resNorm
-            resNorm = newResNorm
-        ratio = resNorm / lastResNorm
+            last_res_norm = res_norm
+            res_norm = new_res_norm
+        ratio = res_norm / last_res_norm
         # Compute reward with the Sarah ratio
         if (ratio <= 1):
             reward = sarah*(1-ratio)
         else:
             reward =  1-ratio
         return alpha, delta_t, reward
+
+##### THIS IS WHERE RL HAPPENS
 
     def _generate_episode(self, length=5):
         """Given the current Policy, generate an episode of fixed length"""
@@ -151,16 +174,11 @@ class TestProblem:
             alpha_history[i] = alpha
             delta_t_history[i] = delta_t
             reward_history[i] = reward
-            # gradient = self.pol.log_pdf_gradient(self.b,self.n,alpha,delta_t)
-
             # Then jump to a new state, at random
-            newb = np.random.uniform(0, 1)
-            newn = np.random.randint(5, 200)
-            self.update(newb, newn)
-
-        myEpisode = Episode(b_history, n_history, alpha_history,
+            self._state_transition()
+        my_episode = Episode(b_history, n_history, alpha_history,
                             delta_t_history, reward_history)
-        return myEpisode
+        return my_episode
 
     def _learn_one_episode(self, ep_length=100):
         """
@@ -169,23 +187,23 @@ class TestProblem:
         """
         gamma = self.gamma
         learning_rate = self.learning_rate
-        myEpisode = self._generate_episode(ep_length)
+        my_episode = self._generate_episode(ep_length)
         for t in range(ep_length):
             # Calculate the sum of rewards
             Gt = 0
             for i in range(t, ep_length):
                 # Return on the trajectory
-                Gt += myEpisode.reward_hist[i] * (gamma**(i-t))
+                Gt += my_episode.reward_hist[i] * (gamma**(i-t))
 
-            b = myEpisode.b_hist[t]
-            n = myEpisode.n_hist[t]
-            alpha = myEpisode.alpha_hist[t]
-            delta_t = myEpisode.delta_t_hist[t]
+            b = my_episode.b_hist[t]
+            n = my_episode.n_hist[t]
+            alpha = my_episode.alpha_hist[t]
+            delta_t = my_episode.delta_t_hist[t]
             # Calculate the log likelihood gradient, for the current Policy
-            log_pdf_grad = self.pol.log_pdf_gradient(b, n, alpha, delta_t)
+            log_pdf_grad = self.policy.log_pdf_gradient(b, n, alpha, delta_t)
             #Update the Policy parameters
-            self.pol.theta += learning_rate*self.learning_mult*log_pdf_grad*Gt
-        return myEpisode
+            self.policy.theta += learning_rate*self.learning_mult*log_pdf_grad*Gt
+        return my_episode
 
     def learn(self, length=100, log=True, fileName='Log/log.csv'):
         """
@@ -204,8 +222,11 @@ class TestProblem:
         for i in range(length):
             ###This is really the only thing it is doing!!
             ep = self._learn_one_episode(self.episode_length)
-            ###########################################################
-            ### Section for logging and printing stuff.
+
+
+            ####################################################
+            ### Section for logging and printing stuff. ########
+            ####################################################
             #Get the average reward in the episode.
             mean_episode_rewards[i] = np.mean(ep.reward_hist)
             # Printing progress
@@ -216,12 +237,14 @@ class TestProblem:
             # Logging
             if (log):
                 to_write1 = '%d,%f,' % (i, mean_episode_rewards[i])
-                theta_to_str = np.array2string(self.pol.theta, separator=',').lstrip(
+                theta_to_str = np.array2string(self.policy.theta, separator=',').lstrip(
                     '[').rstrip(']').replace('\n', '')
                 total_string = to_write1 + theta_to_str + '\n'
                 total_string = total_string.replace(" ", "")
                 f.write(total_string)
-            ###########################################################
+            ######################################################
+
+
         if (log):
             f.close()
         print('Training done!')
@@ -255,10 +278,15 @@ class Episode:
 class Policy:
     """ Policy class. Will be used to compute all sorts of things"""
 
-    def __init__(self, std_dev=0.1) -> None:
-        """ Policy, first with random values"""
+    def __init__(self, std_dev=0.1, version = 'unscaled') -> None:
+        """ Policy, initiated with random values"""
         self.theta = np.random.rand(6)/200
-        self.stdDev = std_dev  # Will be learned later
+        self.stdDev = std_dev  # Can be learned, out of scope
+        if(version == 'scaled' or version == 'unscaled' \
+           or version == 1 or version == 2):
+            self.version = version
+        else:
+            raise ValueError('Wrong policy version')
 
     def set_theta(self, theta):
         self.theta = theta
@@ -267,6 +295,8 @@ class Policy:
         """ Evaluate the Policy and return the alpha, delta_t parameters,
         if deterministic = True, return the mean parameters instead of adding noise.  
         """
+        if(self.version == 2 or self.version == 'scaled'):
+            n = (n-5)/200 #Must be changed if we change how n is chosen
         theta = self.theta
         alpha_mean = theta[0]*b + theta[1] * n + theta[4]
         delta_t_mean = theta[2]*b + theta[3]*n + theta[5]
@@ -277,7 +307,9 @@ class Policy:
         return alpha, delta_t
 
     def __str__(self) -> str:
-        """Overload for the print"""
+        """Overload for the print
+        Doesnt't account for the scaled parameter if they are, for now.
+        """
         D = np.reshape(self.theta[:4], (2, 2))
         part1 = "Policy function, of the form [alpha , delta_t] = D*[b,n]' + bias, with D = \n"
         part2 = D.__str__()
@@ -287,6 +319,7 @@ class Policy:
 
     def log_pdf_gradient(self, b, n, alpha, delta_t):
         """ Get the gradient of log pdf, for each parameters"""
+        n = (n-5)/200
         theta = self.theta
         xi1 = (alpha - theta[0] * b - theta[1] *
                n - theta[4])/(self.stdDev**2)

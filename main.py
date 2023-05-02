@@ -7,17 +7,19 @@ from plotnine import *
 
 
 #########HYPERPARAMETERS
-slowpoke=20000
-slowerpoke = 10*slowpoke
-sahnic=0.25
 
-gamma = 0.1
+gamma = 0
 exploration_rate = 0.1
 episode_length = 20
-learning_rate = 1e-8
-learning_mult = np.array([slowpoke,sahnic,slowerpoke,sahnic,slowpoke,slowerpoke])
-initial_theta = np.array([0.,0.,0.,0.,0.,0.])
-n_episodes = 50000   #Number of episodes to train for
+learning_rate = 1e-4
+initial_theta = np.array([0., 0., 0., 0., 0.3, 2.])
+n_episodes = 20000
+min_n = 5
+max_n = 200
+min_b = 0
+max_b = 1
+policy_version = 'scaled'
+#Number of episodes to train for
 #############
 
 
@@ -26,10 +28,14 @@ problem = TestProblem(gamma=gamma,
                       learning_rate=learning_rate,
                       exploration_rate=exploration_rate,
                       episode_length=episode_length,
-                      learning_mult=learning_mult)
+                      min_b= min_b,
+                      max_b = max_b,
+                      min_n = min_n,
+                      max_n = max_n)
 
 # And a set theta parameters to start with
-problem.pol.set_theta(theta=initial_theta)
+problem.policy.set_theta(theta=initial_theta)
+problem.policy.version = policy_version
 
 
 ######### Everything is set
@@ -43,14 +49,20 @@ config_log_file = 'Log/' + date + '/config_log.txt'
 
 #Writing the parameters used here 
 with open(config_log_file, 'a') as f:
-    f.write("Training parameters\n")
-    f.write('gamma: %s\n' % gamma)
-    f.write('Learning Rate: %s\n' % learning_rate)
-    f.write('Exploration rate/Std_dev: %s\n' % exploration_rate)
-    f.write('Episode length: %s\n' % episode_length)
-    f.write('Initial theta: ' + np.array2string(initial_theta, separator=',') + '\n')
-    f.write('Learning multiplier: ' + np.array2string(learning_mult, separator=',') + '\n')
-    f.write('Number of episodes: '+  str(n_episodes))
+    log_str = "Experiment training parameters: \n"
+    log_str += 'gamma: %s\n' % gamma
+    log_str += 'Learning Rate: %s\n' % learning_rate
+    log_str += 'Exploration rate/Std_dev: %s\n' % exploration_rate
+    log_str += 'Episode length: %s\n' % episode_length
+    log_str += 'Initial theta: ' \
+        + np.array2string(initial_theta, separator=',') + '\n'
+    #log_str += 'Learning multiplier: ' \
+    #    + np.array2string(learning_mult, separator=',') + '\n'
+    log_str += 'Number of episodes: '+  str(n_episodes)
+    log_str += 'b can vary between [%s,%s)\n' % (min_b, max_b)
+    log_str += 'n can vary between [%s, %s]\n' % (min_n,max_n)
+    f.write(log_str)
+    print(log_str)
 
 
 fileName = 'Log/' + date + '/log.csv'
@@ -68,7 +80,7 @@ df2 = df.melt(
         (pl.col('ep_number')/1000).alias('episode_no_1000')
     )
 
-df3 = df.select('ep_number', 'avg_ep_reward').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=1000).alias('rolling reward'))
+df3 = df.select('ep_number', 'avg_ep_reward').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=50).alias('rolling reward'))
 
 
 
