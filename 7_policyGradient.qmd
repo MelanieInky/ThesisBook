@@ -279,6 +279,8 @@ We can now state the REINFORCE algorithm, in pseudo code format
 |
 
 ---
+
+
 :::{.remark}
 Note that we compute the log-policy gradient and update it directly after estimating the return $G_t$. This mean that except for the first estimated return, we estimate the return using an outdated policy, introducing bias unless we generate new episodes often. 
 

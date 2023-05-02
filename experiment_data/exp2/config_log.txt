@@ -1,7 +1,7 @@
 Training parameters
 gamma: 0.1
-Learning Rate: 2e-08
+Learning Rate: 1e-08
 Exploration rate/Std_dev: 0.1
 Episode length: 20
 Initial theta: [0. ,0. ,0. ,0. ,0.3,2. ]
-Learning multiplier: [1,1,1,1,1,1]
+Learning multiplier: [1.0e+03,2.5e-01,5.0e+04,2.5e-01,1.0e+03,5.0e+04]

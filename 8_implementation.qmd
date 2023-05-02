@@ -31,7 +31,7 @@ n
 \theta_4\\
 \theta_5
 \end{pmatrix}
-$$
+$${#eq-policy_deterministic_part}
 
 Then we chose the random policy $\alpha \sim \mathcal{N}(\mu_\alpha,\sigma^2)$,and similarly $\Delta t \sim \mathcal{N}(\mu_{\Delta t}, \sigma^2)$. The term $\sigma^2$, which is the variance of the policy is chosen fixed, and will help us balance exploration vs exploitation. Since $\alpha$ and $\Delta t$ are chosen independently, the joint probability density of both parameters is the product of both marginal pdf, that is 
 
@@ -99,23 +99,20 @@ In the last chapter, we wrote that the state transitions were random, more preci
 
 ## Computing the reward.
 
-Once a state and action is chosen, the reward need to be computed. We said before that, for each state and action, we compute the residual ratio after 10 iterations $c_{10}$. With that ratio, we need to define an appropriate reward metrics. We design the reward such that:
+Once a state and action is chosen, the reward need to be computed. We said before that, for each state and action, we compute the residual ratio after 10 iterations $\rho_{10}$. With that ratio, we need to define an appropriate reward metrics. We design the reward such that:
 
-- The lower the ratio $c_{10}$, the better the convergence rate and the better the reward should be.
-- It appears natural to have a positive reward when $c_{10}<1$, which implies convergence, and a negative reward otherwise.
+- The lower the ratio $\rho_{10}$, the better the convergence rate and the better the reward should be.
+- It appears natural to have a positive reward when $\rho_{10}<1$, which implies convergence, and a negative reward otherwise.
 
  The reward is 
 
 $$
-r(c_{10}) = \begin{cases}
-s\times (1-c_{10}) \;\;\;\;\;\qquad \text{ if } c_{10}<1\\
-\max(-3,1 - c_{10}) \qquad \text{ if } c_{10}\geq1
-\end{cases}
+r(\rho_{10}) = 1-\rho_{10}
 $$
 
-When $c_{10}<1$, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. The term $s$ is there t. 
+When $\rho_{10}<1$, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. The term $s$ is there t. 
 
-When, on the other hand $c_{10}\geq 1$, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at $-3$.
+When, on the other hand $\rho_{10}\geq 1$, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at $-3$.
 
 
 
@@ -134,7 +131,7 @@ We implement the REINFORCE algorithm to the test problem. There are a few hyperp
 
 This leaves the choice of the initial value for $\theta$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-resratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is reasonable. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.3$, and $\theta_5=2$, the other parameters are set to 0.
 
-The algorithm is run for 40000 episodes, and we observe the evolution of the theta parameters(@fig-experimentreward). The objective function $J(\theta)$ can not be observed. We have access, however to the average reward over an episode in @fig-experimenttheta. Note that in the latter plot, the rolling average of the average reward over the last $k=1000$ episodes is used as a smoother.
+The algorithm is run for 50000 episodes, and we observe the evolution of the theta parameters(@fig-experimentreward). The objective function $J(\theta)$ can not be observed. We have access, however to the average reward over an episode in @fig-experimenttheta. Note that in the latter plot, the rolling average of the average reward over the last $k=1000$ episodes is used as a smoother.
 
 ```{python}
 #| label: fig-experimenttheta
@@ -160,7 +157,7 @@ df2 = df.melt(
         (pl.col('ep_number')/1000).alias('episode_no_1000')
     )
 
-df3 = df.select('ep_number', 'avg_ep_reward').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=1000).alias('rolling reward'))
+df3 = df.select('ep_number', 'avg_ep_reward').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=50).alias('rolling reward'))
 
 
 
@@ -269,13 +266,14 @@ $$
 \theta \leftarrow \theta + \alpha_{\text{var}} \odot \nabla_\theta \pi(a|s,\theta)
 $$
 
-where $\alpha_{\text{var}} = (\alpha_{0}, \alpha_{1}, \dots , \alpha_{5})^\intercal$ and $\odot$ represent the termwise vector multiplication. Based on this, we set 
+where $\alpha_{\text{var}} = (\alpha_{0}, \alpha_{1}, \dots , \alpha_{5})^\intercal$ and $\odot$ represent the termwise vector multiplication. Based on this, and trial and error, we set 
 
 $$
 \alpha_{\text{var}} = (\alpha_0,\alpha_1, \dots, \alpha_5)^\intercal = 2\times 10^{-8}(70 , 0.3,50 , 0.3,70 ,50 )^\intercal.
 $$
 
-This learning rate is set partly based on the justification above, and is also found experimentally through trial and error so as to accelerate down the learning of the parameters not "dependent" on $n$. The results are in @fig-variable_learning_theta.
+
+The results are in @fig-variable_learning_theta.
 
 
 ```{python}
@@ -308,7 +306,7 @@ df_exp_tidy = df_exp.melt(
 p1 = (ggplot(df_exp_tidy, aes(x = 'episode_no_1000', y = 'value', colour = 'experiment_number'))
 + geom_line()
 + facet_wrap('~variable', scales='free_y')
-+ theme_bw()
++ theme_seaborn()
 + theme(panel_spacing_x= 0.7)
 + xlab('Episode no. / 1000')
 + ylab('Theta')
@@ -318,25 +316,26 @@ fig = p1.draw()
 fig.show()
 ```
 
-Compared to the last thing, we get a much faster reward
+Compared to the last experiment, we get a much faster reward
 
 ```{python}
 #| label: fig-experimentreward2
 #| echo: false
-#| fig-cap: Evolution of the rolling average (k=1000) of the average episode reward.
+#| fig-cap: Evolution of the rolling average (k=50) of the average episode reward. Note that the 
 #| warning: false
 
 
 
 
-df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','experiment_number').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=1000).alias('rolling reward'))
+df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','experiment_number').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=50).alias('rolling reward'))
 
 
 
 p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = 'experiment_number'))
 + geom_line()
-+ theme_bw()
-+ xlab('Episode number'))
++ theme_seaborn()
++ xlab('Episode number')
++ coord_cartesian(ylim=(-0.1,0.01)))
 
 fig = p2.draw()
 fig.show()
@@ -345,25 +344,152 @@ fig.show()
 
 
 
-## Exploration vs exploitation tradeoff.
-
-In the algorithm that we used before, a single 
-
 
 
 ## Impact of initial condition.
 
-Gradient descent algorithm use the local information about a loss function $l(\theta)$ to compute the update $\theta \rightarrow \theta + \alpha \nabla l(\theta)$. When gradient descent converges, we can only be sure that the convergence is to a local minimum, but we can't be certain that this mimimum is a global mimimum. Therefore, it is interesting to test whether the algorithm converge  
+Gradient descent algorithm use the local information about a loss function $l(\theta)$ to compute the update $\theta \rightarrow \theta + \alpha \nabla l(\theta)$. When gradient descent converges, we can only be sure that the convergence is to a local minimum, but we can't be certain that this mimimum is a global mimimum. Therefore, it is interesting to test whether the algorithm converges to the same values regardless of initial conditions. Turns out it sorta does?  
+
+
+## Further results
+
+The average reward of the episode is a nice way to report on the performance of the method as it is closely linked to the return function. However, it is difficult to interpret how exactly the model is performing once we have some optimal parameters $\theta^*$. 
+
+In particular, while the policy function is stochastic during training, the actual policy we choose can be deterministic. So, at the risk of adding some bias, we simply remove the noise $\sigma$ in the policy and chose to use the  deterministic policy $\alpha = \mu_\alpha$, $\Delta t = \mu_{\Delta t}$, as in @eq-policy_deterministic_part, and we note this policy $\pi_d(a|s,\theta^*)$. For the value of the parameters, we use their last values in the second experiment, which is
+
+$$
+\theta^* = (-0.0114,-1.317e-04,-0.0318,-7.88e-04,0.26,1.07)^\intercal
+$$
+
+Then, we compute the value of $\rho_{10}$, for this policy and for different values of $n$ and $b$, the results are as follow @fig-learned_policy. While we have convergence at any point, the convergence is slow, and the maximum value for $\rho_{10}$ is $0.99917$. Referring back to REFFFF, this slow convergence is also partly an issue with the method, like we've seen in the grid search.
+
+Since we trained the policy on $\rho_{10}$, it may be a good idea to check if the convergence still holds when we compute more iterations of the solver. The result are in @fig-learned_policy. There are some points where the solver diverges, which is a problem in particular because the point where it diverges are for small values of $b$, which is often the case physically. 
+
+This divergence indicates that it may be a good idea, as a further study to further train the learned policy by computing $\rho_{100}$, and having a reward of $1-\rho_{100}$ instead of $1-\rho_{10}$, this of course mean that the training time will be longer. 
+
+```{python}
+#| echo: false
+#| warning: false
+#| eval: false
+
+import numpy as np
+from testProblemClass import TestProblem
+from plotnine import *
+import polars as pl
 
 
 
-## Moving beyond the basics.
+def res_ratio(res_norm_list):
+    return res_norm_list[-1] / res_norm_list[-2]
 
-(Some discussion on what to do next, etc... ) Example include.
+problem = TestProblem()
 
-- Better algorithm, with less sample variance and more sample efficiency.
-- Moving beyond a linear policy. (approximation using NN).
-- Meta learning, maybe?
-- Applying the concept learned here to a more varied set of problem, instead of just confining ourselves to steady state diffusion-convection equation.
+### Setting the policy
+problem.pol.theta = np.array([-1.14752705e-02,-1.31695021e-04,-3.18403538e-02,-7.88315092e-04,2.60922231e-01,1.07161512e+00])
+l = 50
+n_grid = np.arange(5,200,1)
+b_grid = np.linspace(0,1,l)
+
+
+n_grid , b_grid = np.meshgrid(n_grid, b_grid)
+ratio_grid1 = np.zeros((len(b_grid), len(n_grid[0])))
+ratio_grid2 = np.zeros((len(b_grid), len(n_grid[0])))
+
+for i in range(len(n_grid[0])):
+    for j in range(len(b_grid)):
+        n = n_grid[j,i]
+        b = b_grid[j,i]
+        problem.update(b = b, n = n)
+        alpha , delta_t = problem.pol(b = b, n = n, deterministic = True)
+        #For rho10, then rho100
+        _ , res_norm_list1 = problem.main_solver2(alpha, delta_t, n_iter = 10)
+        _ , res_norm_list2 = problem.main_solver2(alpha, delta_t, n_iter = 100)
+        res_ratio_var1 = res_ratio(res_norm_list1)
+        res_ratio_var2 = res_ratio(res_norm_list2)
+        ratio_grid1[j,i] = res_ratio_var1
+        ratio_grid2[j,i] = res_ratio_var2
+
+
+### Useful binning function that could have been np.bins
+def continuous_to_level(res_ratio):
+    if(res_ratio < 0.99):
+        return 0
+    elif(res_ratio < 0.992):
+        return 1
+    elif(res_ratio < 0.994):
+        return 2 
+    elif(res_ratio < 0.996):
+        return 3
+    elif(res_ratio < 0.998):
+        return 4
+    elif(res_ratio < 1):
+        return 5
+    return 6 
+#Vectorized
+vec_continuous_to_level = np.vectorize(continuous_to_level)
+
+
+##Prepare tiny data, make it one dimensional
+flat_ratio_grid1 = ratio_grid1.flatten()
+flat_ratio_grid2 = ratio_grid2.flatten()
+flat_b_grid = b_grid.flatten()
+flat_n_grid = n_grid.flatten().astype('float')
+
+## And now put everything in bins, so it looks better
+flat_ratio_grid1_factor = vec_continuous_to_level(flat_ratio_grid1)
+flat_ratio_grid2_factor = vec_continuous_to_level(flat_ratio_grid2)
+#print(np.max(flat_ratio_grid))
+
+#Make the dataframe
+data = {"n":flat_n_grid, "b":flat_b_grid, "res_ratio_10":flat_ratio_grid1_factor,\
+    "res_ratio_100":flat_ratio_grid2_factor, "convergence_100":flat_ratio_grid2_bool}
+
+df = pl.DataFrame(data)
+
+#Just to label the legend, instead of the hideous factors
+level_order1 = ["<0.99", "[0.99,0.992)", "[0.992,0.994)", "[0.994,0.996)","[0.996,0.998)", "[0.998,1)"]
+
+plot1 = ggplot(df, aes(x = "b", y = "n", fill ="factor(res_ratio_10)")) \
+    + geom_tile() \
+    + xlab('b') \
+    + ylab('n') \
+    + labs(fill = 'Residual ratio.') \
+    + theme_seaborn()\
+    + scale_fill_manual(values = ['#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#b10026'], labels = level_order1) \
+    + theme(legend_background=element_rect(fill='#EBEBEB'))
+
+
+level_order2 = ["<0.99", "[0.99,0.992)", "[0.992,0.994)", "[0.994,0.996)","[0.996,0.998)", "[0.998,1)", ">1"]
+
+
+
+plot2 = ggplot(df, aes(x = 'b', y = 'n', fill ='factor(res_ratio_100)')) \
+    + geom_tile() \
+    + xlab('b') \
+    + ylab('n') \
+    + labs(fill = 'Residual ratio.') \
+    + scale_fill_manual(values = ['#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','black'], labels = level_order2)\
+    + theme_seaborn() \
+    + theme(legend_background=element_rect(fill='#EBEBEB'))
+
+
+plot2.save(filename='images/learned_policy_100.pdf')
+plot1.save(filename='images/learned_policy_10.pdf')
+```
+
+
+::: {#fig-learned_policy layout-nrow=2}
+
+![$\rho_{10}$. Maximum residual ratio: 0.99916.](images/learned_policy_10.pdf){#fig-learned_policy_a}
+
+![$\rho_{100}$. Note the divergence in black, for low values of $b$.](images/learned_policy_100.pdf){#fig-learned_policy_b height=200}
+
+Evolution of the residual ratio $\rho_{10}$ and $\rho_{100}$, with the learned policy, depending on the problem parameters $n$ and $b$.
+
+:::
+
+
+
+## (Possible section with comparison of results).
 
 
