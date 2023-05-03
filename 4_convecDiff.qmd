@@ -3,9 +3,9 @@ author: "Mélanie Fournier"
 jupyter: python3
 ---
 
-# A test problem - Convection diffusion equation
+# A Test Problem, the Convection Diffusion Equation
 
-As a test case for the solver, we consider the one dimensional, steady state convection-diffusion equation with fixed boundary condition
+As a test case, we consider the one dimensional, steady state convection-diffusion equation with fixed boundary condition
 
 $$
     u_x = bu_{xx} + 1 ,  \quad u(0) = u(1) = 0
@@ -18,7 +18,7 @@ u(x) = x - \frac{e^{-(1-x)/b} - e^{-1/b}}{1-e^{-1/b}}.
 $${#eq-convec_diff_th_solution}
 
 
-We are however interested in solving this numerically, with a finite difference approach. We partition the interval $[0,1]$ into equidistant points $x_i, i = 0, \dots n+1$. We note the distance between each points as $\Delta x = \frac{1}{n+1}$, and we have $u(x_0) = u(0) = 0$ and $u(x_{n+1}) = u(1) = 0$. We use the notation $u^i = u(x_i)$. We approximate, for $i \geq 1$ the derivative 
+We are however interested in solving this numerically, with a finite difference approach. We partition the interval $[0,1]$ into $n+2$ equidistant points $x_i, i = 0, \dots n+1$. We note the distance between each points as $\Delta x = \frac{1}{n+1}$. The approximated value of $u$ at the point $x_i$ is noted $u^i$ and we have $u^0 = u(0) = 0$ and $u^{n+1} = u(1) = 0$. We use the notation $u^i = u(x_i)$. We approximate, for $i \geq 1$ the derivative 
 
 $$
     u_x^i = \frac{u^i - u^{i-1}}{\Delta x}
@@ -28,10 +28,10 @@ $$
     u^i_{xx} = \frac{u^{i+1} - 2u^i + u^{i-1}}{\Delta x ^2}
 $$
 
-Note that the first derivative is approximated backward in time. For $i = 1 , \dots , n$, we thus have the approximation 
+Note that the first derivative is approximated backward in space, which aligns with the convection being in the right direction. For $i = 1 , \dots , n$, we thus have the approximation 
 
 $$
-u_x^i =  \frac{u^i - u^{i-1}}{\Delta x}  = b \frac{u^{i+1} - 2u^i + u^{i-1}}{\Delta x ^2} + 1
+\frac{u^i - u^{i-1}}{\Delta x}  = b \frac{u^{i+1} - 2u^i + u^{i-1}}{\Delta x ^2} + 1
 $$
 
 This can be given in matrix format by letting $u = (u^1,\dots, u^{n})^T$
@@ -43,37 +43,37 @@ $$
 where $d = (1,1,\dots , 1)^T$,
 
 $$
-A = \frac{1}{\Delta x}\begin{bmatrix}
+A = \frac{1}{\Delta x}\begin{pmatrix}
     1 &  &&&\\
     -1 & 1 &&\\
     & -1 & 1 &\\
     &&\ddots & \ddots &\\
     &&&-1& 1 
-\end{bmatrix}    
+\end{pmatrix}    
 $$
 
 and 
 
 $$
-B =  \frac{b}{\Delta x ^2}\begin{bmatrix}
+B =  \frac{b}{\Delta x ^2}\begin{pmatrix}
     -2 & 1 &&&\\
     1 & \ddots & \ddots &&\\
     & \ddots & \ddots & \ddots&\\
     && \ddots & \ddots & 1 &\\
     &&&1 & -2  
-\end{bmatrix} .
+\end{pmatrix} .
 $$
 
-With $N = A-B$, we have to solve the linear system 
+With $N = A-B$, the approximated solution of the convection diffusion equation is then the solution of 
 
 $$
-Nu = d
+Nu = d,
 $$ {#eq-UnscaledSystem}
 
 where $N$ is a square matrix of dimension $n \times n$ and $d$ is the one vector of dimension $n$.
 
 :::{.remark}
-It is apparent that $N$ is diagonally dominant. Since all elements of the diagonal are positive, we can use Gershgorin circle theorem to prove that all the eigenvalues of $N$ have a positive real part. Assuming $N$ is non singular, we then have that $-N$ is stable.
+It is apparent that $N$ is diagonally dominant. Since all elements of the diagonal are positive, we can use Gershgorin circle theorem to prove that all the eigenvalues of $N$ have a positive real part. We thus only need to assume $N$ is non singular to prove that $-N$ is stable.
 :::
 
 We plot two examples of what the theoretical solution (@eq-convec_diff_th_solution) and the discretized solution (@eq-UnscaledSystem) look like for different $b$ parameters in @fig-th_vs_dis
@@ -141,19 +141,19 @@ plt.show()
 ```
 
 
-To solve this linear system, we use the method highlighted before. To make it easier for later, we chose to scale $M$ so that its diagonal elements are $1$. This allows us to have all eigenvalues in the circle centered around $1$ with radius $1$ independently of the parametrization. Setting $\eta = \frac{1}{\Delta x} + \frac{2b}{\Delta x^2}$, solving @eq-UnscaledSystem is equivalent to solving the system
+To solve this linear system, we use the method highlighted before. To make it easier for later, we chose to scale $N$ so that its diagonal elements are $1$. This allows us to have all eigenvalues in the circle centered around $1$ with radius $1$ independently of the parametrization. Setting $\eta = \frac{1}{\Delta x} + \frac{2b}{\Delta x^2}$, solving @eq-UnscaledSystem is equivalent to solving the system
 
 $$
 M u = e
 $${#eq-test_problem_scaled_system}
 
-where with $M = M/\eta$, $e_s = e/\eta$. The eigenvalues of $M$ are also scaled by $1/\eta$ so $-M$ is stable, assuming it is non singular. We are now ready to solve the system iteratively using ODE solver. 
-
-We thus introduce a pseudo time variable $t$ and we consider the ODE.
+where with $M = \frac{N}{\eta}$, $e = \frac{d}{\eta}$. The eigenvalues of $N$ are also scaled by $\frac{1}{\eta}$, and therefore $-M$ is stable, assuming it is non singular. We are now ready to solve the system iteratively using an ODE solver. To do that, we introduce a (pseudo) time variable $t$ and we consider the ODE
 
 $$
-u'(t) = e - Mu(t)
+u'(t) = e - Mu(t).
 $${#eq-test_problem_diff_eq}
 
-We can use @thm-steadyState with the non singularity assumption to guarantee that the ODE will converge to a steady state independently of the initial value we chose. In the next chapter, we will then solve this differential equation with a numerical solver.
+
+where $M$ and $e$ depends on both $n$ and $b$, which we will call the problem parameters.
+We can use @thm-steadyState with the non singularity assumption to guarantee that the ODE will converge to a steady state independently of the initial value we chose. In the next chapter, we will then chose a specific numerical method to solve this differential equation.
 

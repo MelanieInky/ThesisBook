@@ -34,7 +34,7 @@ $$
 e^{-At}y'(t) - Ae^{-At}y(t) = e^{-At}b
 $$
 
-We recognise on the left hand side the derivative of the product $e^{-At}y(t)$, and thus, by the fundamental theorem of calculus,
+We recognize on the left hand side the derivative of the product $e^{-At}y(t)$, and thus, by the fundamental theorem of calculus,
 
 $$
 \left[ e^{-Au}y(u)\right]_0^t = \int_0^t -e^{-Au}b \; du.
@@ -73,7 +73,7 @@ where $y^* = A^{-1}b$, and $e^{At}$ is defined using the usual matrix exponentia
 :::
 
 
-Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarly distinct) eigenvalues of $A$, write $\lambda_i = a_i + iy_i$, where $a_i,b_i \in \mathbb{R}$ are respectively the real part and the imaginary parts of the $i^{\text{th}}$ eigenvalue. The following holds
+Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarily distinct) eigenvalues of $A$. We write $\lambda_i = x_i + iy_i$, where $x_i,y_i \in \mathbb{R}$, and are respectively the real part and the imaginary parts of the eigenvalue. Then following holds:
 
 
 
@@ -88,9 +88,9 @@ Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarly distinct)
 
 
 :::{.proof}
-(In the diagonalisable case)
+(In the diagonalizable case)
 
-We assume that $A$ is diagonalisable. Write $A = P\Delta P^{-1}$ where $\Delta$ is diagonal. 
+We assume that $A\in\mathbb{R}^{n\times n}$ is diagonalizable. Let $\lambda_1,\dots,\lambda_n$ be the eigenvalues of $A$. Then we can write $A = P\Delta P^{-1}$ where $\Delta$ is the diagonal matrix with the eigenvalues of $A$, and $P$ is the associated eigenvectors matrix.  
 
 $$
 \Delta = \begin{pmatrix}   
@@ -101,21 +101,26 @@ $$
 \end{pmatrix}
 $$
 
-Then $e^{At} = Pe^{\Delta t} P^{-1}$, where 
+Then $e^{At} = \sum_{i=0}^\infty \frac{(P\Delta P^{-1}t)^i}{i!} = \sum_{i=0}^\infty P \frac{(\Delta t)^i}{i!}P^{-1}$. The $P$ can be moved outside of the sum to get 
 
+$$
+e^{At} = P e^{\Delta t}P^{-1}.
+$$
+
+Since the matrix exponential of a diagonal matrix is simply the matrix of the exponentiated elements, we have
 $$
 e^{\Delta t} = \begin{pmatrix}   
 e^{\lambda_1 t} & & &\\
 &e^{\lambda_2 t} & &  \\
 && \ddots & \\
 &&& e^{\lambda_n t}
-\end{pmatrix}
+\end{pmatrix}.
 $$
 
 
 Let $z(t) = P^{-1}(y(t)-y^*)$, where $y(t)$ is the unique solution to @eq-IVPth for some arbitrary initial value $y_0$. 
 
-Since $P$ is non singular, $y(t) \to y^*$ if and only if $z(t) \to 0$. We have
+Since $P$ is non singular, we can use a continuity argument to state that $y(t) \to y^*$ if and only if $z(t) \to 0$. We have
 
 $$
 z(t) = P^{-1} e^{At}(y_0-y^*)
@@ -131,10 +136,12 @@ $$
 Looking at the $i^{\text{th}}$ element $z(t)_i$, we have 
 
 $$
-|z(t)_i| = e^{a_it}\left( P^{-1}(y_0-y^*)\right)_i
+|z(t)_i| = |e^{\lambda_i t}|\left[ P^{-1}(y_0-y^*)\right]_i
 $$
 
-where $a_i = \Re[\lambda_i]$. Clearly, if $a_i < 0$, $z(t)_i \to 0$ as $t \to +\infty$. If this holds for any $i = 1, \dots , n$, then $z(t) \to 0$ as $t\to +\infty$. This proves ($\Leftarrow$).
+Clearly, the only time dependent term is  $|e^{\lambda_i t}| = e^{a_it}$, with $a_i$ being the real part of $\lambda_i$. Clearly $z(t)_i \to 0$ as $t \to +\infty$ if and only if $a_i<0$.
+
+If this holds for any $i = 1, \dots , n$, then $z(t) \to 0$ as $t\to +\infty$. This proves the sufficient condition.
 
 This is also a necessary condition. Indeed, since $y_0$ is arbitrary, we can chose it so that $P^{-1}(y_0-y^*) = (1, \dots , 1)^T$. Then $z(t) = (e^{\lambda_1 t}, e^{\lambda_2 t}, \dots , e^{\lambda_n t})^T$ which converges to $0$ only if all the eigenvalues have a strictly negative real part.
 
@@ -142,7 +149,7 @@ This is also a necessary condition. Indeed, since $y_0$ is arbitrary, we can cho
 
 
 :::{.remark}
-A general proof is available on [@BellmanStab, chap. 1]
+A proof in the general case is available on [@BellmanStab, chap. 1].
 :::
 
 

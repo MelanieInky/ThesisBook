@@ -3,9 +3,9 @@ author: "Mélanie Fournier"
 jupyter: python3
 ---
 
-# Runge-Kutta method and application to the test problem
+# Explicit Runge-Kutta Method
 
-## Explicit Runge-Kutta method
+## A small introdution to explicit Runge-Kutta methods
 
 This section aim to introduce explicit Runge-Kutta methods[@NumDiffEqBook, chap. 3], and the particular Runge-Kutta method used in this thesis. We consider solving a generic initial value problem of the form
 
@@ -74,7 +74,7 @@ where the stage derivative $\xi_j$ are computed sequentially as follow
 
 
 
-## Implementation
+## Application to the test problem
 
 
 We now have to solve the ODE $u'(t) = e - Mu(t)$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, and $n$ is the chosen number of subdivisions of $[0,1]$. Since we are only interested on the asymptotic behavior of $u$, we only need to care about the stability of the numerical solver we wish to use. We consider in this thesis the following RK method with two stages.
@@ -89,10 +89,14 @@ $$
 $$
 
 
-This solver has two parameters, namely the (pseudo) time step $\Delta t$ and $\alpha$. The goal is for the solver to converge to a steady state solution as fast as possible. Set $u_0 = u(0) = e$ as an initial value. We define the relative residual after $k$ steps as 
+
+
+This solver has two parameters, namely the (pseudo) time step $\Delta t$ and $\alpha$, where $\alpha \in [0,1]$. 
+
+The goal is for the solver to converge to a steady state solution as fast as possible. We set $u_0 = u(0) = e$ as an initial value. We define the relative residual after $k$ steps as 
 
 $$
-r_k = ||M_su_k - e_s||/ ||e_s||.
+r_k = ||Mu_k - e_s||/ ||e||.
 $$
 
 where $||.||$ is the 2-norm.
@@ -101,9 +105,9 @@ If the solver we chose is stable, then $||r_k|| \to 0$ as $k \to \infty$. We def
 
 $$
 \rho_k = \frac{||r_k||}{||r_{k-1}||} = \frac{||Mu_k - e||}{||Mu_{k-1}-e||}
-$$
+$${#eq-residual_ratio_equation}
 
-where $||.||$ is the 2-norm. 
+where $||.||$ is the 2-norm. @fig-residual_ratio_evolution shows the evolution of the relative residual, as well as the residual ratio for specifics parameters. 
 
 
 
@@ -128,8 +132,9 @@ if not os.path.exists("images"):
 
 
 ```{python}
-#| fig-cap: Evolution of the residual norm over iteration, with problem parameters $n = 100$ and $b = 0.05$, and RK parameters $\Delta t = 1.5$ and $\alpha = 0.3$. 
+#| fig-cap: Evolution of the residual norm over iteration, with problem parameters $n = 50$ and $b = 0.05$, and RK parameters $\Delta t = 1$ and $\alpha = 0.2$. 
 #| echo: false
+#| label: fig-residual_ratio_evolution
 
 n = 50
 b = 0.05
@@ -137,7 +142,7 @@ alpha = 0.2
 deltaT = 1
 problem = TestProblem(b = b,n = n)
 
-y ,  resNormList = problem.main_solver2(alpha,deltaT,500)
+y ,  resNormList = problem.main_solver2(alpha,deltaT,1000)
 
 e_norm = np.linalg.norm(problem.e,2)
 relRes = resNormList / e_norm
@@ -156,6 +161,46 @@ ax2.set_xlabel('Iteration')
 plt.show()
 ```
 
+
+:::{.remark}
+Using the same notation as before for the stage values, for the equation $u'(t) = f(t,u(t))$, we have $\xi_1 = u_n$
+
+$$
+\xi_2 = u_n + \Delta t \alpha f(t_n,\xi_1) = u_n + \Delta t \alpha f(t_n,u_n)
+$$
+
+The update is thus
+
+$$
+u_{n+1} = u_n + \Delta t f(t_n+\alpha \Delta t, \xi_2)
+$$
+
+In the test problem case, $f(t_n,u_n) = e - Mu_n$, and we get the update
+
+$$
+u_{n+1} = u_n + \Delta t\left[e-M(u_n+\alpha(e-Mu_n))\right].
+$$
+
+After a few lines of computation, we get the following iteration
+
+$$
+u_{n+1} = \left[I-\Delta t M - \alpha(\Delta t M)^2\right]u_n + \Delta t e - \alpha \Delta t Me.
+$$
+
+We recognize a fixed point iteration of the form $u_{n+1} = g(u_n)$, which converges to a unique fixed point $u^*$ if $g$ is a contraction mapping, and the convergence rate depends on its Lipschitz constant. From this point, it is apparent that optimizing the solver parameters involves minimizing this Lipschitz constant. Furthermore, at the potential fixed point
+
+$$
+u^* = \left[I-\Delta t M - \alpha(\Delta t M)^2\right]u^* + \Delta t e - \alpha \Delta t Me.
+$$
+
+This is equivalent after rearranging the terms to 
+
+$$
+(1+ \alpha \Delta t M)(e-Mu^*) = 0.
+$$
+
+Clearly, if $M$ is non singular, we can simply chose $u^* = M^{-1}e$ to solve this equation. Since the fixed point is unique, this is what the solver converges to. 
+:::
 
 ## A small experiment
 
@@ -269,18 +314,16 @@ fig100.write_image("images/res_ratio100.pdf", width=350, height = 200)
 
 ::: {#fig-elephants layout-ncol=2}
 
-![Surus](images/res_ratio10.pdf){#fig-surus height=200}
+![$\rho_{10}$](images/res_ratio10.pdf){#fig-res_ratio10 height=200}
 
-![Hanno](images/res_ratio100.pdf){#fig-hanno height=200}
+![$\rho_{100}$](images/res_ratio100.pdf){#fig-res_ratio100 height=200}
 
-Famous Elephants
+Contour plot of two residual ratio $\rho_k$ after different number of iterations, for specifics problem parameters. The parameters are $n = 100$ and $b=0.05$. 
 
 :::
 
 
-
-
-The stability region after 100 iterations is more narrow, suggesting that convergence may not hold even if it seems to hold for the first few iterations. Nevertheless, we can see how the parameters act on the function.
+The stability region after 100 iterations is more narrow, suggesting that convergence may not hold even if it seems to hold for the first few iterations. Nevertheless, we can see how the solver parameters interact with the residual ratio. 
 
 This is of course an exploration of particular problem parameters, and it is not advisable in practice to compute the optimal parameters with a grid search. We thus explore a possible solution to this problem by using a reinforcement learning algorithm to "learn" these optimal parameters.
 

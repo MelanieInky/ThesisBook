@@ -5,7 +5,7 @@ import numpy as np
 
 class TestProblem:
     # Define it as
-    def __init__(self, gamma=0.1, learning_rate=0.0000005, episode_length=100, exploration_rate=0.1, learning_mult = np.ones(6),b=0.05, n=100, min_n = 5, max_n = 200, min_b = 0, max_b = 1) -> None:
+    def __init__(self, gamma=0.1, learning_rate=0.0000005, episode_length=100, exploration_rate=0.1, learning_mult = np.ones(6),b=0.05, n=100, min_n = 5, max_n = 200, min_b = 0, max_b = 1, decay = False) -> None:
         """Generate a test problem, with some initial parameters
         # Parameters
         - gamma: learning rate, between 0 and 1
@@ -32,6 +32,7 @@ class TestProblem:
         self.max_b = max_b
         self.min_n = min_n
         self.max_n = max_n
+        self.decay = decay
 
 
     def _build_M(self):
@@ -106,6 +107,7 @@ class TestProblem:
                 return y, res_ratio
             last_res_norm = res_norm
             res_norm = new_res_norm
+            res_ratio = res_norm / last_res_norm
         return y, res_ratio
 
     def main_solver2(self, alpha, delta_t, n_iter=10):
@@ -143,9 +145,8 @@ class TestProblem:
             t += delta_t
             new_res_norm = np.linalg.norm(self.M@y - self.e)
             # Check for overflow!
-            if np.isinf(new_res_norm) or np.isnan(new_res_norm) or new_res_norm > 1e20:
+            if np.isinf(new_res_norm) or np.isnan(new_res_norm):
                 print("Divering greatly! Capping the reward at -20")
-                ratio = res_norm / last_res_norm
                 return alpha, delta_t, -20
             last_res_norm = res_norm
             res_norm = new_res_norm
@@ -212,6 +213,8 @@ class TestProblem:
         # The offset is only for logging purposes.
         # So we can write the correct Episode number
         # When making multiple files
+        original_learning_rate = self.learning_rate
+        original_exploration = self.exploration_rate
         if (log):
             f = open(fileName, 'a')
             firstLine = 'ep_number,avg_ep_reward,theta_0,theta_1,theta_2,theta_3,theta_4,theta_5\n'
@@ -222,6 +225,11 @@ class TestProblem:
         for i in range(length):
             ###This is really the only thing it is doing!!
             ep = self._learn_one_episode(self.episode_length)
+
+            if(self.decay):
+                decay_factor = 10000/(10000+i)
+                new_learning_rate = original_learning_rate*decay_factor
+                self.learning_rate = new_learning_rate
 
 
             ####################################################

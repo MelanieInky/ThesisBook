@@ -1,5 +1,11 @@
-# Abstract {.unnumbered}
+## Abstract {.unnumbered}
 
-Differential equations go brrrrrr
+Under some stability condition on a matrix $A$, solving the matrix $Ax = b$ can be done by solving the initial value problem $x' = Ax-b$. In this bachelor thesis, we study some specific IVPs of this form, which arise from the linear system we get as we discretize a particular convection diffusion equation via finite differences.
 
-# Acknowledgement {.unnumbered}
+To solve these IVP, we use a specific two stage explicit Runge-Kutta method, for which we aim to optimize the parameters using reinforcement learning. 
+
+Using policy gradient methods, and in particular the REINFORCE algorithm, we find that reinforcement learning can be applied in that case, with some serious limitations.  
+
+
+## Acknowledgement {.unnumbered}
+

@@ -141,82 +141,94 @@ We implement the REINFORCE algorithm to the test problem. There are a few hyperp
 - Because the discount rate is so low, the episodes length is set to $20$ as we want to use the updated policy as often as possible.
 - The standard deviation of the policy parameters is set to $\sigma = 0.1$.
 
-This leaves the choice of the initial value for $\theta$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-resratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is reasonable. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.3$, and $\theta_5=2$, the other parameters are set to 0.
+This leaves the choice of the initial value for $\theta$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-res_ratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is a reasonable choice. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.3$, and $\theta_5=2$, the other parameters are set to 0.
 
-The algorithm is run for 50000 episodes, and we observe the evolution of the theta parameters(@fig-experimentreward). 
+The algorithm is run for 50000 episodes, and we observe the evolution of the theta parameters(@fig-theta_evolution_exp1). 
 
-Since the discount rate is set to $0$, in any state, the return is the instant reward received by the agent over a single episode. So, for an episode of length $l$, we have the rewards $r_1, r_2, \dots, r_l$. Then, we can plot the average reward $r_{av} = \frac{r_1 + r_2 +\dots + r_l}{l}$ over each episode. Because the variance of $r_{av}$ is still high, we use the rolling average of $r_{av}$ over the last $k = 20$ episodes as a smoother. 
+Since the discount rate is set to $0$, in any state, the return is the instant reward received by the agent over a single episode. So, for an episode of length $l$, we have the rewards $r_1, r_2, \dots, r_l$. Then, we can plot the average reward $r_{av} = \frac{r_1 + r_2 +\dots + r_l}{l}$ over each episode. Because the variance of $r_{av}$ is still high, we use the rolling average of $r_{av}$ over the last $k = 50$ episodes as a smoother. 
+
+The average reward is the no scaling reward in @fig-experimentreward and is trending upward with successive episodes, which is the intended behavior of the algorithm. However, there are certain problems that have been made apparent by the two plots.
+
 
 
 
 ```{python}
 #| echo: false
+#| warning: false
+#| fig-cap: Evolution of the $\theta$ parameters in a first experiment.
+#| label: fig-theta_evolution_exp1
+#| fig.width: 50%
 
+exp2_file = 'experiment_data/exp2/log.csv'
+exp1_file = 'experiment_data/exp1/log.csv'
+#lbjal
+df_exp1 = pl.read_csv(exp1_file)
+df_exp2 = pl.read_csv(exp2_file)
 
-#### Loading the data + wrangling
-fileName = 'experiment_data/exp1/log.csv'
-df = pl.read_csv(fileName)
-df2 = df.melt( 
-    id_vars=['ep_number','avg_ep_reward'], 
+## Add the experiment number
+df_exp1 = df_exp1.with_columns(pl.lit('1').alias('experiment_number'))
+df_exp2 = df_exp2.with_columns(pl.lit('2').alias('experiment_number'))
+
+df_exp = pl.concat([df_exp1,df_exp2],rechunk=True)
+
+#Make it tidy + ep/1000
+df_exp_tidy = df_exp.melt(
+    id_vars=['ep_number','avg_ep_reward','experiment_number'],
     value_vars=['theta_0', 'theta_1', 'theta_2', 'theta_3', 'theta_4', 'theta_5']
     ).with_columns(
         (pl.col('ep_number')/1000).alias('episode_no_1000')
     )
 
 
-df3 = df.select('ep_number', 'avg_ep_reward').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=50).alias('rolling reward'))
-
-
-```
-```{python}
-#| label: fig-experimenttheta
-#| echo: false
-#| fig-cap: Evolution of the theta parameters with episode number. The hyperparameters are $\sigma$=0.1, learning rate 2e-8.
-#| warning: false
-#| eval: false
 
 
 
-#####REMOVED FOR NOW ####
+df_theta_exp1 = df_exp_tidy.filter(pl.col('experiment_number') == "1")
 
-
-p1 = (ggplot(df2, aes('episode_no_1000','value'))
+p1 = (ggplot(df_theta_exp1, aes(x = 'episode_no_1000', y = 'value'))
 + geom_line()
 + facet_wrap('~variable', scales='free_y')
-+ theme_bw()
-+ theme(panel_spacing_x= 0.7)
++ theme_seaborn()
++ theme(panel_spacing_x= 0.8)
 + xlab('Episode no. / 1000')
 + ylab('Theta')
++ theme(figure_size=(6,3))
 )
 
 fig = p1.draw()
 fig.show()
-
 ```
+
 
 ```{python}
 #| label: fig-experimentreward
 #| echo: false
-#| fig-cap: Evolution of the rolling average (k=1000) of the average episode reward.
+#| fig-cap: Evolution of the rolling average (k=50) of the average episode reward, with or without scaling.
 #| warning: false
 
-p2 = (ggplot(df3, aes('ep_number','rolling reward'))
+
+#Don't use the tidy data 
+df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','experiment_number').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=50).alias('rolling reward'))
+
+p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = 'experiment_number'))
 + geom_line()
-+ theme_bw()
-+ xlab('Episode number'))
++ theme_seaborn()
++ xlab('Episode number')
++ xlim(0,50000)
++ labs(color = 'Re-scaling?')
++ scale_color_discrete(labels = ['No scaling','Scaling for $n$']))
+# + coord_cartesian(ylim=(-0.1,0.01)))
 
 fig = p2.draw()
 fig.show()
 ```
-
-
-The reward in @fig-experimentreward is trending upward, which is the intended behavior of the algorithm. However, there are certain problems that have been made apparent.
-
-- Despite running the algorithm for a long time(approximately 20 minutes on a typical computer), the $\theta$ parameters have not changed very much, and it is clear that we are far from any convergence of the reward function. 
+- Despite running the algorithm for a long time, some of the $\theta$ parameters have barely changed, and it is clear that we are far from any convergence of the reward function. 
 - Even with smoothing, it is apparent that the method has a high variance.
-- It seems that $\theta_1$ and $\theta_5$ varies quite a bit over time whereas the other parameters have a steady rate of change.
+- After the full It seems that $\theta_1$ and $\theta_3$ vary quite a bit over time whereas the other parameters have a steady rate of change.
 
-The slow apparent convergence rate can not be mitigated by a higher learning rate, as this empirically lead to divergences issues. The high variance is typical of reinforcement learning tasks, as well as Monte Carlo based methods, which REINFORCE is a part of. That being said, there exists much better methods that can reduce this variance, at the expense of introducing some bias, such as for example actor-critics methods [@Sutton1998, chap. 13.5], or proximal policy optimization(PPO) @DBLP:journals/corr/SchulmanWDRK17. Both of these methods are not explored in this thesis.
+The slow apparent convergence rate can not be mitigated by a higher learning rate, as this empirically lead to divergences issues. 
+
+The high variance is typical of reinforcement learning tasks, and in particular Monte Carlo based methods, which REINFORCE is a part of. That being said, there exists much better methods that can reduce this variance, at the expense of introducing some bias, such as for example actor-critics methods [@Sutton1998, chap. 13.5], or proximal policy optimization(PPO) @DBLP:journals/corr/SchulmanWDRK17. Both of these methods are not explored in this thesis.
 
 
 
@@ -301,39 +313,50 @@ $${#eq-policy2_deterministic_part}
 
 an expression of the gradient is unchanged, with the exception of replacing $n$ by $n'$ everywhere. 
 
-With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can now be set to $\alpha = 1\times 10^{-4}$ without divergence! The results are in 
+With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to $\alpha = 3\times 10^{-4}$ without divergence. Compared to the first experiment, the evolution of the policy parameters is much higher! The average episode reward is also much better.
 
-The results are in @fig-variable_learning_theta.
+While the average reward converges. The same cannot be said for the $\theta$ parameters. In particular, TODO seem to never converge. Running the program for more episode did not resolve this issue.  
 
+The results are in @fig-variable_theta.
 
 ```{python}
 #| echo: false
 #| warning: false
-#| fig-cap: Evolution of the theta parameters with episode number, with direction based learning rate. 
-#| label: fig-variable_learning_theta
+#| fig-cap: Evolution of the theta parameters with different initial parameters.
+#| label: fig-variable_theta
 
 exp2_file = 'experiment_data/exp2/log.csv'
-exp1_file = 'experiment_data/exp1/log.csv'
-#lbjal
-df_exp1 = pl.read_csv(exp1_file)
+exp_initial_param1_file = 'experiment_data/exp_initial_param1/log.csv'
+exp_initial_param2_file = 'experiment_data/exp_initial_param2/log.csv'
+
+
 df_exp2 = pl.read_csv(exp2_file)
+df_exp_p1 = pl.read_csv(exp_initial_param1_file)
+df_exp_p2 = pl.read_csv(exp_initial_param2_file)
+
+
+initial_theta_exp2 = '[0,0,0,0,0.3,2]'
+initial_theta_p1 = '[0.5,0.5,0.5,0.5,0.5,0.5]'
+initial_theta_p2 = '[0,0,0,0,0,0]'
 
 ## Add the experiment number
-df_exp1 = df_exp1.with_columns(pl.lit('1').alias('experiment_number'))
-df_exp2 = df_exp2.with_columns(pl.lit('2').alias('experiment_number'))
+df_exp2 = df_exp2.with_columns(pl.lit(initial_theta_exp2).alias('Initial theta'))
+df_exp_p1 = df_exp_p1.with_columns(pl.lit(initial_theta_p1).alias('Initial theta'))
+df_exp_p2 = df_exp_p2.with_columns(pl.lit(initial_theta_p2).alias('Initial theta'))
 
-df_exp = pl.concat([df_exp1,df_exp2],rechunk=True)
+
+df_exp = pl.concat([df_exp2,df_exp_p1, df_exp_p2],rechunk=True)
 
 #Make it tidy + ep/1000
 df_exp_tidy = df_exp.melt(
-    id_vars=['ep_number','avg_ep_reward','experiment_number'],
+    id_vars=['ep_number','avg_ep_reward','Initial theta'],
     value_vars=['theta_0', 'theta_1', 'theta_2', 'theta_3', 'theta_4', 'theta_5']
     ).with_columns(
         (pl.col('ep_number')/1000).alias('episode_no_1000')
     )
 
 
-p1 = (ggplot(df_exp_tidy, aes(x = 'episode_no_1000', y = 'value', colour = 'experiment_number'))
+p1 = (ggplot(df_exp_tidy, aes(x = 'episode_no_1000', y = 'value', colour = 'Initial theta'))
 + geom_line()
 + facet_wrap('~variable', scales='free_y')
 + theme_seaborn()
@@ -346,49 +369,50 @@ fig = p1.draw()
 fig.show()
 ```
 
-Compared to the last experiment, we get a much faster reward
-
 ```{python}
-#| label: fig-experimentreward2
 #| echo: false
-#| fig-cap: Evolution of the rolling average (k=50) of the average episode reward.
 #| warning: false
+#| fig-cap: Evolution of the rolling average($k=200$) of the average episode reward for different initial parameters. 
+#| label: fig-reward_initial_theta
 
+#Don't use the tidy data 
+df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','Initial theta').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=200).alias('rolling reward'))
 
-
-
-df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','experiment_number').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=50).alias('rolling reward'))
-
-
-
-p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = 'experiment_number'))
+p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = 'Initial theta'))
 + geom_line()
 + theme_seaborn()
-+ xlab('Episode number'))
-# + coord_cartesian(ylim=(-0.1,0.01)))
++ xlab('Episode number')
++ coord_cartesian(ylim=(0,0.0075)))
 
 fig = p2.draw()
 fig.show()
+
 ```
-
-
 
 
 
 
 ## Impact of initial condition.
 
-Gradient descent algorithm use the local information about a loss function $l(\theta)$ to compute the update $\theta \rightarrow \theta + \alpha \nabla l(\theta)$. When gradient descent converges, we can only be sure that the convergence is to a local minimum, but we can't be certain that this mimimum is a global mimimum. Therefore, it is interesting to test whether the algorithm converges to the same values regardless of initial conditions. Turns out it sorta does?  
+Gradient descent algorithms use the local information about an objective function $J(\theta)$ to compute the update $\theta \rightarrow \theta + \alpha \nabla J(\theta)$. This local behavior also means that any convergence of gradient descent is to a local minimum, but we can't be certain that this mimimum is a global mimimum.
+
+ Therefore, it is interesting to test whether the algorithm converges to the same values regardless of initial conditions. The third experiment is then to run the algorithm with the same parameters as before, but with varied initial conditions for the $\theta$ vector, and to visualize the results, both in the average rewards and the evolution of $\theta$ parameters over 100000 episodes. 
+
+ The evolution of the $\theta$ parameters is in @fig-variable_theta, and the rolling average of the average episode reward is plotted in @fig-reward_initial_theta for different initial value for $\theta$. It turns out that while convergence in reward is to the same values, the convergence of the $\theta$ parameters is more difficult to observe.  
+
+
+
+
 
 
 ## Further results
 
-The average reward of the episode is a nice way to report on the performance of the method as it is closely linked to the return function. However, it is difficult to interpret how exactly the model is performing once we have some optimal parameters $\theta^*$. 
+The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how exactly the model is performing once we have some found some optimal parameters $\theta^*$. 
 
 In particular, while the policy function is stochastic during training, the actual policy we choose can be deterministic. So, at the risk of adding some bias, we simply remove the noise $\sigma$ in the policy and chose to use the  deterministic policy $\alpha = \mu_\alpha$, $\Delta t = \mu_{\Delta t}$, as in @eq-policy_deterministic_part, and we note this policy $\pi_d(a|s,\theta^*)$. For the value of the parameters, we use their last values in the second experiment, which is
 
 $$
-\theta^* = (-0.0114,-1.317e-04,-0.0318,-7.88e-04,0.26,1.07)^\intercal
+\theta^* = [4.02 \times 10^{-4},1.09\times 10^{-2},-6.36\times 10^{-2},-0.335 ,0.238,1.11]
 $$
 
 Then, we compute the value of $\rho_{10}$, for this policy and for different values of $n$ and $b$, the results are as follow @fig-learned_policy. While we have convergence at any point, the convergence is slow, and the maximum value for $\rho_{10}$ is $0.99917$. Referring back to REFFFF, this slow convergence is also partly an issue with the method, like we've seen in the grid search.
@@ -415,7 +439,8 @@ def res_ratio(res_norm_list):
 problem = TestProblem()
 
 ### Setting the policy
-problem.pol.theta = np.array([-1.14752705e-02,-1.31695021e-04,-3.18403538e-02,-7.88315092e-04,2.60922231e-01,1.07161512e+00])
+problem.policy.theta = np.array([4.02e-4,1.09e-2,-6.36e-2,-3.35e-01 ,0.238,1.11])
+problem.policy.version = 2
 l = 50
 n_grid = np.arange(5,200,1)
 b_grid = np.linspace(0,1,l)
@@ -430,12 +455,10 @@ for i in range(len(n_grid[0])):
         n = n_grid[j,i]
         b = b_grid[j,i]
         problem.update(b = b, n = n)
-        alpha , delta_t = problem.pol(b = b, n = n, deterministic = True)
+        
+        _ , res_ratio_var1 = problem.main_solver(n_iter = 10, deterministic_policy=True)
         #For rho10, then rho100
-        _ , res_norm_list1 = problem.main_solver2(alpha, delta_t, n_iter = 10)
-        _ , res_norm_list2 = problem.main_solver2(alpha, delta_t, n_iter = 100)
-        res_ratio_var1 = res_ratio(res_norm_list1)
-        res_ratio_var2 = res_ratio(res_norm_list2)
+        _ , res_ratio_var2 = problem.main_solver(n_iter = 100, deterministic_policy=True)
         ratio_grid1[j,i] = res_ratio_var1
         ratio_grid2[j,i] = res_ratio_var2
 
@@ -471,8 +494,8 @@ flat_ratio_grid2_factor = vec_continuous_to_level(flat_ratio_grid2)
 #print(np.max(flat_ratio_grid))
 
 #Make the dataframe
-data = {"n":flat_n_grid, "b":flat_b_grid, "res_ratio_10":flat_ratio_grid1_factor,\
-    "res_ratio_100":flat_ratio_grid2_factor, "convergence_100":flat_ratio_grid2_bool}
+data = {"n":flat_n_grid, "b":flat_b_grid,             "res_ratio_10":flat_ratio_grid1_factor,
+"res_ratio_100":flat_ratio_grid2_factor}
 
 df = pl.DataFrame(data)
 
@@ -522,4 +545,4 @@ Evolution of the residual ratio $\rho_{10}$ and $\rho_{100}$, with the learned p
 
 ## (Possible section with comparison of results).
 
-
+This possible section is to see if we can compare results.

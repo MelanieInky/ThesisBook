@@ -1,4 +1,5 @@
 from testProblemClass import TestProblem
+
 import polars as pl
 import numpy as np
 from datetime import datetime
@@ -11,14 +12,15 @@ from plotnine import *
 gamma = 0
 exploration_rate = 0.1
 episode_length = 20
-learning_rate = 1e-4
-initial_theta = np.array([0., 0., 0., 0., 0.3, 2.])
-n_episodes = 20000
+learning_rate = 2e-4
+initial_theta = np.array([4.01921979e-04,1.09095758e-02,-6.36481677e-02,-3.34954724e-01,2.38298620e-01,1.11251588e+00])
+n_episodes = 50000
 min_n = 5
 max_n = 200
 min_b = 0
 max_b = 1
 policy_version = 'scaled'
+decay = True
 #Number of episodes to train for
 #############
 
@@ -31,7 +33,8 @@ problem = TestProblem(gamma=gamma,
                       min_b= min_b,
                       max_b = max_b,
                       min_n = min_n,
-                      max_n = max_n)
+                      max_n = max_n,
+                      decay = decay)
 
 # And a set theta parameters to start with
 problem.policy.set_theta(theta=initial_theta)
@@ -58,9 +61,11 @@ with open(config_log_file, 'a') as f:
         + np.array2string(initial_theta, separator=',') + '\n'
     #log_str += 'Learning multiplier: ' \
     #    + np.array2string(learning_mult, separator=',') + '\n'
-    log_str += 'Number of episodes: '+  str(n_episodes)
+    log_str += 'Number of episodes: '+  str(n_episodes) + '\n'
     log_str += 'b can vary between [%s,%s)\n' % (min_b, max_b)
     log_str += 'n can vary between [%s, %s]\n' % (min_n,max_n)
+    log_str += 'policy version: ' + policy_version + '\n'
+    log_str += 'Decay' + str(decay)
     f.write(log_str)
     print(log_str)
 
@@ -80,7 +85,7 @@ df2 = df.melt(
         (pl.col('ep_number')/1000).alias('episode_no_1000')
     )
 
-df3 = df.select('ep_number', 'avg_ep_reward').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=50).alias('rolling reward'))
+df3 = df.select('ep_number', 'avg_ep_reward').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=1000).alias('rolling reward'))
 
 
 
@@ -94,14 +99,15 @@ p = (ggplot(df2, aes('episode_no_1000','value'))
 )
 
 
-p.draw()
 
 p2 = (ggplot(df3, aes('ep_number','rolling reward'))
 + geom_line()
 + theme_seaborn()
 + xlab('Episode number'))
 
-p2.draw()
+p
+p2
+
 
 ###### Some values that seems okay
 #[-9.24809711e-03,  3.23655991e-04,  1.24970436e-01, -3.84203665e-03,
