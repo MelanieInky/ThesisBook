@@ -120,7 +120,7 @@ $$
 G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots = \sum_{t=0}^{+\infty}\gamma^t R_{t+1}
 $$
 
-where $\gamma \in (0,1)$ is called the discount rate. 
+where $\gamma \in [0,1)$ is called the discount rate. 
 :::
 
 :::{.remark}

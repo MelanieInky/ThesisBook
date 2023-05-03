@@ -3,9 +3,9 @@ project:
   output-dir: docs
 
 book:
-  title: "Bachelor thesis - Reinforcement learning for something."
+  title: "Reinforcement learning for the optimization of explicit Runge Kutta parameters"
   author: "Mélanie Fournier"
-  date: "3/15/2023"
+  date: "03/05/2023"
   chapters:
     - index.qmd
     - 2_intro.qmd

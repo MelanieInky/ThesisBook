@@ -1,10 +1,10 @@
 
 
-# Policy gradient methods
+# Policy Gradient Method
 
 Now that we have access to the main definitions used in RL, we can now translate the problem we had at the end of chapter 4.
 
-## Translating the Test Problem
+## Translating the test problem
 
 As a reminder, we have a test problem with the following problem parameters:
 
@@ -12,12 +12,12 @@ As a reminder, we have a test problem with the following problem parameters:
 
 - a discretization parameter $n\in\mathbb{N}$ defining the number of points in the linear grid used to solve numerically the equation.
 
-We end up with a linear equation to solve for, which can be solver using the method highlighted before. We wish to find the solver parameters $\Delta t$ and $\alpha$ that will minimize the residual of REF as fast as possible. To simplify future computation, we will be interested in minimizing the residual ratio after 10 iteration of the Runge-Kutta solver $c_{10}$. We define this ratio as $c_{b,n}(\Delta t, \alpha)$, a function parametrized by $b$ and $n$, with arguments $\Delta t$ and $\alpha$. We are faced with the following optimization problem:
+We end up with a linear equation to solve for, which can be solver using the method highlighted before. We wish to find the solver parameters $\Delta t$ and $\alpha$ that will minimize the residual @eq-relative_residual as fast as possible. To simplify future computation, we will be interested in minimizing the residual ratio after 10 iteration of the Runge-Kutta solver $\rho_{10}$. We define this ratio as $\rho_{b,n}(\Delta t, \alpha)$, a function parametrized by $b$ and $n$, with arguments $\Delta t$ and $\alpha$. We are faced with the following optimization problem:
 
 
 For any $b$, $n$, find
 $$
-(\Delta t^*, \alpha^*) =  \arg \min_{\Delta t, \alpha} c_{b,n}(\Delta t, \alpha).
+(\Delta t^*, \alpha^*) =  \arg \min_{\Delta t, \alpha} \rho_{b,n}(\Delta t, \alpha).
 $$
 
 
@@ -101,20 +101,20 @@ We are faced with the immediate issue that the algorithm requires knowing the gr
 
 ### Policy gradient theorem
 
-We prove, using the aforementioned assumptions the policy gradient theorem. This proof is adapted from [@Sutton1998,chap 13.2]. 
+We prove, using the aforementioned assumptions the policy gradient theorem. This proof is adapted from [@Sutton1998,chap 13.2]. To unclutter the notation, we remove $\theta$ in $\pi(a|s,\theta)$. The gradient $\nabla$ are also implied to be w.r.t $\theta$. 
 
-Using the expression //TODO: REF, the expression for a specific state value can be written as
 
+From the last chapter, we have the expression of the state values
 $$
-v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a|s)q_\pi(a,s)
+v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a|s)q_\pi(a,s).
 $$
 
-We take the gradient w.r.t $\theta$ to get
+Taking the gradient w.r.t $\theta$ to get
 $$
 \nabla v_\pi(s) = \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s) + \pi(a|s)\nabla q_\pi(a,s)
 $$
 
-Using the expression //REF for the action value we get 
+Using the definition of the action value and the return $G_t$ we get 
 
 $$
 \nabla q_\pi(a,s) = \nabla \left[ \sum_{r}p(r|s,a)r + \gamma\sum_{s'}p(s'|a,s)v_\pi(s')\right]

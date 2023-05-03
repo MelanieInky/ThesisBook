@@ -97,7 +97,7 @@ The goal is for the solver to converge to a steady state solution as fast as pos
 
 $$
 r_k = ||Mu_k - e_s||/ ||e||.
-$$
+$${#eq-relative_residual}
 
 where $||.||$ is the 2-norm.
 
@@ -210,7 +210,7 @@ We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for
 - What do these functions look like. In particular, we may be interested in the function convexity.
 
 
-In both cases, we use a contour plot. In @fig-resRatio10 and @fig-resRatio100, the residual ratio is clipped when it is $\geq 1$ so as to maximize contrast.
+In both cases, we use a contour plot. In @fig-res_ratio10 and @fig-res_ratio100, the residual ratio is clipped when it is $\geq 1$ so as to maximize contrast.
 
 ```{python}
 #| echo: false
