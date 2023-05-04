@@ -157,3 +157,36 @@ $${#eq-test_problem_diff_eq}
 where $M$ and $e$ depends on both $n$ and $b$, which we will call the problem parameters.
 We can use @thm-steadyState with the non singularity assumption to guarantee that the ODE will converge to a steady state independently of the initial value we chose. In the next chapter, we will then chose a specific numerical method to solve this differential equation.
 
+
+:::{.remark}
+
+The convection diffusion equation is derived in [@convection_diffusion_book , chap. 3] from the continuity equation for a scalar quantity $u$ and is
+
+
+$$
+\frac{\partial u}{\partial t} + \Delta.(\vec{v}u - \nabla(Du)) = R.
+$$
+
+We will assume that the quantity $u$, which can be for example a concentration or the temperature, has for unit $\rho$. The physical quantity are:
+
+- $\vec{v}$, which is the velocity of the medium the quantity is in, in $\text{m.s}^{-1}$. (the advection/convection). 
+- $D$ is the diffusion coefficient, in $\text{m}^2.\text{s}^{-1}$. 
+- $R$ is governing whether the quantity is created, when $R>0$ or destructed when $R<0$. The unit is $\rho.\text{s}^{-1}$.
+
+We can now simplify the equation by considering it in a single dimension $x$
+
+$$
+\frac{\partial u}{\partial t} + \frac{\partial}{\partial x}.(vu - \frac{\partial}{\partial x}(Du)) = R.
+$$
+
+This further simplifies to $u_t + vu_x - Du_{xx} = R$.
+
+
+Then, in steady state, $u_t = 0$ so we have
+
+$$
+u_x = \frac{D}{v}u_{xx} + \frac{R}{v}
+$$
+
+and we recognize @eq-convec_diff_steady, with $b = \frac{D}{v}$, and $1 = \frac{R}{v}$. This also means that we lose two parameters in the studied test problem for simplification purposes. Nevertheless, this can be used to give some degree of intuition behind @fig-th_vs_dis. When the diffusion is high compared to the convection, the quantity is more centered, but on the other hand, when the convection is high compared to the diffusion, the quantity $u$ is "flushed" to the right. 
+:::

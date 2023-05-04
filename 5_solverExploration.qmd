@@ -5,9 +5,9 @@ jupyter: python3
 
 # Explicit Runge-Kutta Method
 
-## A small introdution to explicit Runge-Kutta methods
+## A small introduction to explicit Runge-Kutta methods
 
-This section aim to introduce explicit Runge-Kutta methods[@NumDiffEqBook, chap. 3], and the particular Runge-Kutta method used in this thesis. We consider solving a generic initial value problem of the form
+This section aims to introduce explicit Runge-Kutta methods[@NumDiffEqBook, chap. 3], which we use in this thesis. We consider solving a generic initial value problem of the form
 
 $$
 y'(t) = f(t,y(t)), \quad y(0) = y_0.
@@ -22,7 +22,7 @@ $$
 and with the change of variable $u = t_n + \Delta t\tau$, we have
 
 $$
-y(t_{n+1}) = y(t_n) + \Delta t\int_0^1f(t_n+h\tau,y(t_n+h\tau)) \; d\tau
+y(t_{n+1}) = y(t_n) + \Delta t\int_0^1f(t_n+\Delta t\tau,y(t_n+\Delta t\tau)) \; d\tau
 $$
 The problem is finding a suitable way to compute the integral above. An elementary approach is to use the current value of $f(t_n,y(t_n))$ and to treat $f$ as constant, thus defining the sequence
 
@@ -30,19 +30,19 @@ $$
 y_{n+1} = y_n + \Delta tf(t_n,y_n)
 $$
 
-where $y_{n} \approx y(t_{n})$, $y_0 = y(0)$. This is the explicit Euler's method. We now want to exploit quadrature formulas for integration. Let $c_j \in [0,1], j=1,2,\nu$ be the nodes in the quadrature formula, with their associated weight $b_j, j=1,2,\dots$. A quadrature formula for the integral is then of the form
+where $y_{n} \approx y(t_{n})$, $y_0 = y(0)$. This is the explicit Euler's method. We now want to exploit quadrature formulas for integration. Let $c_j \in [0,1], j=1,2,\nu$ be the nodes in the quadrature formula, with their associated weight $b_j, j=1,2,\dots, \nu$. A quadrature formula for the integral is then of the form
 
 $$
-\int_0^1 f(t_n+h\tau,y(t_n+\Delta t\tau))\; d\tau = \sum_{j=1}^\nu b_j f(t_n + \Delta t c_j,y(t_n+\Delta t c_j)).
+\int_0^1 f(t_n+\Delta t \tau,y(t_n+\Delta t\tau))\; d\tau = \sum_{j=1}^\nu b_j f(t_n + \Delta t c_j,y(t_n+\Delta t c_j)).
 $$
 
-This is all well and good, except that we have to know the values $y(t_n+hc_j)$, which we do not know. We can however, play pretend and compute an approximation of these values $\xi_j \approx y(t_n+\Delta t c_j), j=1,\dots, \nu$. The $\xi_j$ are called *stage values*. [@BirkenNotes], and we compute them using a linear combination of the values $f(t_n + \Delta t c_j, \xi_j)$. That is 
+This is all well and good, except that we have to know the values $y(t_n+\Delta c_j)$, which we do not know. We can however, play pretend and compute an approximation of these values $\xi_j \approx y(t_n+\Delta t c_j), j=1,\dots, \nu$. The $\xi_j$ are called *stage values*. [@BirkenNotes]. The main idea is to put to use the knowledge $\xi_i$, to compute $\xi_j$, using a linear combinations of the term $f(t_n + \Delta t c_j, \xi_j)$. That is 
 
 $$
 \xi_i = y_n + \Delta t \sum_{j=1}^\nu a_{ij}f(t_n+\Delta t c_j, \xi_j),
 $$
 
-for $i = 1,\dots, \nu$, where the $a_{ij}$ are some well chosen values, which is not in scope of this thesis. To simplify notation, we note $A$ as the square array containing the $a_{ij}$ parameters, that is $A_{ij} = a_{ij}$, $c = (c_1,\dots,c_\nu)^\intercal$ the vector of nodes, and $b = (b_1,\dots, b_\nu)^\intercal$ the vector of weights. A RK methods is then written in the form of the following array, also called Butcher tableau.  
+for $i = 1,\dots, \nu$, where the $a_{ij}$ are some well chosen values, which is not in scope of this thesis. To simplify notation, we note $A$ as the square array containing the $a_{ij}$ parameters, that is $A_{ij} = a_{ij}$, $c = (c_1,\dots,c_\nu)^\intercal$ the vector of nodes, and $b = (b_1,\dots, b_\nu)^\intercal$ the vector of weights. A RK methods is then written in the form of the following array, also called a Butcher tableau.  
 
 $$
 \renewcommand\arraystretch{1.2}
@@ -61,7 +61,7 @@ $$
 y_{n+1} = y_n + h\sum_{j=1}^\nu b_j f(t_n+\Delta t c_j,\xi_j),
 $$
 
-where the stage derivative $\xi_j$ are computed sequentially as follow
+where the stage values $\xi_j$ are computed sequentially as follow
 
 
 \begin{align*}
@@ -77,7 +77,7 @@ where the stage derivative $\xi_j$ are computed sequentially as follow
 ## Application to the test problem
 
 
-We now have to solve the ODE $u'(t) = e - Mu(t)$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, and $n$ is the chosen number of subdivisions of $[0,1]$. Since we are only interested on the asymptotic behavior of $u$, we only need to care about the stability of the numerical solver we wish to use. We consider in this thesis the following RK method with two stages.
+We now have to solve the ODE $u'(t) = e - Mu(t)$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, and $n$ is the chosen number of subdivisions of $[0,1]$. Since we are only interested on the asymptotic behavior of $u$, we only need to care about the stability of the numerical solver we wish to use. We consider in this thesis the following RK method with two stages @BirkenNotes.
 
 $$
 \begin{array}
@@ -89,14 +89,16 @@ $$
 $$
 
 
-
+:::{.remark}
+This RK method can be extended to more stages. We only need the last stage value to compute the time step update, and we only need to compute the stage values sequentially using only the last stage value calculated. This makes it possible, when programming the method, to simply to do the update of the variable $\xi$ in place inside the computer memory. Such methods are thus memory efficient.  
+:::
 
 This solver has two parameters, namely the (pseudo) time step $\Delta t$ and $\alpha$, where $\alpha \in [0,1]$. 
 
 The goal is for the solver to converge to a steady state solution as fast as possible. We set $u_0 = u(0) = e$ as an initial value. We define the relative residual after $k$ steps as 
 
 $$
-r_k = ||Mu_k - e_s||/ ||e||.
+r_k = ||Mu_k - e||/ ||e||.
 $${#eq-relative_residual}
 
 where $||.||$ is the 2-norm.
@@ -107,7 +109,7 @@ $$
 \rho_k = \frac{||r_k||}{||r_{k-1}||} = \frac{||Mu_k - e||}{||Mu_{k-1}-e||}
 $${#eq-residual_ratio_equation}
 
-where $||.||$ is the 2-norm. @fig-residual_ratio_evolution shows the evolution of the relative residual, as well as the residual ratio for specifics parameters. 
+where $||.||$ is the 2-norm. @fig-residual_ratio_evolution shows the evolution of the relative residual, as well as the residual ratio for specifics parameters. After a certain number of iterations, the convergence rate becomes linear. This can be however be after a large amount of iterations, so it is difficult to compute the convergence rate. 
 
 
 
@@ -142,12 +144,12 @@ alpha = 0.2
 deltaT = 1
 problem = TestProblem(b = b,n = n)
 
-y ,  resNormList = problem.main_solver2(alpha,deltaT,1000)
+y ,  res_norm_list = problem.main_solver2(alpha,deltaT,1000)
 
 e_norm = np.linalg.norm(problem.e,2)
-relRes = resNormList / e_norm
+relRes = res_norm_list / e_norm
 
-resRatio = resNormList[1:]/resNormList[:-1]
+resRatio = res_norm_list[1:]/res_norm_list[:-1]
 
 fig, (ax1, ax2) = plt.subplots(2,1)
 ax1.plot(relRes)
@@ -199,18 +201,20 @@ $$
 (1+ \alpha \Delta t M)(e-Mu^*) = 0.
 $$
 
-Clearly, if $M$ is non singular, we can simply chose $u^* = M^{-1}e$ to solve this equation. Since the fixed point is unique, this is what the solver converges to. 
+Clearly, if $M$ is non singular, we can simply chose $u^* = M^{-1}e$ to solve this equation. Since the fixed point is unique, this is what the solver converges to. Seeing the iteration as a fixed point iteration also explains the linear convergence rate.
 :::
 
 ## A small experiment
 
-We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b, n)$. Since the residual ratio vary quite a bit depending on the number of iteration, we decide to investigate the residual ratio after 10 iterations and 100 iterations. So, for the problem parameters $b = 0.05$, and $n = 100$, we plot $\rho_{10 }= f(\Delta t, \alpha)$ and $\rho_{100} = g(\Delta t, \alpha)$. We wish to answer the following questions
+We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b, n)$. Ideally, we should minimize the asymptotic residual ratio $\rho_\infty$, but this is computationally intensive, so we restrict ourselves to minimizing the residual ratio $\rho_i$ after a fixed amount of iterations. 
 
-- Where are the optimal parameters for this specific problem, that is, the ones that minimize $\rho_{10}$ and $\rho_{100}$, and do they also depend on the iteration number or not. 
-- What do these functions look like. In particular, we may be interested in the function convexity.
+Since $\rho_i$ can vary quite a bit depending on $i$, we decide to investigate the residual ratio after 10 iterations and 100 iterations. So, for the problem parameters $b = 0.05$, and $n = 100$, we plot $\rho_{10 }= f(\Delta t, \alpha)$ and $\rho_{100} = g(\Delta t, \alpha)$. We wish to answer the following question: what are the optimal parameters for this specific problem, that is, the ones that minimize $\rho_{k}$, for different values of $k$, and are they broadly the same. 
 
+We use a contour plot to visualize $\rho_k$ in @fig-res_ratio_comparison.
 
-In both cases, we use a contour plot. In @fig-res_ratio10 and @fig-res_ratio100, the residual ratio is clipped when it is $\geq 1$ so as to maximize contrast.
+The stability region after 100 iterations is more narrow than after 10 iterations, suggesting that convergence may not hold even if it seems to hold for the first few iterations. However, this doesn't seem to be the case when we consider higher values of $k$. Nevertheless, we can see how the solver parameters interact with the residual ratio. 
+
+This is of course an exploration of particular problem parameters, and, while doing a grid search every time is possible in that case, it is not always so when the number of parameters is higher. We thus explore a possible solution to this problem by using a reinforcement learning algorithm to "learn" these optimal parameters.
 
 ```{python}
 #| echo: false
@@ -218,8 +222,8 @@ In both cases, we use a contour plot. In @fig-res_ratio10 and @fig-res_ratio100,
 #| eval: false
 
 
-def resRatio(resNormList):
-    return resNormList[-1] / resNormList[-2]
+def resRatio(res_norm_list):
+    return res_norm_list[-1] / res_norm_list[-2]
 
 
 b = 0.05
@@ -229,101 +233,109 @@ problem = TestProblem(b = b,n = n)
 
 ##Make an l*l grid to search in
 l = 100
-deltaTgrid = np.linspace(0.1,5,l)
-alphaGrid = np.linspace(0,1,l)
+delta_t_grid = np.linspace(0.1,5,l)
+alpha_grid = np.linspace(0,1,l)
 
-deltaTgrid, alphaGrid = np.meshgrid(deltaTgrid,alphaGrid)
+delta_t_grid, alpha_grid = np.meshgrid(delta_t_grid,alpha_grid)
 
-resRatioGrid2 = np.zeros((l,l))
+res_ratio_grid_10 = np.zeros((l,l))
+res_ratio_grid_100 = np.zeros((l,l))
 
-#Version 10th residual ratio
-for i in range(l):
-    for j in range(l):
-        #print('alpha', alphaGrid[j,0])
-        #print('deltaT', deltaTgrid[0,i])
-        y , resNormList = problem.main_solver2(alphaGrid[j,i],deltaTgrid[j,i],10)
-        ratio = resRatio(resNormList)
-        #print('ratio', ratio)
-        resRatioGrid2[j,i] = resRatio(resNormList)
+
+def res_ratio_grid(l,alpha_grid, delta_t_grid,n_iter = 10):
+    res_ratio_grid = np.zeros((l,l))
+    for i in range(l):
+        for j in range(l):
+            #print('alpha', alpha_grid[j,0])
+            #print('deltaT', delta_t_grid[0,i])
+            try:
+                _ , res_norm_list = problem.main_solver2(alpha_grid[j,i],delta_t_grid[j,i],n_iter)
+                ratio = resRatio(res_norm_list)
+                res_ratio_grid[j,i] = ratio
+            except ValueError: #Catch when it diverges really badly
+                res_ratio_grid[j,i] = np.Inf   
+            #print('ratio', ratio)
+    return res_ratio_grid
 
 
 ##VISUALISATION
 
-###Removing the margins
-layout = go.Layout(
-  margin=go.layout.Margin(
-        l=0, #left margin
-        r=0, #right margin
-        b=0, #bottom margin
-        t=0, #top margin
+def visualize_res_ratio(alpha_grid, delta_t_grid, res_ratio_grid, n_iter):
+    ###Removing the margins
+    layout = go.Layout(
+    margin=go.layout.Margin(
+            l=0, #left margin
+            r=0, #right margin
+            b=0, #bottom margin
+            t=0, #top margin
+        ))
+    ### Make it so that when it diverges, we set the ratio to inf so its grey
+    #Quick and dirty
+    n_row = np.shape(res_ratio_grid)[0]
+    n_col = np.shape(res_ratio_grid)[1]
+    res_ratio = np.copy(res_ratio_grid)
+    for i in range(n_row):
+        for j in range(n_col):
+            if res_ratio_grid[i,j] > 1:
+                res_ratio[i,j] = np.inf
+
+    fig = go.Figure(data = 
+        go.Contour(
+            z = res_ratio,
+            #z = np.clip(res_ratio_grid,0.5,1.0001),
+            y = alpha_grid[:,0],
+            x = delta_t_grid[0,:],
+            colorbar=dict(
+                title='Residual ratio, after %s iter.' % n_iter, # title here
+                titleside='right',
+                titlefont=dict(
+                size=14,
+                family='Arial, sans-serif'))
+        ), layout = layout)
+
+    fig = fig.update_layout(
+        xaxis_title = 'Delta t',
+        yaxis_title = 'alpha'
     )
-)
-
-fig10 = go.Figure(data = 
-    go.Contour(
-        z = np.clip(resRatioGrid2,0.5,1),
-        y = alphaGrid[:,0],
-        x = deltaTgrid[0,:],
-        colorbar=dict(
-            title='Residual ratio, after 10 iter.', # title here
-            titleside='right',
-            titlefont=dict(
-            size=14,
-            family='Arial, sans-serif'))
-    ), layout = layout)
-
-fig10 = fig10.update_layout(
-    xaxis_title = 'Delta t',
-    yaxis_title = 'alpha'
-)
+    return fig
 
 
-###NOT RUN because it takes a while to compile otherwise
-#### Version 100 #####
-for i in range(l):
-    for j in range(l):
-        #Solve using the parameters
-        y , resNormList = problem.main_solver2(alphaGrid[j,i],deltaTgrid[j,i],100)
-        ratio = resRatio(resNormList)
-        #print('ratio', ratio)
-        resRatioGrid2[j,i] = resRatio(resNormList)
+## Thinking hurts and ram is cheap
+res_ratio_grid_10 = res_ratio_grid(l, alpha_grid, delta_t_grid, 10)
+print('yeeah')
+res_ratio_grid_100 = res_ratio_grid(l, alpha_grid, delta_t_grid, 100)
+print('yeaah2')
+res_ratio_grid_200 = res_ratio_grid(l, alpha_grid, delta_t_grid, 200)
+print('yeaah3')
+res_ratio_grid_500 = res_ratio_grid(l, alpha_grid, delta_t_grid, 500)
+print('yeaah4')
 
-fig100 = go.Figure(data = 
-    go.Contour(
-        z = np.clip(resRatioGrid2,0.5,1),
-        y = alphaGrid[:,0],
-        x = deltaTgrid[0,:],
-        colorbar=dict(
-            title='Residual ratio, after 100 iter.', # title here
-            titleside='right',
-            titlefont=dict(
-            size=14,
-            family='Arial, sans-serif'))
-    ), layout = layout)
-
-fig100.update_layout(
-    xaxis_title = 'Delta t',
-    yaxis_title = 'alpha'
-)
+fig_10 = visualize_res_ratio(alpha_grid, delta_t_grid,res_ratio_grid_10, 10)
+fig_100 = visualize_res_ratio(alpha_grid, delta_t_grid,res_ratio_grid_100, 100)
+fig_200 = visualize_res_ratio(alpha_grid, delta_t_grid,res_ratio_grid_200, 200)
+fig_500 = visualize_res_ratio(alpha_grid, delta_t_grid,res_ratio_grid_500, 500)
 
 #Saving
-fig10.write_image("images/res_ratio10.pdf", width = 350, height = 200)
-fig100.write_image("images/res_ratio100.pdf", width=350, height = 200)
+fig_10.write_image("images/res_ratio10.pdf", width = 350, height = 200)
+fig_100.write_image("images/res_ratio100.pdf", width=350, height = 200)
+fig_200.write_image("images/res_ratio200.pdf", width=350, height = 200)
+fig_500.write_image("images/res_ratio500.pdf", width=350, height = 200)
 ```
 
 
-::: {#fig-elephants layout-ncol=2}
+::: {#fig-res_ratio_comparison layout-ncol=2 layout-nrow=2}
 
 ![$\rho_{10}$](images/res_ratio10.pdf){#fig-res_ratio10 height=200}
 
 ![$\rho_{100}$](images/res_ratio100.pdf){#fig-res_ratio100 height=200}
 
-Contour plot of two residual ratio $\rho_k$ after different number of iterations, for specifics problem parameters. The parameters are $n = 100$ and $b=0.05$. 
+
+![$\rho_{200}$](images/res_ratio200.pdf){#fig-res_ratio200 height=200}
+
+![$\rho_{500}$](images/res_ratio500.pdf){#fig-res_ratio500 height=200}
+
+Contour plot of some residual ratios $\rho_k$, for different $k$ after different number of iterations, for the specific problem parameters $n = 100$ and $b=0.05$. Note that the grey area is where $\rho_k > 1$.
 
 :::
 
-
-The stability region after 100 iterations is more narrow, suggesting that convergence may not hold even if it seems to hold for the first few iterations. Nevertheless, we can see how the solver parameters interact with the residual ratio. 
-
-This is of course an exploration of particular problem parameters, and it is not advisable in practice to compute the optimal parameters with a grid search. We thus explore a possible solution to this problem by using a reinforcement learning algorithm to "learn" these optimal parameters.
 

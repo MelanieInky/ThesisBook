@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 book:
-  title: "Reinforcement learning for the optimization of explicit Runge Kutta parameters"
+  title: "Reinforcement Learning for the Optimization of Explicit Runge Kutta Method Parameters"
   author: "Mélanie Fournier"
   date: "03/05/2023"
   chapters:

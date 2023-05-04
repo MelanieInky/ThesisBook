@@ -123,6 +123,9 @@ class TestProblem:
             y = self._one_step_smoother(y, t, delta_t, alpha)
             t += delta_t
             res_norm = np.linalg.norm(self.M@y - self.e, 2)
+            if(np.isinf(res_norm) or np.isnan(res_norm)):
+                raise ValueError('Divergence of the solver')
+            
             res_norm_list[i+1] = res_norm
         return y, res_norm_list
 

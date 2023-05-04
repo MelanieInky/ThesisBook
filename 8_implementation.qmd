@@ -313,11 +313,9 @@ $${#eq-policy2_deterministic_part}
 
 an expression of the gradient is unchanged, with the exception of replacing $n$ by $n'$ everywhere. 
 
-With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to $\alpha = 3\times 10^{-4}$ without divergence. Compared to the first experiment, the evolution of the policy parameters is much higher! The average episode reward is also much better.
+With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to $\alpha = 2\times 10^{-4}$ without divergence. Compared to the first experiment, the evolution of the policy parameters is much higher! The average episode reward is also much better, as seen in @fig-experimentreward.
 
-While the average reward converges. The same cannot be said for the $\theta$ parameters. In particular, TODO seem to never converge. Running the program for more episode did not resolve this issue.  
-
-The results are in @fig-variable_theta.
+While the average reward converges. The same cannot be said for the $\theta$ parameters(see @fig-variable_theta). In particular, $\theta_2$ seem to not converge. Running the program for more episode did not resolve this issue.
 
 ```{python}
 #| echo: false

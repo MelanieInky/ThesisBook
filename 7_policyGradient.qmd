@@ -2,7 +2,7 @@
 
 # Policy Gradient Method
 
-Now that we have access to the main definitions used in RL, we can now translate the problem we had at the end of chapter 4.
+Now that we have access to the main definitions used in RL, we can study the problem we had at the end of chapter 3 through the lens of RL.
 
 ## Translating the test problem
 
@@ -12,7 +12,9 @@ As a reminder, we have a test problem with the following problem parameters:
 
 - a discretization parameter $n\in\mathbb{N}$ defining the number of points in the linear grid used to solve numerically the equation.
 
-We end up with a linear equation to solve for, which can be solver using the method highlighted before. We wish to find the solver parameters $\Delta t$ and $\alpha$ that will minimize the residual @eq-relative_residual as fast as possible. To simplify future computation, we will be interested in minimizing the residual ratio after 10 iteration of the Runge-Kutta solver $\rho_{10}$. We define this ratio as $\rho_{b,n}(\Delta t, \alpha)$, a function parametrized by $b$ and $n$, with arguments $\Delta t$ and $\alpha$. We are faced with the following optimization problem:
+We end up with a linear equation to solve for, which can be solver using the method highlighted before. We wish to find the solver parameters $\Delta t$ and $\alpha$ that will minimize the residual @eq-relative_residual as fast as possible. We are interested in minimizing the residual ratio after 10 iteration of the Runge-Kutta solver $\rho_{10}$. This is not ideal as we have seen that optimal parameters for $\rho_{10}$ can lead to divergence of the solver, but this reduces computation time.
+
+ We define this ratio as $\rho_{b,n}(\Delta t, \alpha)$, a function parametrized by $b$ and $n$, with arguments $\Delta t$ and $\alpha$. We are faced with the following optimization problem:
 
 
 For any $b$, $n$, find
@@ -32,7 +34,7 @@ The state transition model is more difficult to find a direct translation for. F
 
 There are still several challenges that need to be addressed.
 
-- State transition being random makes for a poor model to apply reinforcement learning to. In a typical RL scenario, the discount rate is usually set close to 1 as the agent need to take into account the future states it will be in. Here, the next state is independent on the action taken, so it makes no sense to set the discount rate high. As a consequence, we set it low.
+- State transition being random makes for a poor model to apply in reinforcement learning to. In a typical RL scenario, the discount rate is usually set close to 1 as the agent need to take into account the future states it will be in. Here, the next state is independent on the action taken, so it makes no sense to set the discount rate high. As a consequence, we set it low.
 - In our problem, the State-Action space is continuous. We previously assumed finite spaces.
 - In the definition of a MDP, the reward is a modeled random variable. This is not the case here, as we do not know in advance how the solver will behave.
 
@@ -42,20 +44,20 @@ The first challenge is inherent to the way we translated the problem. We answer 
 
 ## Model based, model free
 
-One problem we are faced with is the problem of the model. In the last section, we assume that both $p(s'|s,a)$ and $p(r|s,a)$ are known. Depending on the problem, this is not straightforward to define. Thankfully, the model can be empirically estimated via Monte Carlo methods. 
+One problem we are faced with is the problem of the model. In the last section, we assume that both $p(s'|s,a)$ and $p(r|s,a)$ are known. Depending on the problem, this is not straightforward to define. Thankfully, the model can be empirically estimated via Monte-Carlo methods. 
 
 In particular, we often have to compute expectation of random variables. The most basic method is simply to sample the desired random variable and to use the empirical mean as an estimator of the desired expectation. Stochastic estimation is also used in numerous reinforcement learning algorithm. 
 
 
 ## Dealing with a large state-action space.
 
-In the last chapter, we made the assumption that the every space, be it state, action, or reward is finite. However, this is in practice not always the case, as some state may be continuously defined for example. Even if those spaces are discrete, the *curse of dimensionality* (TODO, should something be cited) may not allow us to efficiently represent every state or action. 
+In the last chapter, we made the assumption that the every space, be it state, action, or reward is finite. However, this is in practice not always the case, as some state may be continuously defined for example. Even if those spaces are discrete, the *curse of dimensionality* may not allow us to efficiently represent every state or action. 
 
 We take our problem as formulated before. The state is defined as the problem parameters, that is $b\in[0,1]$ and $n = 1 , 2, \dots$. Without any adjustment, the state space is of the form $[0,1] \times \mathbb{N}$, and is not finite. 
 
 Similarly, the policy is defined by choosing the values $(\alpha,\Delta t) \in [0,1]\times \mathbb{R}^+$, depending on the state. Once again, the action space is continuous. 
 
-One approach would be to discretize the entire state $\times$ action space, and then to apply classical dynamic programming algorithm to get some results. Then, after an optimal policy is found, do some form of interpolation for problem parameters outside of the discretized space. This approach has its own merit, as there is 3 dimensions that need to be discretized, and $n$ can be chosen within a finite range. The main issue is that since there are no relationship between the states, solving the resulting Bellman optimal equation is effectively close to brute forcing the problem. (//TODO, this need a stronger argument instead of "My intuition said so".)
+One approach would be to discretize the entire state $\times$ action space, and then to apply classical dynamic programming algorithm to get some results. Then, after an optimal policy is found, do some form of interpolation for problem parameters outside of the discretized space. This approach has its own merit, as there is 3 dimensions that need to be discretized, and $n$ can be chosen within a finite range. The main issue is that since there are no relationship between the states. In that case, we can prove that there exists an optimal policy. However, the poor relationship between successive states means that this would be effectively brute forcing the problem.
 
 Another approach is to use approximation function. A common approach is to approximate the value function $v(s)$ by some parametrization $v(s) \approx \hat{v}(s,\omega)$ where $\omega \in \mathbb{R}^d$ are $d$ parameters. Such methods are called *value based*. The method we use in this thesis, on the other hand, use an approximation of the policy function defined as $\pi(a|s,\theta)$, where $\theta\in \mathbb{R}^d$ is a parameter vector is dimension $d$. Such method are called *policy based*. The reason to chose from this class of algorithm is two-fold.
 
@@ -160,10 +162,10 @@ $$
 
 This is an expression of the policy gradient theorem. The reason to put the fraction $1/|\mathcal{S}|$ inside the first sum is to get a parallel with the more general expression, where in general, we have a weighted sum with different weight depending on the state. Depending on the metric used and the environment, this can be the stationary distribution of the states for a given policy.
 
-We state the policy gradient theorem in a more general form 
+We state the policy gradient theorem in a more general form.
 
 :::{#thm-policyGradient}
-(Policy gradient theorem)
+**Policy gradient theorem**
 
 Given an appropriate objective function $J(\theta)$, the gradient of the metric is proportional to the weighted sum
 
@@ -178,7 +180,7 @@ where $\sum_s\mu(s) = 1$ . The weights depends on how the problem is formulated.
 
 :::{.remark}
 
-Depending on the model, the objective function may change. Nevertheless, the expression of the policy gradient theorem stay similar. In particular, the constant of proportionality may change.   
+Depending on the model, the objective function that is used may change. Nevertheless, the expression of the policy gradient theorem stay similar. In particular, the constant of proportionality may change.   
 
 :::
 
@@ -289,8 +291,10 @@ On the other hand, a low episode length also introduces bias in estimated return
 A balance must therefore be found for episode length in continuing cases, which is the case in this thesis. 
 :::
 
+:::{.remark}
+The REINFORCE update can be interpreted as updating the parameters to make it more likely to take an action if the return is good, and the opposite otherwise. Furthermore, by looking at the term $\nabla \ln \pi = \frac{\nabla \pi}{\pi}$, we can see that if the probability of taking the action is rare, then the gradient becomes bigger! That way, this gradient act as a balance between exploration and exploitation. Otherwise we would update the parameters as much for a rare action than a common one, and the common action is taken more often which lead to the common action having much more sway in the process.
 
-
+:::
 
 
 

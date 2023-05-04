@@ -22,7 +22,7 @@ jupyter: python3
 
 
 
-Let $A$ be non singular square matrix of dimension $n\geq 1$ and let $b\in\mathbb{R}^n$. We consider the linear system $Ay = b$, where $y \in \mathbb{R}^n$. The system has for unique solution $y^* = A^{-1}b$. This is a fundamental problem to solve in numerical analysis, and there are numerous numerical methods to solve this, whether they are direct methods or iterative methods. In this thesis, we consider an iterative method. We consider the initial value problem 
+Let $A$ be non singular square matrix of dimension $n\geq 1$ and let $b\in\mathbb{R}^n$. We consider the linear system $Ay = b$, where $y \in \mathbb{R}^n$. The system has the unique analytical solution $y^* = A^{-1}b$. As directly inverting the matrix is a terrible idea, a fundamental problem in numerical analysis is to find numerical methods to solve this. This can be done with the use of direct methods or iterative methods. In this thesis, we consider an iterative method. Consider now the initial value problem(IVP) 
 
 $$
 y'(t) = Ay(t)- b, \; \;  y(0) = y_0
@@ -40,19 +40,27 @@ $$
 \left[ e^{-Au}y(u)\right]_0^t = \int_0^t -e^{-Au}b \; du.
 $$
 
-Multiplying by $A^{-1}A$ inside the integral in the LHS, we get 
+Multiplying by $I = A^{-1}A$ inside the integral in the LHS, we get 
+
 
 $$
-e^{-At}y(t) - y_0 = A^{-1}\left[e^{-Au}\right]_0^t b = A^{-1}e^{-At}b - A^{-1}b.
+e^{-At}y(t) - y(0) = A^{-1} \int_0^t -Ae^{-Au}b \; du.
 $$
 
-Multiplying each side by $e^{At}$ and rearranging the terms we get an expression for $y(t)$,
+which can be integrated to get
+
+$$
+e^{-At}y(t) - y_0 = A^{-1}\left[e^{-At} - b\right]
+$$
+
+
+Multiplying each side by $e^{At}$ on the left, and rearranging the terms we get an expression for $y(t)$,
 
 $$
 y(t) = e^{At}(y_0 - A^{-1}b) + A^{-1}b.
 $$
 
-Note that each of those step can be taken backward , which means that the solution we have is unique. We have thus proved 
+Here, we also used the fact that $e^{At}A^{-1} = A^{-1}e^{At}$. This gives an expression for the solution of the IVP.Since each of those step can be taken backward , the solution we get is unique. We have thus proved 
 
 ::: {#thm-ODEtheoretical}
 
@@ -73,7 +81,7 @@ where $y^* = A^{-1}b$, and $e^{At}$ is defined using the usual matrix exponentia
 :::
 
 
-Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarily distinct) eigenvalues of $A$. We write $\lambda_i = x_i + iy_i$, where $x_i,y_i \in \mathbb{R}$, and are respectively the real part and the imaginary parts of the eigenvalue. Then following holds:
+Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarily distinct) eigenvalues of $A$. We write $\lambda_i = x_i + iy_i$, where $x_i,y_i \in \mathbb{R}$, and are respectively the real part and the imaginary parts of the $i^{th}$eigenvalue. Then, the following results holds:
 
 
 
@@ -83,17 +91,17 @@ Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarily distinct
 
 :::
 
-
+We call such matrices *stable* in the rest of this thesis. 
 
 
 
 :::{.proof}
 (In the diagonalizable case)
 
-We assume that $A\in\mathbb{R}^{n\times n}$ is diagonalizable. Let $\lambda_1,\dots,\lambda_n$ be the eigenvalues of $A$. Then we can write $A = P\Delta P^{-1}$ where $\Delta$ is the diagonal matrix with the eigenvalues of $A$, and $P$ is the associated eigenvectors matrix.  
+We assume that $A\in\mathbb{R}^{n\times n}$ is diagonalizable. Let $\lambda_1,\dots,\lambda_n$ be the eigenvalues of $A$. Then we can write $A = PD P^{-1}$ where $D$ is the diagonal matrix with the eigenvalues of $A$, and $P$ is the associated eigenvectors matrix.  
 
 $$
-\Delta = \begin{pmatrix}   
+D = \begin{pmatrix}   
 \lambda_1 & & &\\
 &\lambda_2 & &  \\
 && \ddots & \\
@@ -101,15 +109,15 @@ $$
 \end{pmatrix}
 $$
 
-Then $e^{At} = \sum_{i=0}^\infty \frac{(P\Delta P^{-1}t)^i}{i!} = \sum_{i=0}^\infty P \frac{(\Delta t)^i}{i!}P^{-1}$. The $P$ can be moved outside of the sum to get 
+Then $e^{At} = \sum_{i=0}^\infty \frac{(PD P^{-1}t)^i}{i!} = \sum_{i=0}^\infty P \frac{(D t)^i}{i!}P^{-1}$. The $P$ can be moved outside of the sum to get 
 
 $$
-e^{At} = P e^{\Delta t}P^{-1}.
+e^{At} = P e^{D t}P^{-1}.
 $$
 
 Since the matrix exponential of a diagonal matrix is simply the matrix of the exponentiated elements, we have
 $$
-e^{\Delta t} = \begin{pmatrix}   
+e^{D t} = \begin{pmatrix}   
 e^{\lambda_1 t} & & &\\
 &e^{\lambda_2 t} & &  \\
 && \ddots & \\
@@ -129,7 +137,7 @@ $$
 We note that $P^{-1} e^{At} = e^{\Delta t} P^{-1}$, thus
 
 $$
-z(t) = e^{\Delta t} P^{-1}(y_0-y^*).
+z(t) = e^{D t} P^{-1}(y_0-y^*).
 $$
 
 
@@ -157,5 +165,6 @@ We now go back to the original problem of solving the linear system $Ay = b$. If
 
 
 :::{.remark}
-If all the eigenvalues of $A$ have a strictly positive real part, then we can simply solve $y' = (-A)y - (-b) = -Ay+b$ instead.
+
+The eigenvalues of $A$ are $\lambda_1, \dots , \lambda_n$. If all these eigenvalues have a strictly positive real part, then the eigenvalues of $-A$, which are $-\lambda_1, \dots , -\lambda_n$, have a strictly negative real part. Therefore, $-A$ is stable and to solve the linear problem $Ay = b$, we can simply consider the IVP $y' = (-A)y - (-b) = -Ay+b$ instead.
 :::
