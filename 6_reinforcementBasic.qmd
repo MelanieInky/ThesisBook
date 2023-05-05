@@ -62,14 +62,14 @@ Furthermore, a MDP has a policy function that governs, for any state $s\in\mathc
 :::
 
 
+
 :::{.remark}
 
-$S_t,A_t,R_t$ are random variables. A diagram of the process is as follow
+$S_t,A_t,R_t$ are random variables. A diagram of the process is as follow:
 
 
+![An example of Markov decision process with two states and two possible actions for each state. The dashed lines represent the model. After each action, a reward is given, here in dark red.](images/MDP.pdf){#fig-MDP_example width="40%"}
 
-
-(Here is a shiny diagram, I should learn tikz..)
 :::
 
 :::{.remark}
@@ -81,6 +81,8 @@ The model in a MDP is often impossible to define in advance. This problem is rem
 
 :::{.remark}
 A fundamental property that we implicitely assume is Markov property, or lack of memory. The action taken at instant t $A_t$ is only dependent on current the state $S_t$ and not the state before. Mathematically $p(A_t|S_t, S_{t-1}, \dots , S_0) = p(A_t|S_t)$.
+
+With the Markov property. If we ignore the rewards and consider a fixed policy, then the Markov decision process becomes a Markov chain. 
 :::
 
 
@@ -98,9 +100,7 @@ where $n$ can either be finite or infinite. Note that due to the Markov property
 
 
 :::{.remark}
-In some environments, it is natural for the agent to have a task that has a starting state and a finishing states (for example, beginning a cooking session and finishing it, or starting a game and winning/losing at it.) We call these tasks *episodic tasks* and in these cases, a finite trajectory $S_0,A_0 \to \dots \to S_T$ is also called an *episode*.
-
-In the cases where the task is such that no such state can be defined, a trajectory is not finite and we call these tasks *continuing tasks*, which will be the case in this thesis.
+In some environments, it is natural for the agent to have a task that has a starting state and a finishing states (for example, beginning a cooking session and finishing it, or starting a game and winning/losing at it.) We call these tasks *episodic tasks* and in these cases, a finite trajectory $S_0,A_0 \to \dots \to S_T$ is also called an *episode*. In the cases where the task is such that no such state can be defined, a trajectory is not finite and we call these tasks *continuing tasks*, which will be the case in this thesis.
 
 :::
 
@@ -183,17 +183,73 @@ $$
 E[G_{t+1} | S_t = s] = \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A}}v_\pi(s')\pi(a|s)p(s'|s,a).
 $${#eq-state_value_part2}
 
-Putting @eq-state_value_part1 and @eq-state_value_part2 together, we get a first form of Bellman equation.
+Putting @eq-state_value_part1 and @eq-state_value_part2 together, we get Bellman equation.
+
 
 $$
 v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)\left[\sum_{r\in\mathcal{R}}rp(r|s,a) + \gamma\sum_{s'\in\mathcal{S}}v_\pi(s')p(s'|s,a) \right]
 $$ {#eq-Bellman}
 
 :::{.remark}
-The Bellman equation gives a recursive relation for the state values. Solving this equation is called policy evaluation and involves fixed point iterations, which we will not get into details here.
-
-This equation is dependent on the given policy. 
+The Bellman equation is dependent on the given policy and gives a recursive relation for the state values. Solving this equation is called policy evaluation which involves fixed point iterations(see example below). 
 :::
+
+
+:::{#exm-the_example}
+
+We can derive directly the state values in the MDP in @fig-MDP_example. In particular, for the state $s_2$. There are two possible actions $a_0$ and $a_1$ we can take. The policy is to take action $a_0$ with a probability $0.6$, and action $a_1$ with a probability $0.4$. When we take  for example action $a_0$, the probability of the next state being $s_1$ is $0.3$, in which case the reward is $5$. Proceeding similarly for all the possible actions and rewards, we get
+
+$$
+v_\pi(s_2) = 0.6 \left[0.7\times-2 + 0.3 \times 5 + \gamma(0.3v_\pi(s_1) + 0.7v_\pi(s_2))\right] + 0.4 \times [\dots].
+$$
+
+After some computations, we end up with 
+
+$$
+v_\pi(s_2) = 1.5 + \gamma (0.5,0.5)\begin{pmatrix}
+v_\pi(s_1) \\
+v_\pi(s_2)
+\end{pmatrix}.
+$$
+
+Similarly $v_\pi(s_1) = 4.1 + \gamma(0.9,0.1)(v_\pi(s_1),v_\pi(s_2))^\intercal$. This lead to the system 
+
+$$
+\begin{pmatrix}
+v_\pi(s_1)\\
+v_\pi(s_2)
+\end{pmatrix} = \begin{pmatrix}
+4.1\\
+1.5
+\end{pmatrix} + \gamma \begin{pmatrix}
+0.9 & 0.1\\
+0.5 & 0.5
+\end{pmatrix}\begin{pmatrix}
+v_\pi(s_1)\\
+v_\pi(s_2)
+\end{pmatrix}
+$$
+
+We stop here to remark that this equation is of the form $v_\pi = r_\pi + \gamma P_\pi v_\pi$. $P_\pi$ is row stochastic, and is the transition matrix of the Markov chain we get when we consider a given policy. Furthermore, since $\gamma<1$, we motivate solving the equation by using a fixed point iteration. This is the main idea behind *dynamic programming* @bellman1957dynamic. In this case, we can simply solve the system directly. With $\gamma= 0.5$, we have the state values $v_\pi(s_1) = 7.875$, $v_\pi(s_2) = 4.625$. There is, for the given policy, more value in being in the first state than the second. 
+
+```{python}
+#| echo: false
+#| output: false
+import numpy as np
+gamma = 0.5
+
+matrix = np.array([[0.9*gamma-1,0.1*gamma],[0.5*gamma,0.5*gamma-1]])
+vector2 = np.array([-4.1,-1.5])
+
+v = np.linalg.solve(matrix,vector2)
+print(v)
+
+
+```
+
+
+:::
+
 
 
 
@@ -204,7 +260,8 @@ The state value gives information about a specific state, however, we are also o
 
 
 :::{#def-action_value}
-**Action value**The action value is defined as 
+**Action value** 
+The action value is defined as 
 
 $$
 q_\pi(a,s) = E\left[G_t|A_t=a,S_t=s\right]

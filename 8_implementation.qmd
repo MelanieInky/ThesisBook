@@ -116,15 +116,13 @@ Once a state and action is chosen, the reward need to be computed. We said befor
 - The lower the ratio $\rho_{10}$, the better the convergence rate and the better the reward should be.
 - It appears natural to have a positive reward when $\rho_{10}<1$, which implies convergence, and a negative reward otherwise.
 
- The reward is 
+The reward is then set to be
 
 $$
 r(\rho_{10}) = 1-\rho_{10}
 $$
 
-When $\rho_{10}<1$, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. The term $s$ is there t. 
-
-When, on the other hand $\rho_{10}\geq 1$, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at $-3$.
+When $\rho_{10}<1$, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. When, on the other hand $\rho_{10}\geq 1$, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at $-3$.
 
 
 
@@ -136,8 +134,8 @@ Now that everything as been defined, the REINFORCE algorithm can be applied to f
 
 We implement the REINFORCE algorithm to the test problem. There are a few hyperparameters to set.
 
-- The learning rate is set to $\alpha=2\times10^{-8}$.
-- The discount rate is set to a low value of $\gamma = 0$, as the state transitions are completely random, there is no reason to prefer long term rewards. This also mean that the approximated return in the REINFORCE algorithm is unbiaised!
+- The learning rate is set to $\alpha=1\times10^{-8}$.
+- The discount rate is set to a low value of $\gamma = 0$, as the state transitions are completely random, there is no reason to prefer long term rewards.
 - Because the discount rate is so low, the episodes length is set to $20$ as we want to use the updated policy as often as possible.
 - The standard deviation of the policy parameters is set to $\sigma = 0.1$.
 
@@ -277,11 +275,11 @@ y_t
 \end{pmatrix}.
 $$
 
-That is, $x_{t+1} = (1-2\alpha_x)x_t$ and $z_{t+1} = (1-2\alpha_y)y_t$. This converges to $0$ if and only if $0<\alpha<\frac{1}{2}$, which means we can affort a much bigger learning rate. With $\alpha = \frac{1}{2}$, the gradient descent algorithm can now converge to $0$ in a single iteration! 
+That is, $x_{t+1} = (1-2\alpha_x)x_t$ and $z_{t+1} = (1-2\alpha_y)y_t$. This converges to $0$ if and only if $0<\alpha<\frac{1}{2}$, which means we can afford a much bigger learning rate. With $\alpha = \frac{1}{2}$, the gradient descent algorithm can now converge to $0$ in a single iteration! 
 
 #### Changing the variable.
 
-We have an expression for the policy of the gradient of the policy in @eq-policyGradient. In particular, in @eq-nabla_xi_alpha and @eq-nabla_xi_delta_t, we remark that the gradient value in the directions of $\theta_1$ and $\theta_3$ have a similar expression. Namely, it "depends" strongly on $n$, which can get up to values of $200$. Similarly, $\theta_0$ and $\theta_2$ depends on $b$, and $\theta_4$ and $\theta_5$ depend on neither. However, $b$ can only take values between $0$ and $1$. This motivates the idea that the gradient may be in practice way steeper in the $\theta_1$ and $\theta_3$ directions than the other one.
+We have an expression for the policy of the gradient of the policy in @eq-policyGradient. In particular, in @eq-nabla_xi_alpha and @eq-nabla_xi_delta_t, we remark that the gradient value in the directions of $\theta_1$ and $\theta_3$ have a similar expression. Namely, it "depends" strongly on $n$, which can get up to values of $200$. Similarly, $\theta_0$ and $\theta_2$ depends on $b$, and $\theta_4$ and $\theta_5$ depend on neither. However, $b$ can only take values between $0$ and $1$. This motivates the idea that the gradient may be in practice way steeper in the $\theta_1$ and $\theta_3$ directions than the other ones.
 
 Therefore, instead of using $n$ directly, we implement the scaled variable
 
@@ -289,7 +287,7 @@ $$
 n' = \frac{n-5}{200}
 $$
 
-which can vary between $0$ and $1$. Everything then follows by simply replacing $n$ by $n'$ in @sec-linear_policy. The new deterministic policy is 
+which can now vary  between $0$ and $1$. Everything then follows by simply replacing $n$ by $n'$ in @sec-linear_policy. The new deterministic policy is 
 
 $$
 \begin{pmatrix}
@@ -313,9 +311,8 @@ $${#eq-policy2_deterministic_part}
 
 an expression of the gradient is unchanged, with the exception of replacing $n$ by $n'$ everywhere. 
 
-With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to $\alpha = 2\times 10^{-4}$ without divergence. Compared to the first experiment, the evolution of the policy parameters is much higher! The average episode reward is also much better, as seen in @fig-experimentreward.
+With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to $\alpha = 2\times 10^{-4}$ without divergence. Compared to the first experiment, the evolution of the policy parameters is much higher(see @fig-variable_theta)! The average episode reward is also much better, as seen in @fig-experimentreward.
 
-While the average reward converges. The same cannot be said for the $\theta$ parameters(see @fig-variable_theta). In particular, $\theta_2$ seem to not converge. Running the program for more episode did not resolve this issue.
 
 ```{python}
 #| echo: false
@@ -327,15 +324,15 @@ exp2_file = 'experiment_data/exp2/log.csv'
 exp_initial_param1_file = 'experiment_data/exp_initial_param1/log.csv'
 exp_initial_param2_file = 'experiment_data/exp_initial_param2/log.csv'
 
-
+#flksjdfl
 df_exp2 = pl.read_csv(exp2_file)
 df_exp_p1 = pl.read_csv(exp_initial_param1_file)
 df_exp_p2 = pl.read_csv(exp_initial_param2_file)
 
 
 initial_theta_exp2 = '[0,0,0,0,0.3,2]'
-initial_theta_p1 = '[0.5,0.5,0.5,0.5,0.5,0.5]'
-initial_theta_p2 = '[0,0,0,0,0,0]'
+initial_theta_p2 = '[0.5,0.5,0.5,0.5,0.5,0.5]'
+initial_theta_p1 = '[0,0,0,0,0,0]'
 
 ## Add the experiment number
 df_exp2 = df_exp2.with_columns(pl.lit(initial_theta_exp2).alias('Initial theta'))
@@ -350,16 +347,16 @@ df_exp_tidy = df_exp.melt(
     id_vars=['ep_number','avg_ep_reward','Initial theta'],
     value_vars=['theta_0', 'theta_1', 'theta_2', 'theta_3', 'theta_4', 'theta_5']
     ).with_columns(
-        (pl.col('ep_number')/1000).alias('episode_no_1000')
+        (pl.col('ep_number')/10000).alias('episode_no_10000')
     )
 
 
-p1 = (ggplot(df_exp_tidy, aes(x = 'episode_no_1000', y = 'value', colour = 'Initial theta'))
+p1 = (ggplot(df_exp_tidy, aes(x = 'episode_no_10000', y = 'value', colour = 'Initial theta'))
 + geom_line()
 + facet_wrap('~variable', scales='free_y')
 + theme_seaborn()
 + theme(panel_spacing_x= 0.7)
-+ xlab('Episode no. / 1000')
++ xlab('Episode no. / 10000')
 + ylab('Theta')
 )
 
@@ -370,11 +367,11 @@ fig.show()
 ```{python}
 #| echo: false
 #| warning: false
-#| fig-cap: Evolution of the rolling average($k=200$) of the average episode reward for different initial parameters. 
+#| fig-cap: Evolution of the rolling average($k=1000$) of the average episode reward for different initial parameters. 
 #| label: fig-reward_initial_theta
 
 #Don't use the tidy data 
-df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','Initial theta').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=200).alias('rolling reward'))
+df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','Initial theta').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=1000).alias('rolling reward'))
 
 p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = 'Initial theta'))
 + geom_line()
@@ -392,11 +389,11 @@ fig.show()
 
 ## Impact of initial condition.
 
-Gradient descent algorithms use the local information about an objective function $J(\theta)$ to compute the update $\theta \rightarrow \theta + \alpha \nabla J(\theta)$. This local behavior also means that any convergence of gradient descent is to a local minimum, but we can't be certain that this mimimum is a global mimimum.
+Gradient descent algorithms use the local information about an objective function $J(\theta)$ to compute the update $\theta \rightarrow \theta - \alpha \nabla J(\theta)$. This local behavior also means that any convergence of gradient descent is to a local minimum, and we can't be certain that this mimimum is a global mimimum.
 
- Therefore, it is interesting to test whether the algorithm converges to the same values regardless of initial conditions. The third experiment is then to run the algorithm with the same parameters as before, but with varied initial conditions for the $\theta$ vector, and to visualize the results, both in the average rewards and the evolution of $\theta$ parameters over 100000 episodes. 
+ Therefore, it is interesting to test whether the algorithm converges to the same values regardless of initial conditions. The third experiment is then to run the algorithm with the same parameters as before, but with varied initial conditions for the $\theta$ vector, and to visualize the results, both in the average rewards and the evolution of $\theta$ parameters over 200000 episodes. 
 
- The evolution of the $\theta$ parameters is in @fig-variable_theta, and the rolling average of the average episode reward is plotted in @fig-reward_initial_theta for different initial value for $\theta$. It turns out that while convergence in reward is to the same values, the convergence of the $\theta$ parameters is more difficult to observe.  
+ The evolution of the $\theta$ parameters is in @fig-variable_theta, and the rolling average of the average episode reward is plotted in @fig-reward_initial_theta for different initial value for $\theta$. It turns out that while convergence in reward is to the same values, the $\theta_3$ parameter does not seem to converge to the same value. Furthermore, even with such a large amount of episodes, it is not clear if the other parameters converged. 
 
 
 
@@ -407,13 +404,13 @@ Gradient descent algorithms use the local information about an objective functio
 
 The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how exactly the model is performing once we have some found some optimal parameters $\theta^*$. 
 
-In particular, while the policy function is stochastic during training, the actual policy we choose can be deterministic. So, at the risk of adding some bias, we simply remove the noise $\sigma$ in the policy and chose to use the  deterministic policy $\alpha = \mu_\alpha$, $\Delta t = \mu_{\Delta t}$, as in @eq-policy_deterministic_part, and we note this policy $\pi_d(a|s,\theta^*)$. For the value of the parameters, we use their last values in the second experiment, which is
+In particular, while the policy function is stochastic during training, the actual policy we choose can be deterministic. So, at the risk of adding some bias, we simply remove the noise $\sigma$ in the policy and chose to use the  deterministic policy $\alpha = \mu_\alpha$, $\Delta t = \mu_{\Delta t}$, as in @eq-policy_deterministic_part, and we note this policy $\pi_d(a|s,\theta^*)$. For the value of the parameters, we use their last values in the second experiment, which is(with some rounding off)
 
 $$
-\theta^* = [4.02 \times 10^{-4},1.09\times 10^{-2},-6.36\times 10^{-2},-0.335 ,0.238,1.11]
+\theta^* = [-3.606 \times 10^{-3},4.476\times 10^{-3},-3.598\times 10^{-4},-0.3542 ,0.2435,1.1305]
 $$
 
-Then, we compute the value of $\rho_{10}$, for this policy and for different values of $n$ and $b$, the results are as follow @fig-learned_policy. While we have convergence at any point, the convergence is slow, and the maximum value for $\rho_{10}$ is $0.99917$. Referring back to REFFFF, this slow convergence is also partly an issue with the method, like we've seen in the grid search.
+Then, we compute the value of $\rho_{10}$, for this policy and for different values of $n$ and $b$, the results are as below in @fig-learned_policy. While we have convergence at any point, the convergence is slow, and the maximum value for $\rho_{10}$ is $0.99917$. Referring back to the grid search experiment(see @fig-res_ratio_comparison), this slow convergence is also partly an issue with the solver itself.
 
 Since we trained the policy on $\rho_{10}$, it may be a good idea to check if the convergence still holds when we compute more iterations of the solver. The result are in @fig-learned_policy. There are some points where the solver diverges, which is a problem in particular because the point where it diverges are for small values of $b$, which is often the case physically. 
 
@@ -437,7 +434,7 @@ def res_ratio(res_norm_list):
 problem = TestProblem()
 
 ### Setting the policy
-problem.policy.theta = np.array([4.02e-4,1.09e-2,-6.36e-2,-3.35e-01 ,0.238,1.11])
+problem.policy.theta = np.array([-3.60642577e-03,4.47643004e-03,-3.59883026e-04,-3.54240053e-01,2.43498188e-01,1.13051680e+00])
 problem.policy.version = 2
 l = 50
 n_grid = np.arange(5,200,1)
@@ -531,7 +528,7 @@ plot1.save(filename='images/learned_policy_10.pdf')
 
 ::: {#fig-learned_policy layout-nrow=2}
 
-![$\rho_{10}$. Maximum residual ratio: 0.99916.](images/learned_policy_10.pdf){#fig-learned_policy_a}
+![$\rho_{10}$. Maximum residual ratio: 0.99922.](images/learned_policy_10.pdf){#fig-learned_policy_a}
 
 ![$\rho_{100}$. Note the divergence in black, for low values of $b$.](images/learned_policy_100.pdf){#fig-learned_policy_b height=200}
 

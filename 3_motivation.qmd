@@ -147,7 +147,7 @@ $$
 |z(t)_i| = |e^{\lambda_i t}|\left[ P^{-1}(y_0-y^*)\right]_i
 $$
 
-Clearly, the only time dependent term is  $|e^{\lambda_i t}| = e^{a_it}$, with $a_i$ being the real part of $\lambda_i$. Clearly $z(t)_i \to 0$ as $t \to +\infty$ if and only if $a_i<0$.
+Clearly, the only time dependent term is  $|e^{\lambda_i t}| = e^{a_it}$, with $a_i$ being the real part of $\lambda_i$, and $z(t)_i \to 0$ as $t \to +\infty$ if and only if $a_i<0$.
 
 If this holds for any $i = 1, \dots , n$, then $z(t) \to 0$ as $t\to +\infty$. This proves the sufficient condition.
 

@@ -8,18 +8,18 @@ Now that we have access to the main definitions used in RL, we can study the pro
 
 As a reminder, we have a test problem with the following problem parameters:
 
-- a parameter $b \in [0,1]$ in the steady-state convection diffusion equation, and
+- A parameter $b \in [0,1]$ in the steady-state convection diffusion equation, and
 
-- a discretization parameter $n\in\mathbb{N}$ defining the number of points in the linear grid used to solve numerically the equation.
+- A discretization parameter $n\in\mathbb{N}$ defining the number of points in the linear grid used to solve numerically the equation.
 
-We end up with a linear equation to solve for, which can be solver using the method highlighted before. We wish to find the solver parameters $\Delta t$ and $\alpha$ that will minimize the residual @eq-relative_residual as fast as possible. We are interested in minimizing the residual ratio after 10 iteration of the Runge-Kutta solver $\rho_{10}$. This is not ideal as we have seen that optimal parameters for $\rho_{10}$ can lead to divergence of the solver, but this reduces computation time.
+We end up with a linear equation to solve for, which can be solver using the method highlighted before. We wish to find the solver parameters $\Delta t$ and $\alpha$ that will minimize the residual @eq-relative_residual as fast as possible. We are interested in minimizing the residual ratio after 10 iteration of the Runge-Kutta solver $\rho_{10}$. This is not ideal as we have seen that optimal parameters for $\rho_{10}$ can lead to divergence of the solver, but this reduces computation time significantly.
 
- We define this ratio as $\rho_{b,n}(\Delta t, \alpha)$, a function parametrized by $b$ and $n$, with arguments $\Delta t$ and $\alpha$. We are faced with the following optimization problem:
+ We define this ratio as $\rho_{10}(\Delta t, \alpha)$, a function parametrized by $b$ and $n$, with arguments $\Delta t$ and $\alpha$. We are faced with the following optimization problem:
 
 
 For any $b$, $n$, find
 $$
-(\Delta t^*, \alpha^*) =  \arg \min_{\Delta t, \alpha} \rho_{b,n}(\Delta t, \alpha).
+(\Delta t^*, \alpha^*) =  \arg \min_{\Delta t, \alpha} \rho_{10}(\Delta t, \alpha).
 $$
 
 
@@ -68,7 +68,7 @@ Another approach is to use approximation function. A common approach is to appro
 
 :::{.remark}
 
-Approximation is usually done using neural networks, building on the universal approximation theorem(@HORNIK1989359). In our case, a linear approximation is used.
+Approximation is usually done using neural networks. In the case of this thesis, a linear approximation is used.
 
 :::
 

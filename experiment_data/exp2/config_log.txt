@@ -4,7 +4,8 @@ Learning Rate: 0.0002
 Exploration rate/Std_dev: 0.1
 Episode length: 20
 Initial theta: [0. ,0. ,0. ,0. ,0.3,2. ]
-Number of episodes: 100000
+Number of episodes: 200000
 b can vary between [0,1)
 n can vary between [5, 200]
 policy version: scaled
+DecayFalse

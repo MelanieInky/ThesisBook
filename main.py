@@ -6,35 +6,32 @@ from datetime import datetime
 import os
 from plotnine import *
 
-
 #########HYPERPARAMETERS
-
 gamma = 0
 exploration_rate = 0.1
 episode_length = 20
 learning_rate = 2e-4
-initial_theta = np.array([4.01921979e-04,1.09095758e-02,-6.36481677e-02,-3.34954724e-01,2.38298620e-01,1.11251588e+00])
-n_episodes = 50000
+initial_theta = np.array([0,0,0.,0.,0.,0.])
+n_episodes = 20000 #Number of episodes to train for
 min_n = 5
 max_n = 200
 min_b = 0
 max_b = 1
 policy_version = 'scaled'
-decay = True
-#Number of episodes to train for
-#############
+decay = False
 
+#############
 
 # Create new test problem
 problem = TestProblem(gamma=gamma,
-                      learning_rate=learning_rate,
-                      exploration_rate=exploration_rate,
-                      episode_length=episode_length,
-                      min_b= min_b,
-                      max_b = max_b,
-                      min_n = min_n,
-                      max_n = max_n,
-                      decay = decay)
+                    learning_rate=learning_rate,
+                    exploration_rate=exploration_rate,
+                    episode_length=episode_length,
+                    min_b= min_b,
+                    max_b = max_b,
+                    min_n = min_n,
+                    max_n = max_n,
+                    decay = decay)
 
 # And a set theta parameters to start with
 problem.policy.set_theta(theta=initial_theta)
