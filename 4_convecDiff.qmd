@@ -5,42 +5,44 @@ jupyter: python3
 
 # A Test Problem, the Convection Diffusion Equation
 
-As a test case, we consider the one dimensional, steady state convection-diffusion equation with fixed boundary condition
+As a test case, we consider the one dimensional, steady state convection-diffusion equation with fixed boundary conditions
 
 $$
-    u_x = bu_{xx} + 1 ,  \quad u(0) = u(1) = 0
+    u_x = bu_{xx} + 1 ,  \quad u(0) = u(1) = 0.
 $${#eq-convec_diff_steady}
 
-where $b$ is some physical parameter, proportional to the diffusion coefficient of the medium. Moreover, $u(x)$ is defined for $x$ on the interval $[0,1]$. This equation has an analytical solution that is given by
+Here $b$ is some physical parameter. Moreover, $u(x)$ is defined for $x$ on the interval $[0,1]$. This equation has an analytical solution that is given by
 
 $$
 u(x) = x - \frac{e^{-(1-x)/b} - e^{-1/b}}{1-e^{-1/b}}.
 $${#eq-convec_diff_th_solution}
 
 
-We are however interested in solving this numerically, with a finite difference approach. We partition the interval $[0,1]$ into $n+2$ equidistant points $x_i, i = 0, \dots n+1$. We note the distance between each points as $\Delta x = \frac{1}{n+1}$. The approximated value of $u$ at the point $x_i$ is noted $u^i$ and we have $u^0 = u(0) = 0$ and $u^{n+1} = u(1) = 0$. We use the notation $u^i = u(x_i)$. We approximate, for $i \geq 1$ the derivative 
+We are however interested in solving this numerically, with a finite difference approach. We partition the interval $[0,1]$ into $n+2$ equidistant points $x_i, i = 0, \dots n+1$. We note the distance between each points as $\Delta x = \frac{1}{n+1}$. The approximated value of $u$ at the point $x_i$ is noted $u^i$ and we have $u^0 = u(0) = 0$ and $u^{n+1} = u(1) = 0$. We approximate, for $i \geq 1$ the derivative 
 
 $$
-    u_x^i = \frac{u^i - u^{i-1}}{\Delta x}
+    u_x^i = \frac{u^i - u^{i-1}}{\Delta x},
 $$
 and the second order derivative is approximated by 
 $$
-    u^i_{xx} = \frac{u^{i+1} - 2u^i + u^{i-1}}{\Delta x ^2}
+    u^i_{xx} = \frac{u^{i+1} - 2u^i + u^{i-1}}{\Delta x ^2}.
 $$
 
 Note that the first derivative is approximated backward in space, which aligns with the convection being in the right direction. For $i = 1 , \dots , n$, we thus have the approximation 
 
 $$
-\frac{u^i - u^{i-1}}{\Delta x}  = b \frac{u^{i+1} - 2u^i + u^{i-1}}{\Delta x ^2} + 1
+\frac{u^i - u^{i-1}}{\Delta x}  = b \frac{u^{i+1} - 2u^i + u^{i-1}}{\Delta x ^2} + 1.
 $$
 
-This can be given in matrix format by letting $u = (u^1,\dots, u^{n})^T$
+\vspace{3cm}
+
+This can be given in a matrix-vector format by letting $u = (u^1,\dots, u^{n})^\intercal$:
 
 $$
-    Au = Bu + d
+    Au = Bu + d,
 $$
 
-where $d = (1,1,\dots , 1)^T$,
+where $d = (1,1,\dots , 1)^\intercal$,
 
 $$
 A = \frac{1}{\Delta x}\begin{pmatrix}
@@ -49,7 +51,7 @@ A = \frac{1}{\Delta x}\begin{pmatrix}
     & -1 & 1 &\\
     &&\ddots & \ddots &\\
     &&&-1& 1 
-\end{pmatrix}    
+\end{pmatrix}, 
 $$
 
 and 
@@ -64,7 +66,7 @@ B =  \frac{b}{\Delta x ^2}\begin{pmatrix}
 \end{pmatrix} .
 $$
 
-With $N = A-B$, the approximated solution of the convection diffusion equation is then the solution of 
+With $N = A-B$, the approximated solution of the equation is then the solution of 
 
 $$
 Nu = d,
@@ -144,7 +146,7 @@ plt.show()
 To solve this linear system, we use the method highlighted before. To make it easier for later, we chose to scale $N$ so that its diagonal elements are $1$. This allows us to have all eigenvalues in the circle centered around $1$ with radius $1$ independently of the parametrization. Setting $\eta = \frac{1}{\Delta x} + \frac{2b}{\Delta x^2}$, solving @eq-UnscaledSystem is equivalent to solving the system
 
 $$
-M u = e
+M u = e,
 $${#eq-test_problem_scaled_system}
 
 where with $M = \frac{N}{\eta}$, $e = \frac{d}{\eta}$. The eigenvalues of $N$ are also scaled by $\frac{1}{\eta}$, and therefore $-M$ is stable, assuming it is non singular. We are now ready to solve the system iteratively using an ODE solver. To do that, we introduce a (pseudo) time variable $t$ and we consider the ODE
@@ -155,7 +157,7 @@ $${#eq-test_problem_diff_eq}
 
 
 where $M$ and $e$ depends on both $n$ and $b$, which we will call the problem parameters.
-We can use @thm-steadyState with the non singularity assumption to guarantee that the ODE will converge to a steady state independently of the initial value we chose. In the next chapter, we will then chose a specific numerical method to solve this differential equation.
+We can use @thm-steadyState with the non singularity assumption to guarantee that  $u(t)$ will converge to a steady state independently of its chosen initial value. In the next chapter, we will then introduce the numerical method to solve this differential equation.
 
 
 :::{.remark}
@@ -171,7 +173,7 @@ We will assume that the quantity $u$, which can be for example a concentration o
 
 - $\vec{v}$, which is the velocity of the medium the quantity is in, in $\text{m.s}^{-1}$. (the advection/convection). 
 - $D$ is the diffusion coefficient, in $\text{m}^2.\text{s}^{-1}$. 
-- $R$ is governing whether the quantity is created, when $R>0$ or destructed when $R<0$. The unit is $\rho.\text{s}^{-1}$.
+- $R$ is governing whether the quantity is created when $R>0$, or destructed when $R<0$. The unit is $\rho.\text{s}^{-1}$.
 
 We can now simplify the equation by considering it in a single dimension $x$
 
@@ -182,11 +184,11 @@ $$
 This further simplifies to $u_t + vu_x - Du_{xx} = R$.
 
 
-Then, in steady state, $u_t = 0$ so we have
+Then, in steady state, $u_t = 0$ so we get
 
 $$
-u_x = \frac{D}{v}u_{xx} + \frac{R}{v}
+u_x = \frac{D}{v}u_{xx} + \frac{R}{v},
 $$
 
-and we recognize @eq-convec_diff_steady, with $b = \frac{D}{v}$, and $1 = \frac{R}{v}$. This also means that we lose two parameters in the studied test problem for simplification purposes. Nevertheless, this can be used to give some degree of intuition behind @fig-th_vs_dis. When the diffusion is high compared to the convection, the quantity is more centered, but on the other hand, when the convection is high compared to the diffusion, the quantity $u$ is "flushed" to the right. 
+and we recognize @eq-convec_diff_steady, with $b = \frac{D}{v}$, and $1 = \frac{R}{v}$. This also means that we "lose" two parameters in the studied test problem for simplification purposes. Nevertheless, this can be used to give some degree of intuition behind @fig-th_vs_dis. When the diffusion is high compared to the convection, the quantity is more centered, but on the other hand, when the convection speed is high compared to the diffusion, the quantity $u$ is "flushed" to the right (assuming $v>0$). 
 :::

@@ -22,16 +22,16 @@ jupyter: python3
 
 
 
-Let $A$ be non singular square matrix of dimension $n\geq 1$ and let $b\in\mathbb{R}^n$. We consider the linear system $Ay = b$, where $y \in \mathbb{R}^n$. The system has the unique analytical solution $y^* = A^{-1}b$. As directly inverting the matrix is a terrible idea, a fundamental problem in numerical analysis is to find numerical methods to solve this. This can be done with the use of direct methods or iterative methods. In this thesis, we consider an iterative method. Consider now the initial value problem(IVP) 
+Let $A$ be non singular square matrix of dimension $n\geq 1$ and let $b\in\mathbb{R}^n$. We consider the linear system $Ay = b$, where $y \in \mathbb{R}^n$. The system has the unique analytical solution $y^* = A^{-1}b$. As directly inverting the matrix is a terrible idea, a fundamental problem in numerical analysis is to find numerical methods to solve this. This can be done with the use of direct methods or iterative methods. In this thesis, we consider an iterative method. Consider now the initial value problem(IVP):
 
 $$
-y'(t) = Ay(t)- b, \; \;  y(0) = y_0
+y'(t) = Ay(t)- b, \; \;  y(0) = y_0,
 $$
 
 where $y_0\in \mathbb{R}^n$ and $t\in \mathbb{R}$. Multiplying the equation by $e^{-At}$, where $e^{-At}$ is the usual matrix exponential, and rearranging the terms yields 
 
 $$
-e^{-At}y'(t) - Ae^{-At}y(t) = e^{-At}b
+e^{-At}y'(t) - Ae^{-At}y(t) = e^{-At}b.
 $$
 
 We recognize on the left hand side the derivative of the product $e^{-At}y(t)$, and thus, by the fundamental theorem of calculus,
@@ -44,30 +44,30 @@ Multiplying by $I = A^{-1}A$ inside the integral in the LHS, we get
 
 
 $$
-e^{-At}y(t) - y(0) = A^{-1} \int_0^t -Ae^{-Au}b \; du.
+e^{-At}y(t) - y(0) = A^{-1} \int_0^t -Ae^{-Au}b \; du,
 $$
 
 which can be integrated to get
 
 $$
-e^{-At}y(t) - y_0 = A^{-1}\left[e^{-At} - b\right]
+e^{-At}y(t) - y_0 = A^{-1}\left[e^{-At} - b\right].
 $$
 
 
-Multiplying each side by $e^{At}$ on the left, and rearranging the terms we get an expression for $y(t)$,
+Multiplying each side by $e^{At}$ on the left, and rearranging the terms we get an expression for $y(t)$:
 
 $$
 y(t) = e^{At}(y_0 - A^{-1}b) + A^{-1}b.
-$$
+$${#eq-unique_solution_theoretical}
 
-Here, we also used the fact that $e^{At}A^{-1} = A^{-1}e^{At}$. This gives an expression for the solution of the IVP.Since each of those step can be taken backward , the solution we get is unique. We have thus proved 
+Here, we also used the fact that $e^{At}A^{-1} = A^{-1}e^{At}$. This gives an expression for the solution of the IVP.Since each of those step can be taken backward , the solution we get is unique. We have thus proved:
 
 ::: {#thm-ODEtheoretical}
 
 Let $A$ be a non singular, square matrix of dimension $n\geq 1$, $b\in\mathbb{R}^n$ a vector, and consider the initial value problem 
 
 $$
-y'(t) = Ay(t) - b, \; y(0) = y_0
+y'(t) = Ay(t) - b, \; y(0) = y_0,
 $$ {#eq-IVPth}
 
 where $t \rightarrow y(t)$ is a function from $\mathbb{R}$ to $\mathbb{R}^n$. Then the problem has a unique solution in the form of
@@ -81,7 +81,7 @@ where $y^* = A^{-1}b$, and $e^{At}$ is defined using the usual matrix exponentia
 :::
 
 
-Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarily distinct) eigenvalues of $A$. We write $\lambda_i = x_i + iy_i$, where $x_i,y_i \in \mathbb{R}$, and are respectively the real part and the imaginary parts of the $i^{th}$eigenvalue. Then, the following results holds:
+Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarily distinct) eigenvalues of $A$. We write $\lambda_i = x_i + iy_i$, where $x_i,y_i \in \mathbb{R}$ and are respectively the real part and the imaginary parts of the $i^{th}$ eigenvalue. Then, the following results holds:
 
 
 
@@ -96,9 +96,7 @@ We call such matrices *stable* in the rest of this thesis.
 
 
 :::{.proof}
-(In the diagonalizable case)
-
-We assume that $A\in\mathbb{R}^{n\times n}$ is diagonalizable. Let $\lambda_1,\dots,\lambda_n$ be the eigenvalues of $A$. Then we can write $A = PD P^{-1}$ where $D$ is the diagonal matrix with the eigenvalues of $A$, and $P$ is the associated eigenvectors matrix.  
+We restrict ourselves to the diagonalizable case. Assume that $A\in\mathbb{R}^{n\times n}$ is diagonalizable and let $\lambda_1,\dots,\lambda_n$ be the eigenvalues of $A$. Then we can write $A = PD P^{-1}$ where $D$ is the diagonal matrix with the eigenvalues of $A$, and $P$ is the associated eigenvectors matrix:
 
 $$
 D = \begin{pmatrix}   
@@ -106,7 +104,7 @@ D = \begin{pmatrix}
 &\lambda_2 & &  \\
 && \ddots & \\
 &&& \lambda_n 
-\end{pmatrix}
+\end{pmatrix}.
 $$
 
 Then $e^{At} = \sum_{i=0}^\infty \frac{(PD P^{-1}t)^i}{i!} = \sum_{i=0}^\infty P \frac{(D t)^i}{i!}P^{-1}$. The $P$ can be moved outside of the sum to get 
@@ -131,7 +129,7 @@ Let $z(t) = P^{-1}(y(t)-y^*)$, where $y(t)$ is the unique solution to @eq-IVPth 
 Since $P$ is non singular, we can use a continuity argument to state that $y(t) \to y^*$ if and only if $z(t) \to 0$. We have
 
 $$
-z(t) = P^{-1} e^{At}(y_0-y^*)
+z(t) = P^{-1} e^{At}(y_0-y^*).
 $$
 
 We note that $P^{-1} e^{At} = e^{\Delta t} P^{-1}$, thus
@@ -144,7 +142,7 @@ $$
 Looking at the $i^{\text{th}}$ element $z(t)_i$, we have 
 
 $$
-|z(t)_i| = |e^{\lambda_i t}|\left[ P^{-1}(y_0-y^*)\right]_i
+|z(t)_i| = |e^{\lambda_i t}|\left[ P^{-1}(y_0-y^*)\right]_i.
 $$
 
 Clearly, the only time dependent term is  $|e^{\lambda_i t}| = e^{a_it}$, with $a_i$ being the real part of $\lambda_i$, and $z(t)_i \to 0$ as $t \to +\infty$ if and only if $a_i<0$.
@@ -161,10 +159,10 @@ A proof in the general case is available on [@BellmanStab, chap. 1].
 :::
 
 
-We now go back to the original problem of solving the linear system $Ay = b$. If all the eigenvalues of $A$ have a strictly negative real part, then, any numerical solver for the initial value problem $y'(t) = Ay(t) - b$ with $y(0) = y_0$ where $t$ is some pseudo-time variable also becomes an iterative solver for the linear system $Ay = b$, as $y(t) \to y^*$. 
+We now go back to the original problem of solving the linear system $Ay = b$. If all the eigenvalues of $A$ have a strictly negative real part, then, any numerical solver for the initial value problem $y'(t) = Ay(t) - b$ with $y(0) = y_0$, where $t$ is a pseudo-time variable also becomes an iterative solver for the linear system $Ay = b$, as $y(t) \to y^*$. 
 
 
 :::{.remark}
 
-The eigenvalues of $A$ are $\lambda_1, \dots , \lambda_n$. If all these eigenvalues have a strictly positive real part, then the eigenvalues of $-A$, which are $-\lambda_1, \dots , -\lambda_n$, have a strictly negative real part. Therefore, $-A$ is stable and to solve the linear problem $Ay = b$, we can simply consider the IVP $y' = (-A)y - (-b) = -Ay+b$ instead.
+The eigenvalues of $A$ are $\lambda_1, \dots , \lambda_n$. If all these eigenvalues have a strictly positive real part, then the eigenvalues of $-A$, which are $-\lambda_1, \dots , -\lambda_n$, have a strictly negative real part. Therefore, $-A$ is stable and to solve the linear problem $Ay = b$, we can simply consider the IVP $y' = (-A)y - (-b) = -Ay+b$ instead, with our best guess of $y^*$ as the initial value.
 :::

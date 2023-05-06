@@ -32,7 +32,9 @@ We are interested in using reinforcement learning to solve this problem. The las
  
 The state transition model is more difficult to find a direct translation for. For the purpose of this thesis, the next state is chosen at random after computing an action and a reward. This is not ideal.  
 
-There are still several challenges that need to be addressed.
+\vspace{1cm}
+
+There are still several challenges that need to be addressed:
 
 - State transition being random makes for a poor model to apply in reinforcement learning to. In a typical RL scenario, the discount rate is usually set close to 1 as the agent need to take into account the future states it will be in. Here, the next state is independent on the action taken, so it makes no sense to set the discount rate high. As a consequence, we set it low.
 - In our problem, the State-Action space is continuous. We previously assumed finite spaces.
@@ -42,24 +44,24 @@ The first challenge is inherent to the way we translated the problem. We answer 
 
 
 
-## Model based, model free
+## Model-based, model-free
 
-One problem we are faced with is the problem of the model. In the last section, we assume that both $p(s'|s,a)$ and $p(r|s,a)$ are known. Depending on the problem, this is not straightforward to define. Thankfully, the model can be empirically estimated via Monte-Carlo methods. 
+One problem we are faced with is the issue of the model. In the last section, we assume that both $p(s'|s,a)$ and $p(r|s,a)$ are known. Depending on the problem, this is not straightforward to define. Thankfully, the model can be empirically estimated via Monte-Carlo methods. 
 
-In particular, we often have to compute expectation of random variables. The most basic method is simply to sample the desired random variable and to use the empirical mean as an estimator of the desired expectation. Stochastic estimation is also used in numerous reinforcement learning algorithm. 
+In particular, we often have to compute the expectation of functions of random variables. The most basic method is simply to sample the desired random variable and to use the empirical mean as an estimator of the desired expectation.  
 
 
 ## Dealing with a large state-action space.
 
-In the last chapter, we made the assumption that the every space, be it state, action, or reward is finite. However, this is in practice not always the case, as some state may be continuously defined for example. Even if those spaces are discrete, the *curse of dimensionality* may not allow us to efficiently represent every state or action. 
+In the last chapter, we made the assumption that every space, be it state, action, or reward is finite. However, this is in practice not always the case, as some states may be continuously defined for example. 
 
 We take our problem as formulated before. The state is defined as the problem parameters, that is $b\in[0,1]$ and $n = 1 , 2, \dots$. Without any adjustment, the state space is of the form $[0,1] \times \mathbb{N}$, and is not finite. 
 
 Similarly, the policy is defined by choosing the values $(\alpha,\Delta t) \in [0,1]\times \mathbb{R}^+$, depending on the state. Once again, the action space is continuous. 
 
-One approach would be to discretize the entire state $\times$ action space, and then to apply classical dynamic programming algorithm to get some results. Then, after an optimal policy is found, do some form of interpolation for problem parameters outside of the discretized space. This approach has its own merit, as there is 3 dimensions that need to be discretized, and $n$ can be chosen within a finite range. The main issue is that since there are no relationship between the states. In that case, we can prove that there exists an optimal policy. However, the poor relationship between successive states means that this would be effectively brute forcing the problem.
+One approach would be to discretize the entire state $\times$ action space, and then to apply classical dynamic programming algorithms to get some results. Then, after an optimal policy is found, do some form of interpolation for problem parameters outside of the discretized space. This approach has its own merit, as there is 3 dimensions that need to be discretized, and $n$ can be chosen within a finite range. The main issue is that since there are no relationship between the states.
 
-Another approach is to use approximation function. A common approach is to approximate the value function $v(s)$ by some parametrization $v(s) \approx \hat{v}(s,\omega)$ where $\omega \in \mathbb{R}^d$ are $d$ parameters. Such methods are called *value based*. The method we use in this thesis, on the other hand, use an approximation of the policy function defined as $\pi(a|s,\theta)$, where $\theta\in \mathbb{R}^d$ is a parameter vector is dimension $d$. Such method are called *policy based*. The reason to chose from this class of algorithm is two-fold.
+Another approach is to use an approximation function. One way to do that is approximate the value function $v(s)$ by some parametrization $v(s) \approx \hat{v}(s,\omega)$ where $\omega \in \mathbb{R}^d$ are $d$ parameters. Such methods are called *value based*. The method we use in this thesis, on the other hand, use an approximation of the policy function defined as $\pi(a|s,\theta)$, where $\theta\in \mathbb{R}^d$ is a parameter vector is dimension $d$. Such methods are called *policy based*. The reason to chose from this class of algorithm is two-fold.
 
 - When thinking about the test problem, one approach which appears natural is to chose the solver parameters as a linear function of the problem parameters. A policy based approach allow us to do exactly this. 
 
@@ -81,25 +83,25 @@ Approximation is usually done using neural networks. In the case of this thesis,
 
 We apply a policy gradient method to our problem. Let $\theta \in \mathbb{R}^d$ be a parameter vector and $\pi(a|s,\theta) = p(A_t = a | S_t = s , \theta)$ an approximate policy that is derivable w.r.t $\theta$. We want to define an objective function $J(\theta)$ that we want to maximize in order to find the best value of $\theta$.
 
- To this end, we make the following assumptions, which are specific to our problem. For simplicity, we restrict ourselves to the discrete case. 
+ To this end, we make the following assumption, which are specific to our problem. For simplicity, we also restrict ourselves to the finite case. 
 
 - The states are uniformly distributed. That is, for any $s\in\mathcal{S}, p(S_t = s) = 1 / |\mathcal{S}|$, where $|\mathcal{S}|$ is the number of element of $S$. This correspond to the idea of taking a new state at random in our problem. 
 
 We define the objective function
 
 $$
-J(\theta) = \overline{v_\pi(S)} = \frac{1}{|\mathcal{S}|}\sum_{s\in S}v_\pi(s)
+J(\theta) = \overline{v_\pi(S)} = \frac{1}{|\mathcal{S}|}\sum_{s\in S}v_\pi(s).
 $$
 
-that is, $J(\theta)$ is the average, (non weighted, as per assumption) state value.
+That is, $J(\theta)$ is the average, (non weighted, as per assumption) state value.
 
-We want to maximize this objective function. To this end, we use a gradient ascend algorithm of the form
+We want to maximize this objective function by changing the policy parameter $\theta$. To this end, we use a gradient ascend algorithm of the form
 
 $$
 \theta_{t+1} = \theta_t + \alpha \nabla_\theta J(\theta).
 $${#eq-gradient_ascent_algorithm}
 
-We are faced with the immediate issue that the algorithm requires knowing the gradient of the objective function.  
+We are faced with the immediate issue that the algorithm requires knowing the gradient of the objective function.
 
 ### Policy gradient theorem
 
@@ -111,18 +113,18 @@ $$
 v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a|s)q_\pi(a,s).
 $$
 
-Taking the gradient w.r.t $\theta$ to get
+We take the gradient of $v_\pi(s)$ w.r.t $\theta$ to get
 $$
-\nabla v_\pi(s) = \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s) + \pi(a|s)\nabla q_\pi(a,s)
+\nabla v_\pi(s) = \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s) + \pi(a|s)\nabla q_\pi(a,s).
+$${#eq-gradient_wrt_theta}
+
+We now turn our attention to the $\nabla q_\pi(a,s)$ term above. Using the definition of the action value(@def-action_value) and the definition  of return $G_t$ (@def-discount), we get 
+
+$$
+\nabla q_\pi(a,s) = \nabla \left[ \sum_{r}p(r|s,a)r + \gamma\sum_{s'}p(s'|a,s)v_\pi(s')\right].
 $$
 
-Using the definition of the action value and the return $G_t$ we get 
-
-$$
-\nabla q_\pi(a,s) = \nabla \left[ \sum_{r}p(r|s,a)r + \gamma\sum_{s'}p(s'|a,s)v_\pi(s')\right]
-$$
-
-It is apparent that the first part of the RHS is not dependent on $\theta$, therefore, and neither is the state transition probability, the gradient becomes
+It is apparent that the first part of the RHS is not dependent on the policy, and therefore $\theta$, and neither is the state transition probability $p(s'|a,s)$. The gradient is thus
 
 $$
 \nabla q_\pi(a,s) =  \gamma\sum_{s'}p(s'|a,s)\nabla v_\pi(s').
@@ -134,9 +136,10 @@ $$
 \nabla q_\pi(a,s) =  \gamma\sum_{s'}\frac{1}{|\mathcal{S}|}\nabla v_\pi(s').
 $$
 
-We recognize the expression for the gradient of the metric to get $\nabla q_\pi(a,s) = \gamma \nabla J(\theta)$.
+We recognize the expression of the metric's gradient $\nabla J(\theta)$ to get $\nabla q_\pi(a,s) = \gamma \nabla J(\theta)$. We insert this in @eq-gradient_wrt_theta and we get
+
 $$
-\nabla v_\pi(s) = \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s) + \gamma\pi(a|s)\nabla J(\theta)
+\nabla v_\pi(s) = \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s) + \gamma\pi(a|s)\nabla J(\theta).
 $$
 
 Since the policy $\pi(a|s)$ is a probability over the action space, it sums to $1$ and we can get the second part of the RHS out of the sum
@@ -149,15 +152,15 @@ Using $\nabla J(\theta) = \frac{1}{|\mathcal{S}|}\sum_{s\in\mathcal{S}}\nabla v_
 
 
 \begin{align}
-\nabla J(\theta) &= \frac{1}{|\mathcal{S}|}\sum_{s\in\mathcal{S}}\left[\gamma J(\theta) + \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s)\right] \\
-&= \gamma \nabla J(\theta) + \sum_{s\in\mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s)
+\nabla J(\theta) &= \frac{1}{|\mathcal{S}|}\sum_{s\in\mathcal{S}}\left[\gamma J(\theta) + \sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s)\right],\\
+&= \gamma \nabla J(\theta) + \sum_{s\in\mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|s)q_\pi(a,s).
 \end{align}
 
 
-And after a small rearrangement of the terms
+And after a small rearrangement of the terms,
 
 $$
-\nabla J(\theta) = \frac{1}{1-\gamma}\sum_{s\in \mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|S)q_\pi(a,S)
+\nabla J(\theta) = \frac{1}{1-\gamma}\sum_{s\in \mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|S)q_\pi(a,S).
 $$
 
 This is an expression of the policy gradient theorem. The reason to put the fraction $1/|\mathcal{S}|$ inside the first sum is to get a parallel with the more general expression, where in general, we have a weighted sum with different weight depending on the state. Depending on the metric used and the environment, this can be the stationary distribution of the states for a given policy.
@@ -173,7 +176,7 @@ $$
 \nabla J(\theta) \propto \sum_s \mu(s) \sum_a q_\pi(a,s)\nabla \pi(a|s)
 $$
 
-where $\sum_s\mu(s) = 1$ . The weights depends on how the problem is formulated. In the case of continuing problems, that is, problems where there exist no end states, $\mu(s)$ can be, for example the probability of being in state $s$, following the stationary distribution of the Markov process on policy $\pi$. 
+where $\sum_s\mu(s) = 1$ . The weights depends on how the problem is formulated. In the case of continuing problems, that is, problems where there exist no end states, $\mu(s)$ can be, for example the long term probability of being in state $s$.
 :::
 
 
@@ -191,13 +194,13 @@ The policy gradient theorem is powerful in the sense that we can derive the grad
 ### REINFORCE algorithm 
 
 
-Here, we introduce reinforce the classic REINFORCE algorithm @Williams1992. Even with the policy gradient theorem, we are still faced with the problem of estimating the action values $q_\pi$. But we remark that the formula in the policy gradient is an expectation. 
+Here, we introduce reinforce the classic REINFORCE algorithm @Williams1992. Even with the policy gradient theorem, we are still faced with the problem of estimating the action values $q_\pi$. But we remark that the formula in the policy gradient is an expectation:
 
 $$
-\nabla J(\theta) \propto E_{S_\pi}\left[\sum_a q_\pi(a,S)\nabla \pi(a|S)\right]
+\nabla J(\theta) \propto E_{S \sim S_\pi}\left[\sum_a q_\pi(a,S)\nabla \pi(a|S)\right],
 $$
-
-where $S_\pi$ is the stationary distribution of the state.  
+ 
+where $S_\pi$ is the random variable with probability mass function $\mu(s)$.
 By using the identity $\frac{\nabla f}{f} = \nabla \ln f$, we can also rewrite the inner term as
 
 $$
@@ -211,7 +214,7 @@ $$
 $$
 
 
-We also know from before that the action value is also an expectation of the return $G_t = E[q_\pi(S_t,A_t)]$. Therefore, 
+We also know from before that the action value is also an expectation of the return $G_t = E[q_\pi(S_t,A_t)]$. Thus, 
 
 
 $$
@@ -227,34 +230,34 @@ Since this is an expectation, we can estimate it by using samples. The $k$'th, w
 Then, the estimator for the RHS in @eq-policy_gradient_expectation is given by 
 
 $$
-\hat{E}_n = \frac{1}{n}\sum_{k=1}^n e_k
+\hat{E}_n = \frac{1}{n}\sum_{k=1}^n e_k,
 $$
 
-where $n$ is the amount of samples we gathered. Using the gradient ascent algorithm in @eq-gradient_ascent_algorithm, we can update the parameters $\theta$. 
+where $n$ is the amount of samples we gathered. Using the gradient ascent algorithm in @eq-gradient_ascent_algorithm, we can update the parameters $\theta$:
 
 $$
-\theta_{t+1} = \theta_t + \alpha\frac{1}{n}\sum_{k=1}^n e_k
+\theta_{t+1} = \theta_t + \alpha\frac{1}{n}\sum_{k=1}^n e_k.
 $$
 
-One of the problem of this approach is the low sample efficiency. Indeed, to compute the return of a specific state action pair, we have to generate a sufficiently long trajectory starting from that state. This mean that any information we get about the state visited along the trajectory is discarded. However, suppose we have an episode 
+One of the problem of this approach is the low sample efficiency. Indeed, to compute the return of a specific state action pair, we have to generate a sufficiently long trajectory starting from that state. This mean that any information we get about the state visited along the trajectory is discarded. However, suppose we have a trajectory 
 
 $$
-S_t,A_t \to S_{t+1}, A_{t+1} \to S_{t+2},A_{t+2} \dots 
+S_t,A_t \to S_{t+1}, A_{t+1} \to S_{t+2},A_{t+2} \dots .
 $$
 
-Then, we can estimate the return $G_t$, but we also have access to the trajectory 
+Then, we can estimate, via Monte Carlo estimation, the return $G_t$.Doing this, we also have access to the trajectory 
 
 $$
-S_{t+1}, A_{t+1} \to S_{t+2},A_{t+2} \dots
+S_{t+1}, A_{t+1} \to S_{t+2},A_{t+2} \dots,
 $$
 
-and thus we can also estimate the return $G_{t+1}$! Therefore, we can use a single episode to estimate multiple samples! Using this idea, we can generate an episode 
+and thus we can also estimate the return $G_{t+1}$! Therefore, we can use a single episode to estimate multiple samples! Using this idea, we can generate an episode of length $T+2$:
 
 $$
-S_0,A_0 \to S_1,A_1,R_1 \to S_2,A_2,R_2 \to \dots \to S_{T+1}, R_{T+1}
+S_0,A_0 \to S_1,A_1,R_1 \to S_2,A_2,R_2 \to \dots \to S_{T+1}, R_{T+1}.
 $$
 
-then, for any $t = 0,\dots ,T$, the estimated return can be defined as 
+For any $t = 0,\dots ,T$, the estimated return is then defined as 
 
 $$
 \hat{G}_t = \sum_{k=t}^T \gamma^{t-k}R_{k+1}.
@@ -266,18 +269,18 @@ We can now state the REINFORCE algorithm, in pseudo code format
 ---
 
 | **REINFORCE algorithm pseudocode**
-| **INPUT:** A parameter vector $\theta \in\mathbb{R}^d$, and a parametrized policy $\pi(a|s,\theta)$ with derivable gradient $\nabla_\theta \pi(a|s,\theta)$. Hyperpararameters 
+| **INPUT:** A parameter vector $\theta \in\mathbb{R}^d$, and a parametrized policy $\pi(a|s,\theta)$ with gradient $\nabla_\theta \pi(a|s,\theta)$. Hyperpararameters:
 | - Learning rate $\alpha$
 | - Discount rate $\gamma$
-| - Episode length $T+2$;  
+| - Episode length $T+2$
 | **OUTPUT:** The updated $\theta$ parameters ;  
 | 
 | **FOR** any number of episode:  
 |       Compute an episode, following $\pi(a|s,\theta)$, of length T+2 the form  $S_0,A_0 \to S_1,A_1,R_1 \to S_2,A_2,R_2 \to \dots \to S_{T+1}, R_{T+1}$;
-|       **FOR** t=0 ... T
-|           Compute the estimated return $G_t = \sum_{k=t}^T \gamma^{t-k}R_{k+1}$;  
+|       **FOR** t=0 ... T:
+|           Compute the estimated return $\hat{G_t} = \sum_{k=t}^T \gamma^{t-k}R_{k+1}$;  
 |           Compute the log gradient $\nabla \ln \pi(A_t|S_t,\theta)$;  
-|           Update $\theta \leftarrow \theta + \alpha G_t \nabla \ln \pi(A_t|S_t,\theta)$;
+|           Update $\theta \leftarrow \theta + \alpha \hat{G_t} \nabla \ln \pi(A_t|S_t,\theta)$;
 |
 
 ---
@@ -286,13 +289,13 @@ We can now state the REINFORCE algorithm, in pseudo code format
 :::{.remark}
 Note that we compute the log-policy gradient and update it directly after estimating the return $G_t$. This mean that except for the first estimated return, we estimate the return using an outdated policy, introducing bias unless we generate new episodes often. 
 
-On the other hand, a low episode length also introduces bias in estimated returns, especially with discount rate $\gamma \approx 1$. 
+On the other hand, a low episode length also introduces bias in the estimated returns, especially with discount rates $\gamma \approx 1$. 
 
 A balance must therefore be found for episode length in continuing cases, which is the case in this thesis. 
 :::
 
 :::{.remark}
-The REINFORCE update can be interpreted as updating the parameters to make it more likely to take an action if the return is good, and the opposite otherwise. Furthermore, by looking at the term $\nabla \ln \pi = \frac{\nabla \pi}{\pi}$, we can see that if the probability of taking the action is rare, then the gradient becomes bigger! That way, this gradient act as a balance between exploration and exploitation. Otherwise we would update the parameters as much for a rare action than a common one, and the common action is taken more often which lead to the common action having much more sway in the process.
+The REINFORCE update can be interpreted as updating the parameters to make it more likely to take an action if the estimated sample return is good, and the opposite otherwise. Furthermore, by looking at the term $\nabla \ln \pi = \frac{\nabla \pi}{\pi}$, we can see that if the probability of taking the action is rare, then the gradient becomes bigger! That way, this gradient act as a balance between exploration and exploitation. Otherwise we would update the parameters as much for a rare action than a common one, and the common action is taken more often which lead to the common action having much more sway in the process.
 
 :::
 

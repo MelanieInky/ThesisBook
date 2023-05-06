@@ -1,4 +1,4 @@
-# Summary and discussion
+# Summary and Discussion
 
 In this thesis, we started  with the idea of using numerical differential equations solver as an iterative solver to a linear system. More specifically, we turned our attention to a specific RK  method, which has two parameters to chose from, which we called the solver parameters. We also chose a specific type of linear equation which arises from the discretization of the steady state, one dimensional convection-diffusion equation. This linear equation depends on two parameters, which we called the problem parameters. The goal was then to see if we could optimize for the solver parameters, as a function of the problem parameters, to maximize the convergence rate of the method. To do that, we used reinforcement learning. In particular, we applied the classical REINFORCE algorithm to our problem. Using the implementation in this thesis, we observed that the implemented solution works, with limited results. In particular, the optimized parameters that we learnt do not always guarantee long term convergence. There are some avenues to improve these results, in particular: 
 

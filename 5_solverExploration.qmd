@@ -7,7 +7,7 @@ jupyter: python3
 
 ## A small introduction to explicit Runge-Kutta methods
 
-This section aims to introduce explicit Runge-Kutta methods[@NumDiffEqBook, chap. 3], which we use in this thesis. We consider solving a generic initial value problem of the form
+This section aims to introduce explicit Runge-Kutta methods[@NumDiffEqBook, chap. 3], which we use in this paper. We consider solving a generic initial value problem of the form
 
 $$
 y'(t) = f(t,y(t)), \quad y(0) = y_0.
@@ -16,33 +16,33 @@ $$
 If we know, for an instant $t_n$ the value for $y(t_n)$, we can compute the value of $y$ at instant $t_{n+1} = t_n +\Delta t$ by integrating
 
 $$
-y(t_{n+1}) = y(t_n) + \int_{t_n}^{t_{n+1}}f(u,y(u))\; du
+y(t_{n+1}) = y(t_n) + \int_{t_n}^{t_{n+1}}f(u,y(u))\; du,
 $$
 
 and with the change of variable $u = t_n + \Delta t\tau$, we have
 
 $$
-y(t_{n+1}) = y(t_n) + \Delta t\int_0^1f(t_n+\Delta t\tau,y(t_n+\Delta t\tau)) \; d\tau
+y(t_{n+1}) = y(t_n) + \Delta t\int_0^1f(t_n+\Delta t\tau,y(t_n+\Delta t\tau)) \; d\tau.
 $$
 The problem is finding a suitable way to compute the integral above. An elementary approach is to use the current value of $f(t_n,y(t_n))$ and to treat $f$ as constant, thus defining the sequence
 
 $$
-y_{n+1} = y_n + \Delta tf(t_n,y_n)
+y_{n+1} = y_n + \Delta tf(t_n,y_n),
 $$
 
-where $y_{n} \approx y(t_{n})$, $y_0 = y(0)$. This is the explicit Euler's method. We now want to exploit quadrature formulas for integration. Let $c_j \in [0,1], j=1,2,\nu$ be the nodes in the quadrature formula, with their associated weight $b_j, j=1,2,\dots, \nu$. A quadrature formula for the integral is then of the form
+where $y_{n} \approx y(t_{n})$, $y_0 = y(0)$. This is the explicit Euler's method. We now want to exploit quadrature formulas for numerical integration. Let $c_j \in [0,1], j=1,2,\nu$ be the nodes in the quadrature formula, with their associated weight $b_j, j=1,2,\dots, \nu$. A quadrature formula for the integral is then of the form
 
 $$
-\int_0^1 f(t_n+\Delta t \tau,y(t_n+\Delta t\tau))\; d\tau = \sum_{j=1}^\nu b_j f(t_n + \Delta t c_j,y(t_n+\Delta t c_j)).
+\int_0^1 f(t_n+\Delta t \tau,y(t_n+\Delta t\tau))\; d\tau \approx \sum_{j=1}^\nu b_j f(t_n + \Delta t c_j,y(t_n+\Delta t c_j)).
 $$
 
-This is all well and good, except that we have to know the values $y(t_n+\Delta c_j)$, which we do not know. We can however, play pretend and compute an approximation of these values $\xi_j \approx y(t_n+\Delta t c_j), j=1,\dots, \nu$. The $\xi_j$ are called *stage values*. [@BirkenNotes]. The main idea is to put to use the knowledge $\xi_i$, to compute $\xi_j$, using a linear combinations of the term $f(t_n + \Delta t c_j, \xi_j)$. That is 
+This is all well and good, except that we have to know the values $y(t_n+\Delta c_j)$, which we do not possess. We can however, play pretend and compute an approximation of these values $\xi_j \approx y(t_n+\Delta t c_j), j=1,\dots, \nu$. The $\xi_j$ are called *stage values*. [@BirkenNotes]. The main idea to use the $\xi_i$'s  to compute $\xi_j$, using a linear combinations of the terms $f(t_n + \Delta t c_j, \xi_i)$. That is 
 
 $$
 \xi_i = y_n + \Delta t \sum_{j=1}^\nu a_{ij}f(t_n+\Delta t c_j, \xi_j),
 $$
 
-for $i = 1,\dots, \nu$, where the $a_{ij}$ are some well chosen values, which is not in scope of this thesis. To simplify notation, we note $A$ as the square array containing the $a_{ij}$ parameters, that is $A_{ij} = a_{ij}$, $c = (c_1,\dots,c_\nu)^\intercal$ the vector of nodes, and $b = (b_1,\dots, b_\nu)^\intercal$ the vector of weights. A RK methods is then written in the form of the following array, also called a Butcher tableau.  
+for $i = 1,\dots, \nu$, where the $a_{ij}$ are some well chosen values, which is not in scope of this thesis. To simplify notation, we note $A$ as the square array containing the $a_{ij}$ parameters, that is $A_{ij} = a_{ij}$, $c = (c_1,\dots,c_\nu)^\intercal$ the vector of nodes, and $b = (b_1,\dots, b_\nu)^\intercal$ the vector of weights. A RK method is then written in the form of the following array, also called a Butcher tableau: 
 
 $$
 \renewcommand\arraystretch{1.2}
@@ -50,12 +50,12 @@ $$
 {c|c}
 c & A\\
 \hline & b^\intercal
-\end{array}
+\end{array}.
 $$
 
 
 
-We remark that if, for for any $j\geq i$,  $a_{ij} \neq 0$, then we will need to know $\xi_j$ to compute $\xi_i$, which involves solving an equation, making the method *implicit*. We consider here *explicit* methods, where we can compute $\xi_{i+1}$ if we know $\xi_j, j = 1 , \dots , i-1$. Let $a_{11} = 0$ and $c_1 = 0$. An explicit RK method is then of the form 
+We remark that if, for for any $j\geq i$,  $a_{ij} \neq 0$, then we will need to know $\xi_j$ to compute $\xi_i$, which involves solving an equation, making the method *implicit*. We consider here *explicit* methods, where we can compute $\xi_{i+1}$ if we know $\xi_j, j = 1 , \dots , i-1$. Since we know $f(t_n,y_n)$, we $a_{11} = 0$ and $c_1 = 0$. An explicit RK method is then of the form 
 
 $$
 y_{n+1} = y_n + h\sum_{j=1}^\nu b_j f(t_n+\Delta t c_j,\xi_j),
@@ -65,11 +65,11 @@ where the stage values $\xi_j$ are computed sequentially as follow
 
 
 \begin{align*}
-\xi_1 &= y_n\\
-\xi_2 &= y_n + \Delta t a_{2,1}f(t_n,\xi_1)\\
-\xi_3 &= y_n + \Delta t a_{3,1}f(t_n,\xi_1) +  \Delta t a_{3,2}f(t_n+\Delta t c_2,\xi_2)\\
+\xi_1 &= y_n,\\
+\xi_2 &= y_n + \Delta t a_{2,1}f(t_n,\xi_1),\\
+\xi_3 &= y_n + \Delta t a_{3,1}f(t_n,\xi_1) +  \Delta t a_{3,2}f(t_n+\Delta t c_2,\xi_2),\\
 \vdots\\
-\xi_\nu &= y_n + \Delta t \sum_{j=1}^{\nu-1} a_{\nu,j}f(t_n + \Delta t c_j,\xi_j)
+\xi_\nu &= y_n + \Delta t \sum_{j=1}^{\nu-1} a_{\nu,j}f(t_n + \Delta t c_j,\xi_j).
 \end{align*}
 
 
@@ -77,7 +77,7 @@ where the stage values $\xi_j$ are computed sequentially as follow
 ## Application to the test problem
 
 
-We now have to solve the ODE $u'(t) = e - Mu(t)$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, and $n$ is the chosen number of subdivisions of $[0,1]$. Since we are only interested on the asymptotic behavior of $u$, we only need to care about the stability of the numerical solver we wish to use. We consider in this thesis the following RK method with two stages @BirkenNotes.
+We now have to solve the ODE $u'(t) = e - Mu(t)$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, and $n$ is the chosen number of subdivisions of $[0,1]$. We consider in this thesis the following RK method with two stages @BirkenNotes.
 
 $$
 \begin{array}
@@ -85,7 +85,7 @@ $$
 0 & &\\
  \alpha & \alpha & \\
 \hline & 0 & 1
-\end{array}
+\end{array}.
 $$
 
 
@@ -98,7 +98,7 @@ This solver has two parameters, namely the (pseudo) time step $\Delta t$ and $\a
 The goal is for the solver to converge to a steady state solution as fast as possible. We set $u_0 = u(0) = e$ as an initial value. We define the relative residual after $k$ steps as 
 
 $$
-r_k = ||Mu_k - e||/ ||e||.
+r_k = \frac{||Mu_k - e||}{||e||},
 $${#eq-relative_residual}
 
 where $||.||$ is the 2-norm.
@@ -106,10 +106,10 @@ where $||.||$ is the 2-norm.
 If the solver we chose is stable, then $||r_k|| \to 0$ as $k \to \infty$. We define now the convergence at step $n$ to be the ratio of residual at step $k$ and $k-1$. That is 
 
 $$
-\rho_k = \frac{||r_k||}{||r_{k-1}||} = \frac{||Mu_k - e||}{||Mu_{k-1}-e||}
+\rho_k = \frac{||r_k||}{||r_{k-1}||} = \frac{||Mu_k - e||}{||Mu_{k-1}-e||}.
 $${#eq-residual_ratio_equation}
 
-where $||.||$ is the 2-norm. @fig-residual_ratio_evolution shows the evolution of the relative residual, as well as the residual ratio for specifics parameters. After a certain number of iterations, the convergence rate becomes linear. This can be however be after a large amount of iterations, so it is difficult to compute the convergence rate. 
+@fig-residual_ratio_evolution shows the evolution of the relative residual, as well as the residual ratio for specifics parameters. After a certain number of iterations, the convergence rate becomes linear. This can be however be after a large amount of iterations, so the convergence rate can be costly to compute. 
 
 
 
@@ -137,6 +137,7 @@ if not os.path.exists("images"):
 #| fig-cap: Evolution of the residual norm over iteration, with problem parameters $n = 50$ and $b = 0.05$, and RK parameters $\Delta t = 1$ and $\alpha = 0.2$. 
 #| echo: false
 #| label: fig-residual_ratio_evolution
+#| out-width: "70%"
 
 n = 50
 b = 0.05
@@ -165,16 +166,16 @@ plt.show()
 
 
 :::{.remark}
-Using the same notation as before for the stage values, for the equation $u'(t) = f(t,u(t))$, we have $\xi_1 = u_n$
+Using the same notation as before for the stage values and the studied RK method, for the equation $u'(t) = f(t,u(t))$, we have $\xi_1 = u_n$,
 
 $$
-\xi_2 = u_n + \Delta t \alpha f(t_n,\xi_1) = u_n + \Delta t \alpha f(t_n,u_n)
+\xi_2 = u_n + \Delta t \alpha f(t_n,\xi_1) = u_n + \Delta t \alpha f(t_n,u_n).
 $$
 
-The update is thus
+The update is thus;
 
 $$
-u_{n+1} = u_n + \Delta t f(t_n+\alpha \Delta t, \xi_2)
+u_{n+1} = u_n + \Delta t f(t_n+\alpha \Delta t, \xi_2).
 $$
 
 In the test problem case, $f(t_n,u_n) = e - Mu_n$, and we get the update
@@ -183,13 +184,13 @@ $$
 u_{n+1} = u_n + \Delta t\left[e-M(u_n+\alpha(e-Mu_n))\right].
 $$
 
-After a few lines of computation, we get the following iteration
+After a few lines of computation, we get the following iteration:
 
 $$
 u_{n+1} = \left[I-\Delta t M - \alpha(\Delta t M)^2\right]u_n + \Delta t e - \alpha \Delta t Me.
 $$
 
-We recognize a fixed point iteration of the form $u_{n+1} = g(u_n)$, which converges to a unique fixed point $u^*$ if $g$ is a contraction mapping, and the convergence rate depends on its Lipschitz constant. From this point, it is apparent that optimizing the solver parameters involves minimizing this Lipschitz constant. Furthermore, at the potential fixed point
+We recognize a fixed point iteration of the form $u_{n+1} = g(u_n)$, which converges to a unique fixed point $u^*$ if $g$ is a contraction mapping, and the convergence rate depends on its Lipschitz constant. From this point, it is apparent that optimizing the solver parameters involves minimizing this Lipschitz constant. Furthermore, at the potential fixed point,
 
 $$
 u^* = \left[I-\Delta t M - \alpha(\Delta t M)^2\right]u^* + \Delta t e - \alpha \Delta t Me.
@@ -201,20 +202,18 @@ $$
 (1+ \alpha \Delta t M)(e-Mu^*) = 0.
 $$
 
-Clearly, if $M$ is non singular, we can simply chose $u^* = M^{-1}e$ to solve this equation. Since the fixed point is unique, this is what the solver converges to. Seeing the iteration as a fixed point iteration also explains the linear convergence rate.
+Clearly, if $M$ is non singular, we can simply chose $u^* = M^{-1}e$ to solve this equation. Since the fixed point is unique, this is what the solver willl converge to. Seeing the iteration as a fixed point iteration also explains the linear convergence rate.
 :::
 
 ## A small experiment
 
 We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b, n)$. Ideally, we should minimize the asymptotic residual ratio $\rho_\infty$, but this is computationally intensive, so we restrict ourselves to minimizing the residual ratio $\rho_i$ after a fixed amount of iterations. 
 
-Since $\rho_i$ can vary quite a bit depending on $i$, we decide to investigate the residual ratio after 10 iterations and 100 iterations. So, for the problem parameters $b = 0.05$, and $n = 100$, we plot $\rho_{10 }= f(\Delta t, \alpha)$ and $\rho_{100} = g(\Delta t, \alpha)$. We wish to answer the following question: what are the optimal parameters for this specific problem, that is, the ones that minimize $\rho_{k}$, for different values of $k$, and are they broadly the same. 
+Since $\rho_i$ can vary quite a bit depending on $i$, we decide to investigate the residual ratio after 10 iterations and 100 iterations. So, for the problem parameters $b = 0.05$, and $n = 100$, we plot $\rho_{10 }= f(\Delta t, \alpha)$ and $\rho_{100} = g(\Delta t, \alpha)$. We wish to find the optimal parameters for this specific problem, that is, the ones that minimize $\rho_{k}$, for different values of $k$. We are also interested in seeing how much the optimal parameters depend on $k$. 
 
-We use a contour plot to visualize $\rho_k$ in @fig-res_ratio_comparison.
+We use a contour plot to visualize $\rho_k$ in @fig-res_ratio_comparison. The stability region after 100 iterations is more narrow than after 10 iterations, suggesting that convergence may not hold even if it seems to hold for the first few iterations. However, this doesn't seem to be the case when we consider higher values of $k$. Nevertheless, we can see how the solver parameters interact with the residual ratio. 
 
-The stability region after 100 iterations is more narrow than after 10 iterations, suggesting that convergence may not hold even if it seems to hold for the first few iterations. However, this doesn't seem to be the case when we consider higher values of $k$. Nevertheless, we can see how the solver parameters interact with the residual ratio. 
-
-This is of course an exploration of particular problem parameters, and, while doing a grid search every time is possible in that case, it is not always so when the number of parameters is higher. We thus explore a possible solution to this problem by using a reinforcement learning algorithm to "learn" these optimal parameters.
+This is of course an exploration of particular problem parameters, and, while doing a grid search every time is possible in that case, it is not always so when the number of parameters is higher. We therefore explore a possible solution to this problem by using a reinforcement learning algorithm to "learn" these optimal parameters.
 
 ```{python}
 #| echo: false
