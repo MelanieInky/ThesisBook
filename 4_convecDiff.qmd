@@ -11,14 +11,14 @@ $$
     u_x = bu_{xx} + 1 ,  \quad u(0) = u(1) = 0.
 $${#eq-convec_diff_steady}
 
-Here $b$ is some physical parameter. Moreover, $u(x)$ is defined for $x$ on the interval $[0,1]$. This equation has an analytical solution that is given by
+Here $b$ is some physical parameter. Moreover, $u(x)$ is defined on the interval $[0,1]$. This equation has an exact solution that is given by
 
 $$
 u(x) = x - \frac{e^{-(1-x)/b} - e^{-1/b}}{1-e^{-1/b}}.
 $${#eq-convec_diff_th_solution}
 
 
-We are however interested in solving this numerically, with a finite difference approach. We partition the interval $[0,1]$ into $n+2$ equidistant points $x_i, i = 0, \dots n+1$. We note the distance between each points as $\Delta x = \frac{1}{n+1}$. The approximated value of $u$ at the point $x_i$ is noted $u^i$ and we have $u^0 = u(0) = 0$ and $u^{n+1} = u(1) = 0$. We approximate, for $i \geq 1$ the derivative 
+We are however interested in solving this numerically, with a finite difference approach. We partition the interval $[0,1]$ using $n+2$ equidistant points $x_i, i = 0, \dots n+1$. We denote the distance between each points as $\Delta x = \frac{1}{n+1}$. The approximated value of $u$ at the point $x_i$ is denoted by $u^i$ and we have $u^0 = u(0) = 0$ and $u^{n+1} = u(1) = 0$. We approximate, for $i \geq 1$ the derivative 
 
 $$
     u_x^i = \frac{u^i - u^{i-1}}{\Delta x},
@@ -66,7 +66,7 @@ B =  \frac{b}{\Delta x ^2}\begin{pmatrix}
 \end{pmatrix} .
 $$
 
-With $N = A-B$, the approximated solution of the equation is then the solution of 
+With $N = A-B$, the approximate solution of @eq-convec_diff_steady is then the solution of the linear system
 
 $$
 Nu = d,
@@ -78,7 +78,7 @@ where $N$ is a square matrix of dimension $n \times n$ and $d$ is the one vector
 It is apparent that $N$ is diagonally dominant. Since all elements of the diagonal are positive, we can use Gershgorin circle theorem to prove that all the eigenvalues of $N$ have a positive real part. We thus only need to assume $N$ is non singular to prove that $-N$ is stable.
 :::
 
-We plot two examples of what the theoretical solution (@eq-convec_diff_th_solution) and the discretized solution (@eq-UnscaledSystem) look like for different $b$ parameters in @fig-th_vs_dis
+We plot two examples of what the exact solution (@eq-convec_diff_th_solution) and the discretized solution (@eq-UnscaledSystem) look like for different values of $b$ in @fig-th_vs_dis
 
 ```{python}
 #| echo: false
@@ -90,7 +90,7 @@ from testProblemClass import TestProblem
 
 ```{python}
 #| layout-ncol: 2
-#| fig-cap: "Theoretical and discretized solution of the convection diffusion equation, for different parameters."
+#| fig-cap: "Exact and discretized solution of the convection diffusion equation, for different parameters."
 #| fig-subcap: 
 #|   - "$b = 0.05$, $n=50$."
 #|   - "$b = 0.5$, $n=50$."
@@ -111,7 +111,7 @@ x = np.linspace(0,1,n)
 y_th = x - (np.exp(-(1-x)/b) - np.exp(-1/b))/(1-np.exp(-1/b))
 
 fig , ax = plt.subplots()
-ax.plot(x,y_th,label='theoretical solution')
+ax.plot(x,y_th,label='exact solution')
 ax.plot(x,y,label='discretized solution')
 ax.legend()
 ax.set_xlabel('x')
@@ -133,7 +133,7 @@ x = np.linspace(0,1,n)
 y_th = x - (np.exp(-(1-x)/b) - np.exp(-1/b))/(1-np.exp(-1/b))
 
 fig , ax = plt.subplots()
-ax.plot(x,y_th,label='theoretical solution')
+ax.plot(x,y_th,label='exact solution')
 ax.plot(x,y,label='discretized solution')
 ax.legend()
 ax.set_xlabel('x')
@@ -143,7 +143,7 @@ plt.show()
 ```
 
 
-To solve this linear system, we use the method highlighted before. To make it easier for later, we chose to scale $N$ so that its diagonal elements are $1$. This allows us to have all eigenvalues in the circle centered around $1$ with radius $1$ independently of the parametrization. Setting $\eta = \frac{1}{\Delta x} + \frac{2b}{\Delta x^2}$, solving @eq-UnscaledSystem is equivalent to solving the system
+To solve this linear system, we use the method highlighted before. To make it easier for later, we choose to scale $N$ so that its diagonal elements are $1$. This allows us to have all eigenvalues in the circle centered around $1$ with radius $1$ independently of the parametrization. Setting $\eta = \frac{1}{\Delta x} + \frac{2b}{\Delta x^2}$, solving @eq-UnscaledSystem is equivalent to solving the system
 
 $$
 M u = e,
@@ -169,11 +169,11 @@ $$
 \frac{\partial u}{\partial t} + \Delta.(\vec{v}u - \nabla(Du)) = R.
 $$
 
-We will assume that the quantity $u$, which can be for example a concentration or the temperature, has for unit $\rho$. The physical quantity are:
+We will assume that the quantity $u$, is the temperature in Kelvin, and has the S.I unit $K$. The physical quantities are:
 
-- $\vec{v}$, which is the velocity of the medium the quantity is in, in $\text{m.s}^{-1}$. (the advection/convection). 
-- $D$ is the diffusion coefficient, in $\text{m}^2.\text{s}^{-1}$. 
-- $R$ is governing whether the quantity is created when $R>0$, or destructed when $R<0$. The unit is $\rho.\text{s}^{-1}$.
+- $\vec{v}$, which is the velocity of the medium the quantity is in, in $\text{ms}^{-1}$. (the advection/convection). 
+- $D$ is the diffusion coefficient, in $\text{m}^2\text{s}^{-1}$. 
+- $R$ is governing whether the quantity is created when $R>0$, or destructed when $R<0$. The unit is $K\text{s}^{-1}$.
 
 We can now simplify the equation by considering it in a single dimension $x$
 
@@ -184,7 +184,7 @@ $$
 This further simplifies to $u_t + vu_x - Du_{xx} = R$.
 
 
-Then, in steady state, $u_t = 0$ so we get
+Then, in the steady state, $u_t = 0$ so we get
 
 $$
 u_x = \frac{D}{v}u_{xx} + \frac{R}{v},

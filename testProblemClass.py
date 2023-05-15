@@ -1,4 +1,6 @@
 import numpy as np
+from scipy.sparse.linalg import eigs, ArpackNoConvergence
+
 
 # This is where we define the class. TestProblem as most of everything
 
@@ -86,7 +88,8 @@ class TestProblem:
         self.update(new_b, new_n)
 
     def main_solver(self, n_iter=10, deterministic_policy = False):
-        """ Main solver for the problem, 
+        """ 
+         Main solver for the problem, 
         use the current Policy to calculate the approximated solution
         after n_iter pseudo time steps. """
         t = 0
@@ -161,6 +164,37 @@ class TestProblem:
             reward =  1-ratio
         return alpha, delta_t, reward
 
+    def step(self):
+        #Get the action taken
+        alpha, delta_t = self.policy(self.b, self.n)
+        rho = self.compute_spectral_radius(alpha, delta_t)
+        reward = 1-rho
+        return alpha, delta_t , reward
+
+    def compute_spectral_radius(self, alpha, delta_t):
+        K = np.identity(self.n) - delta_t * self.M + alpha * delta_t**2 * self.M@self.M
+        x = np.ones(self.n) / np.sqrt(self.n)
+        ##Power iterations
+        threshold = 1e-1
+        for i in range(10):
+            #Check if we meet some stopping condition
+            x_next = K@x
+            rho = x.T @ x_next #Rayleigh quotient
+            rho_x = rho*x
+            norm_rho_x = np.linalg.norm(rho_x)
+            residual = x_next - rho_x / norm_rho_x
+            #Check if sufficiently converged
+            if(np.linalg.norm(residual) < threshold):
+                return rho
+            x = x_next / np.linalg.norm(x_next)
+        rho = np.abs(x.T@K@x)
+        return rho
+
+    def compute_spectral_radius2(self,alpha,delta_t):
+        K = np.identity(self.n) - delta_t * self.M + alpha * delta_t**2 * self.M@self.M
+        rho = eigs(K, k = 1, which='LM', return_eigenvectors=False, tol=1e-2)
+        return np.abs(rho)
+    
 ##### THIS IS WHERE RL HAPPENS
 
     def _generate_episode(self, length=5):
@@ -174,7 +208,8 @@ class TestProblem:
             b_history[i] = self.b
             n_history[i] = self.n
             # Compute action and reward
-            alpha, delta_t, reward = self._get_action_and_reward()
+            #alpha, delta_t, reward = self._get_action_and_reward()
+            alpha, delta_t, reward = self.step()
             alpha_history[i] = alpha
             delta_t_history[i] = delta_t
             reward_history[i] = reward
