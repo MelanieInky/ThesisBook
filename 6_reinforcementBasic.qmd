@@ -25,19 +25,110 @@ In Reinforcement Learning tasks, we are training an  *agent* that interacts with
 - Whether to put the oven to $200^\circ C$ or $220^\circ C$.
 - Or simply do nothing!
 
-All of these decisions, which we will call *actions* from now on, are taken based on the current *state* of the cooking process, following a certain *policy*, which is shaped by our previous cooking experience. 
+All of these decisions, which we will call *actions* from now on, are taken based on the current *state* of the environment, that is the cooking process. How we decide which *action* to take given a current *state* will be called the *policy* from now on.
 
-After each action, the cooking process get to a new *state* and we get a *reward* that depend on how well we did. Maybe the food started to burn in which case we get a negative reward, or maybe we made the food better, in which case we get a positive reward. In this example, there is also a *terminal state*, in which we finished cooking and get to enjoy the meal. 
+After each action, the cooking process get to a new *state* and we taste the meal. By tasting it, we get a *reward* that depend on how well we did. Maybe the food started to burn in which case we get a negative reward, or maybe we made the food tastier, in which case we get a positive reward. In this example, there is a *starting state*, where we decide to cook something, and a *terminal state*, in which we finished cooking and get to enjoy the meal. 
 
-But how do we learn how to cook, how do we know what *action* to take at a specific *state*? That is, how do we learn the *policy*? We learn it by trying to make the food as flavorful as possible, which is defined by the *reward* we get after each action. Some of those rewards are immediate, for example, if we add some spices to our food and it tastes better.  We want to have a *policy* that maximizes the total *rewards* we get over a entire cooking session. This also mean that we have to balance how we prefer the immediate rewards against the future rewards. For example, adding a spice may make the meal taste better in the short term, for which we get a reward, but it may clash later when we add other ingredients, leading to a worse meal and worse *rewards* down the line.
+But how do we learn how to cook, how do we know what *action* to take at a specific *state*? That is, how do we learn the *policy*? We learn it by getting feedback, which is defined by the *reward* we get after each action. Some of those rewards are immediate, for example, if we add some spices to our food and it tastes better.  We want to have a *policy* that maximizes the total *rewards* we get over a entire cooking session. This also mean that we have to balance how we prefer the immediate rewards against the future rewards. For example, adding a spice may make the meal taste better in the short term, for which we get a reward, but it may clash later when we add other ingredients, leading to a worse meal and worse *rewards* down the line.
 
 Each time we cook, we learn what works and what doesn't, and remember that for any future time we cook. But, if we want to get better at cooking, we must not just repeat the *actions* that worked! We also have to take some risks, and *explore* the potential actions we can take at each state! On the other hand, we still need to rely and *exploit* what we know. There is a balance to find between *exploitation* and *exploration* so as to learn as fast as possible.
 
+## Another example: Leonardo the rabbit
+
+The last example is an intuitive way of thinking of reinforcement learning as similar to the way we animals learn about the world and its processes. The ideas behind reinforcement learning borrow a lot from the fields of psychology and neuroscience[@aPrimerBrain], and modelling how we learn is a gargantuan task that is, for this very reason, outside of the scope of this thesis!
+
+We turn our attention to a more modest example that is much easier to model, and it an example that one can find in a lot of reinforcement learning books[@Sutton1998], [@reinforcementBookShiyuZhao]. We consider the case of Leonardo the rabbit. Leonardo, the agent, is situated in the outside world, which is represented as a $3\times 3$ grid (the environment). He wants to get to the carrot at the bottom right as fast as possible. To help Leonardo get to his meal, we will use reinforcement learning. 
+
+
+
+### States
+
+The first thing we do is give a number to each box in the grid, from $1$ to $9$. We call the set of all boxes number as the state set, which we denote by $\mathcal{S}$. In this example, $\mathcal{S} = {1,2,\dots,9}$ (see @fig-gridworld1). A state is defined as any element in the state set, which we denote by $s\in\mathcal{S}$. 
+
+In this example, the state is the box Leonardo is in. 
+
+![Can you help Leonardo get to his carrot? The grid environment, with the  numbered states in which agent Leonardo is in.](images/gridworld.pdf){#fig-gridworld1}
+
+### Actions
+
+
+Leonardo, in this grid, can move in any 4 directions, that is left, right, up or down. We call this the action set $\mathcal{A}$, and in this example $\mathcal{A} = \{\text{left,right,up,down}\}$. An action is defined as any element in the action set, which we denote by $a\in\mathcal{A}$. 
+
+
+### State transitions 
+
+At this point, we can introduce a time variable $t$. The initial time is set to $t=0$, and, after Leonardo takes an action $t$ moves forward by $1$, and he finds himself in a new state. This is what we call a state transition(see )
+
+We want to keep track of Leonardo positions and actions over time, which is why we denote the state Leonardo is in at time $t$ by $S_t$, and the action he takes  by $A_t$. In this example, there is the initial state $S_0 = 1$. 
+
+:::{.remark}
+$S_t$ and $A_t$ are random variables, which is we denote in uppercase. Observations of $S_t$ and $A_t$ will be in lowercase, that is respectively $s_t$ and $a_t$. 
+:::
+
+![An example of state transition. Leonardo, being at the state $s_t = 4$, takes the action $a_t = \text{right}$. After this action, he is at the state $s_{t+1} = 5$. Leonardo gets the reward $r_{t+1} = -5$.](images/gridworld_transition.pdf){#fig-gridworld_transition}
+
+
+### Policy
+
+Leonardo, as the agent, only has access to his current state $S_t$. He has to take an action $A_t$, but how does he know which action to take? To do that, he uses a policy, which we denote by a function $\pi$. More formally, $\pi$ is a function that defines the probability of taking the action $A_t = a$ if the state is $S_t = s$. We denote this by $\pi(a,s)$. 
+
+Suppose for example that $S_t = 3$. Leonardo has no idea of where the carrot is, but he knows that he can not go up nor to the right, so his policy is to go down, or right at random. Then:
+
+- The probability to get right is $\pi(\text{right}, 3) = 0.5$.
+- The probability to go down is $\pi(\text{down}, 3) = 0.5$.
+- The probability to go left is $\pi(\text{left},3) = 0$.
+- The probability to go up is $\pi(\text{left},3) = 0$.
+
+
+More specifically, for any state $s$, we define the conditional probability mass function $\pi(a|s) = \Pr(A_t = a | S_t = s)$, where $\Pr$ denote a probability. Hence, $\sum_{a\in\mathcal{A}} \pi(a,s) = 1$.
+
+
+
+:::{.remark}
+We will assume that Leonardo only cares about what his current state is to take an action, and not for how long he has been in the grid. This makes the policy independent of the time $t$.
+:::
+
+:::{.remark}
+Depending on how we model this example, we can allow movement through the world's borders by stating that the state transition is to the same starting state, i.e $S_{t+1} = S_t$. 
+:::
+
+
+### Rewards
+
+While Leonardo only takes actions by looking at his current state, he still wants to get to the carrot as fast as possible. He knows his current state $s_t$ and takes the action $a_t$. Doing so, he ends up in the state $s_{t+1}$ and he gets a reward.
+
+- The red colored box are difficult to get in, so if he ends up on one of the red colored box, he gets a reward of $-5$. This is for example the case in @fig-gridworld_transition. 
+- If he ends up on the carrot, he gets a reward of $+5$. 
+- If he ends up in any other state, he gets a reward of $-1$, as he doesn't want to lose time. 
+
+More formally, the denote the reward Leonardo gets after taking the action $A_t$ from the state $S_t$ as $R_{t+1}$. The set of all possible rewards is denoted by $\mathcal{R}$. Here $\mathcal{R} = \{-1,5,-5\}$. $R_t$ is again a random variable and we denote an observations of the reward at time $t$ by $r_t$. 
+
+### State transitions and rewards probabilities
+
+Suppose now that there in the 4th box. This teleporter is however unreliable.  Half the time, it teleports whoever steps in its box to the $9^{th}$ box, making Leonardo get directly to his prize! The other half of the time, however, it teleports the user to the $7^{th}$ box. 
+
+Suppose now that Leonardo is at state $s_t=1$, he takes the action $a_t = \text{down}$ to the teleporter(see ). Then:
+
+- The next state is $s_{t+1} = 9$ with probability $0.5$.
+- The next state is $s_{t+1} = 7$ with probability $0.5$. 
+
+But now, the reward he gets is random too! 
+
+- If he end up in the $9^{th}$ box, $r_{t+1} = 5$.
+- If the teleporter does not work and he ends up in the $7^{th}$ box, $r_{t+1} = -1$.
+
+More specifically, this means that state transitions and rewards need to be modelled by a probability, more specifically, the probability of getting a reward $r\in\mathcal{R}$, and that the next state is $s'\in\mathcal{S}$ given that the agent takes the action $a\in\mathcal{A}$ at the state $s\in\mathcal{S}$. We formalize a state transition probability as the conditional probability defined in the sample space $\mathcal{S}\times \mathcal{R}$
+
+$$
+p(s',r|s,a) = \Pr(S_{t+1} = s', R_{t+1} = r | S_t = s, A_t = a).
+$$
+
+
+![Will it be worth the risk? Leonardo has taken the action $a = \text{down}$ at the state $s=1$. There is a $50\%$ chance he ends up right on his prize! The state transition and reward probability is $p(s'=9,r=5|s=1,a=down) = 0.5$.](images/bunny_teleporter.pdf){#fig-gridworld_teleporter}
 
 
 
 ## Finite Markov decision process
-
 
 
 We formalize the above example by defining a Markov decision process (MDP) @reinforcementBookShiyuZhao.
@@ -53,14 +144,15 @@ A finite Markov decision process (MDP) is defined as a discrete time process, wh
 We use the notation $S_t, A_t$ as the state and action of the process at time $t$. The reward $R_t$ is the reward received at time t. $S_t,A_t$ and $R_t$ are random variables.
 
 
-A Markov decision process also has a model, which consists of:
+A Markov decision process also has a model, which consists of the state and reward transition probabilities:
 
-- The probability of getting from state $s$ to the state $s'$ by taking action $a$, which we call the state transition probability $p(s'|s,a) = \Pr(S_{t+1} = s' | S_t = s, A_t = a)$.
-- The probability of getting reward $r$ by taking the action $a$ at a state $s$ $p(r|s,a) = \Pr(R_{t+1} = r | S_t = s, A_t = a)$. 
+- The probability, given that the current state is $s$, and that the action taken is $a$, that the next state is $s'$ and the next reward is $r$. That is $p(s',r|s,a) = \Pr(S_{t+1} = s', R_{t+1} = r | S_t = s, A_t = a)$.
 
-Furthermore, a Markov decision process has a policy that governs, for any state $s\in\mathcal{S}$, the probability of taking action $a\in\mathcal{A}$, that probability is $\pi(a|s) = \Pr(A_t = a|S_t = s)$.
+Furthermore, a Markov decision process has a policy that governs, for any state $s\in\mathcal{S}$, the probability of taking action $a\in\mathcal{A}$, that probability is $\pi(a,s) = \Pr(A_t = a|S_t = s)$. We assume that the policy is not dependent on time. 
 
-Finally, a Markov decision process has the Markov property, or lack of memory. The action taken at instant t $A_t$ is only dependent on the current state $S_t$ and not the state before. Mathematically, $p(A_t|S_t, S_{t-1}, \dots , S_0) = p(A_t|S_t)$.
+Finally, a Markov decision process has the Markov property, or lack of memory. The state transition and rewards probabilities are only dependent on the current state $S_t$  and action $A_t$, and not the states and actions that preceeded. Mathematically, $\Pr(S_{t+1} = s', R_{t+1} = r|S_t, A_t, S_{t-1}, A_{t-1}, \dots , S_0, A_0) = \Pr(S_{t+1} = s', R_{t+1} = r | S_t, A_t)$.
+
+
 
 :::
 
@@ -71,28 +163,26 @@ An example of Markov decision process with two states can be seen in @fig-MDP_ex
 
 :::{.remark}
 
-The state space $\mathcal{S}$ and the action space $\mathcal{A}$ can be finite or not. We only consider the case of finite Markov decision process to make matters easier. This also mean that the model is finite. 
+The state space $\mathcal{S}$ and the action space $\mathcal{A}$ can be finite or not. We only consider the case of finite Markov decision process to make matters easier. 
+:::
 
+:::{.remark}
 The model in a Markov decision process is often impossible to define in advance. This problem is remedied by using *model free* algorithms.
 :::
 
-:::{#exm-grid_world}
-A Markov decision process is the mathematical formalization of an agent interacting with its environment @Sutton1998. Consider the following grid, in which Leonardo the rabbit is in. Leonardo wants to get to the carrot.  
-
-:::
 
 
 ## State Value and Bellman Equation
 
-The Markov decision process are the mathematical formalization of an agent (for example a chess player) interacting with its environment (the chess board)@Sutton1998. 
+The Markov decision process are the mathematical formalization of an agent (for example a chess player) interacting with its environment (the chess board) @Sutton1998. 
 
-We first define a trajectory. We denote by $S_t$ the state of an agent at instant $t$. Then, according to the policy, this agent takes the action $A_t$. After taking this action, the agent is now at the state $S_{t+1}$, and it gets the rewards $R_{t+1}$. Then the agent takes action $A_{t+1}$, and gets to a new state $S_{t+2}$ with reward $R_{t+2}$. This can continues indefinitely. We define the trajectory of an agent with starting state $S_t = s$ as the chain of state, actions and rewards from time $t$ to time $t+\tau$:
+We first define a trajectory. We denote by $S_t$ the state of an agent at instant $t$. Then, according to the policy, this agent takes the action $A_t$. After taking this action, the agent is now at the state $S_{t+1}$, and it gets the rewards $R_{t+1}$. Then the agent takes action $A_{t+1}$, and gets to a new state $S_{t+2}$ with reward $R_{t+2}$. This can continues indefinitely. We define the trajectory of an agent with starting state $S_t = s_t$ as the chain of state, actions and rewards from time $t$ onward:
 
 $$
-S_t,A_t \to R_{t+1},S_{t+1},A_{t+1} \to R_{t+2},S_{t+2},A_{t+2} \to \cdots \to R_{t+\tau},S_{t+\tau},A_{t+\tau},
+S_t = s_t,A_t \to R_{t+1},S_{t+1},A_{t+1} \to R_{t+2},S_{t+2},A_{t+2} \to \cdots,
 $$
 
-where $\tau$ can either be finite or infinite. Note that due to the Markov property, the value of $t$ is not important. 
+where $\tau$ can either be finite or infinite. Note that, due to the Markov property and the fact that we assume the policy is time independent, the starting value of $t$ is not important. 
 
 
 :::{.remark}
@@ -100,8 +190,7 @@ In some environments, it is natural for the agent to have a task that has a star
 
 :::
 
-The goal of any reinforcement learning algorithm is to maximize the rewards the agent get, which we elaborate on in the next sections. 
-We now define the discounted return along a trajectory,
+The goal of any reinforcement learning algorithm is to find a policy that maximizes the rewards the agent get, which we elaborate on in the next sections. We now define the discounted return along a trajectory,
 
 
 :::{#def-discount}
@@ -115,33 +204,31 @@ where $\gamma \in [0,1)$ is called the discount rate.
 :::
 
 :::{.remark}
-By setting a discount rate that is less than 1 in continuing tasks, we make sure that the discounted return is well defined in the case of bounded rewards. Indeed, if, for any $t$, $|R_t|\leq M$, then $\sum_{k=0}^{+\infty}|\gamma^k R_{t+1+k}| \leq  \sum_{t=0}^{+\infty}\gamma^t M = \frac{M}{1-\gamma}$, so the series converges absolutely.
+By setting a discount rate that is less than 1 in continuing tasks, we make sure that the discounted return is well defined in the case of bounded rewards. Indeed, if, for any $t$, $|R_t|\leq M$, then $\sum_{k=0}^{+\infty}|\gamma^k R_{t+1+k}| \leq  \sum_{k=0}^{+\infty}\gamma^k M = \frac{M}{1-\gamma}$, so the series is absolutely convergent.
 :::
 
-The discounted return is thus the sum of rewards along a trajectory, with a penalty for rewards far in the future. The discount rate is chosen depending on whether we want the agent to favor short term rewards, in which case a discount rate closer to $0$ can be chosen, or long term rewards, with a discount rate closer to $1$.
+The *discounted return* is thus the sum of rewards along a trajectory, with a penalty for rewards far in the future, controlled by the *discount rate*. The discount rate is chosen depending on whether we want the agent to favor short term rewards, in which case a discount rate closer to $0$ can be chosen, or long term rewards, with a discount rate closer to $1$.
 
-Since the return is a random variable, we can look at its expectation, in particular, we are interested in its conditional expectation, given a starting state $S_t = s$. This expectation is called the state value.
+Since the  discounted return is a random variable, we can look at its expectation, in particular, we are interested in its conditional expectation, given a starting state $S_t = s$. This expectation is called the state value @Sutton1998.
 
 
 
 
 :::{#def-state_value}
-**State value**@Sutton1998 The state value of a state $s$ is the function, defined for any $s\in\mathcal{S}$ as:
+**State value** The state value of a state $s$ is the function, defined for any $s\in\mathcal{S}$ as the conditional expectation of the discounted return, given $S_t = s$:
 
 $$
-v_\pi(s) = E[G_t|S_t = s] = E[R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots | S_t],
+v_\pi(s) = E[G_t|S_t = s] = E[R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots | S_t = s],
 $$
 
 where $\pi$ is a given policy. 
 :::
 
 :::{.remark}
-The Markov property of the MDP means that the state value does not depend on time.
+Once again, the Markov property and the time independence of the policy mean that the state value does not depend on time.
 :::
 
-The objective is thus to find a policy $\pi$ that maximizes the state values. We next derive the Bellman equation. 
-
-We have
+We remark that
 
 
 \begin{align}   
@@ -159,30 +246,38 @@ $$
 v_\pi(s) = E[G_t|S_t = s]= E[R_{t+1}| S_t = s] + \gamma E[G_{t+1} | S_t = s].
 $${#eq-state_value_part1}
 
-The first term is the expectation of immediate reward, following a certain policy $\pi$, the second is the expectation of future rewards. Let us expand on that formula a bit more. We use the law of total expectations on the first part of the RHS to get
+The first term is the expectation of immediate reward, following a certain policy $\pi$, the second is the expectation of future rewards. Let us expand on that formula a bit more. We now make use of the "law of total expectation":
+
+:::{#thm-total_expectation}
+Let $X$ and $Y$ be random variables, and suppose $E[|Y|]<\infty$. Then
+$$
+E[Y] = E\left[E[Y|X]\right]
+$$
+:::
+
+Using this, the expectation of immediate reward is
 
 $$
-E[R_{t+1}| S_t = s] = E\big[E[R_{t+1}|S_t = s,A_t]\big] = \sum_{a\in\mathcal{A}}\pi(a,s)\sum_{r\in\mathcal{R}}rp(r|s,a),
+E[R_{t+1}| S_t = s] = E\big[E[R_{t+1}|S_t = s,A_t]\big] = \sum_{a\in\mathcal{A}}\pi(a,s)\sum_{r\in\mathcal{R}} \sum_{s'\in \mathcal{S}}rp(s',r|s,a).
 $$
 
-where $\mathcal{R} = \mathcal{R}(s,a)$ is the set of possible rewards one can get by taking action $a$ at state $s$. 
 
-We now develop the second part of the RHS of the equation to get
+We now develop the second part in the RHS of @eq-state_value_part1, and use the law of total expectation again to get
 
 $$
 E[G_{t+1} | S_t = s] = E\big[E[G_{t+1} | S_t = s , S_{t+1}]\big] = \sum_{s'\in\mathcal{S}}p(s'|s)E[G_{t+1}|S_t = s, S_{t+1} = s'],
 $$
 
-where $p(s'|s) = \sum_{a\in\mathcal{A}} p(s'|s,a)\pi(a,s)$ is the probability of the next state being $s'$ if the current state is $s$. Because of the Markov property of the MDP, we can remove the conditioning $S_t = s$ and thus, $E[G_{t+1}|S_t = s, S_{t+1} = s'] = E[G_{t+1}|S_{t+1} = s] = v_\pi(s')$. Then 
+where $p(s'|s) = \sum_{a\in\mathcal{A}} \sum_{r\in\mathcal{R}}p(s',r|s,a)\pi(a,s)$ is the probability of the next state being $s'$ if the current state is $s$. Because of the Markov property of the MDP, we can remove the conditioning $S_t = s$ and thus, $E[G_{t+1}|S_t = s, S_{t+1} = s'] = E[G_{t+1}|S_{t+1} = s] = v_\pi(s')$. Then 
 $$
-E[G_{t+1} | S_t = s] = \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A}}v_\pi(s')\pi(a|s)p(s'|s,a).
+E[G_{t+1} | S_t = s] = \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A}}\sum_{r\in\mathcal{R}}v_\pi(s')\pi(a|s)p(s',r|s,a).
 $${#eq-state_value_part2}
 
 Putting @eq-state_value_part1 and @eq-state_value_part2 together, we get Bellman's equation:
 
 
 $$
-v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)\left[\sum_{r\in\mathcal{R}}rp(r|s,a) + \gamma\sum_{s'\in\mathcal{S}}v_\pi(s')p(s'|s,a) \right].
+v_\pi(s) = \sum_{a\in\mathcal{A}}\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}\pi(a,s)p(s',r|s,a)\left[ r + \gamma v_\pi(s')\right].
 $$ {#eq-Bellman}
 
 :::{.remark}
@@ -192,11 +287,17 @@ The Bellman equation is dependent on the given policy and gives a recursive rela
 
 :::{#exm-the_example}
 
-We can derive directly the state values in the MDP in @fig-MDP_example. In particular, for the state $s_2$. There are two possible actions $a_0$ and $a_1$ we can take. The policy is to take action $a_0$ with a probability $0.6$, and action $a_1$ with a probability $0.4$. When we take  for example action $a_0$, the probability of the next state being $s_1$ is $0.3$, in which case the reward is $5$. Proceeding similarly for all the possible actions and rewards, we get
+We can derive directly the state values in the MDP in @fig-MDP_example. We remark that in this example, given a specific state transition, the reward we get is deterministic, which simplifies the computations. 
 
-$$
-v_\pi(s_2) = 0.6 \left[0.7\times-2 + 0.3 \times 5 + \gamma(0.3v_\pi(s_1) + 0.7v_\pi(s_2))\right] + 0.4 \times [\dots].
-$$
+ In particular, for the state $s_2$, There are two possible actions $a_0$ and $a_1$ we can take. The policy is to take action $a_0$ with a probability $0.6$, and action $a_1$ with a probability $0.4$. When we take  for example action $a_0$, the probability of the next state being $s_1$ is $0.3$, in which case the reward is $5$. Proceeding similarly for all the possible actions and rewards, we get
+
+\begin{align*}
+v_\pi(s_2) &= \sum_{a=0}^1\sum_{r\in\mathcal{R}}\sum_{s'=1}^2\pi(a,s)p(s',r|s_2,a)\left[ r + \gamma v_\pi(s')\right]\\
+&= 0.6 \sum_{r\in\mathcal{R}}\sum_{s'=1}^2 p(s',r|s_2,a=0)\left[ r + \gamma v_\pi(s')\right] + 0.4 \sum_{r\in\mathcal{R}}\sum_{s'=1}^2 p(s',r|s_2,a=1)\left[ r + \gamma v_\pi(s')\right]\\
+&= 0.6 \left[0.3(5 + \gamma v_\pi(s_1)) + 0.7(-2 + \gamma v_\pi(s_2))\right] + 0.4\left[ 0.2(-2 + \gamma v_\pi(s_2)) + 0.8(5+\gamma v_\pi(s_1) \right].
+\end{align*}
+
+
 
 After some computations, we end up with 
 
@@ -225,7 +326,7 @@ v_\pi(s_2)
 \end{pmatrix}.
 $$
 
-We stop here to remark that this equation is of the form $v_\pi = r_\pi + \gamma P_\pi v_\pi$. $P_\pi$ is row stochastic, and is the transition matrix of the Markov chain we get when we consider a given policy. Furthermore, since $\gamma<1$, we motivate solving the equation by using a fixed point iteration. This is the main idea behind *dynamic programming* @bellman1957dynamic. In this case, we can simply solve the system directly. With $\gamma= 0.5$, we have the state values $v_\pi(s_1) = 7.875$, $v_\pi(s_2) = 4.625$. There is, for the given policy, more value in being in the first state than the second. 
+We stop here to remark that this equation is of the form $v_\pi = r_\pi + \gamma P_\pi v_\pi$. $P_\pi$ is row stochastic, and is the transition matrix of the Markov chain we get when we consider a given policy. Furthermore, since $\gamma<1$, we motivate solving the equation by using a fixed point iteration. This is the main idea behind *dynamic programming* @bellman1957dynamic. In this case, we can simply solve the system directly. With $\gamma= 0.5$, we get the state values $v_\pi(s_1) = 7.875$, $v_\pi(s_2) = 4.625$. There is, for the given policy, more value in being in the first state than the second. 
 
 ```{python}
 #| echo: false
@@ -256,7 +357,7 @@ The state value gives information about a specific state, however, we are also o
 
 :::{#def-action_value}
 **Action value** 
-The action value is defined as 
+The action value is defined as the expectation of discounted return $G_t$, given a specific action $a$, taken at the current state $s$:
 
 $$
 q_\pi(a,s) = E\left[G_t|A_t=a,S_t=s\right].
@@ -281,4 +382,10 @@ $$
 v_\pi(s) = \sum_{a\in\mathcal{A}} \pi(a,s)q_\pi(a,s).
 $${#eq-state_value_action_relation}
 
+We remark that by viewing $\pi(a,s)$ as a probability mass function (p.m.f) with support $\mathcal{A}$, we can express the state values as another expectation:
 
+$$
+v_\pi(s) = E[q_\pi(A,s)],
+$$
+
+where $A$ is random variable with p.m.f $\pi(a,s)$. 

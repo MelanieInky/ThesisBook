@@ -35,6 +35,7 @@ class TestProblem:
         self.min_n = min_n
         self.max_n = max_n
         self.decay = decay
+        self.cool_convergence = 0
 
 
     def _build_M(self):
@@ -175,18 +176,21 @@ class TestProblem:
         K = np.identity(self.n) - delta_t * self.M + alpha * delta_t**2 * self.M@self.M
         x = np.ones(self.n) / np.sqrt(self.n)
         ##Power iterations
-        threshold = 1e-1
-        for i in range(10):
+        threshold = 1e-3
+        for i in range(30):
             #Check if we meet some stopping condition
-            x_next = K@x
-            rho = x.T @ x_next #Rayleigh quotient
+            K_x = K@x
+            rho = x.T @ K_x #Rayleigh quotient
             rho_x = rho*x
             norm_rho_x = np.linalg.norm(rho_x)
-            residual = x_next - rho_x / norm_rho_x
+            residual = (K_x - rho_x) / norm_rho_x
             #Check if sufficiently converged
             if(np.linalg.norm(residual) < threshold):
+                #Just for debugging
+                self.cool_convergence += 1
                 return rho
-            x = x_next / np.linalg.norm(x_next)
+            #Normalize for next iteration
+            x = K_x / np.linalg.norm(K_x)
         rho = np.abs(x.T@K@x)
         return rho
 
