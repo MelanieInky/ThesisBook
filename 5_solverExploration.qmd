@@ -80,7 +80,7 @@ This is where we do the stability theory.
 
 
 
-## Application to the test problem
+## Application to the test problem {#sec-RK_solver_test_problem}
 
 
 We now have to solve the ODE $u'(t) = e - Mu(t)$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, and $n$ is the chosen number of subdivisions of $[0,1]$. We consider in this thesis the following RK method with two stages @BirkenNotes:
@@ -214,7 +214,7 @@ We recognize this iteration as a linear stationary iteration, which converges to
 
 :::
 
-## A small experiment
+## A small experiment {#sec-small_experiment}
 
 We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b,n)$. Ideally, we should minimize the asymptotic residual ratio $\rho_\infty$, but this is computationally intensive, so we restrict ourselves to minimizing the residual ratio $\rho_i$ after a fixed amount of iterations. 
 

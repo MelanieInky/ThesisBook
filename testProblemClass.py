@@ -133,7 +133,7 @@ class TestProblem:
             res_norm_list[i+1] = res_norm
         return y, res_norm_list
 
-    def _get_action_and_reward(self, n_iter=10, sarah=1):
+    def _get_action_and_reward(self, n_iter=10, sarah_ratio=1):
         """Take an action, given the current problem parameters and Policy,
         then compute the reward. 
         (This is similar to the step function in gym environments.)
@@ -160,19 +160,17 @@ class TestProblem:
         ratio = res_norm / last_res_norm
         # Compute reward with the Sarah ratio
         if (ratio <= 1):
-            reward = sarah*(1-ratio)
+            reward = sarah_ratio*(1-ratio)
         else:
             reward =  1-ratio
         return alpha, delta_t, reward
 
-    def step(self):
-        #Get the action taken
-        alpha, delta_t = self.policy(self.b, self.n)
-        rho = self.compute_spectral_radius(alpha, delta_t)
-        reward = 1-rho
-        return alpha, delta_t , reward
 
     def compute_spectral_radius(self, alpha, delta_t):
+        """
+        Unused in the thesis, compute the spectral radius of K via power iteration, instead of using the solver. 
+        Results are mostly the same, more experimentation needed.
+        """
         K = np.identity(self.n) - delta_t * self.M + alpha * delta_t**2 * self.M@self.M
         x = np.ones(self.n) / np.sqrt(self.n)
         ##Power iterations
@@ -194,10 +192,16 @@ class TestProblem:
         rho = np.abs(x.T@K@x)
         return rho
 
-    def compute_spectral_radius2(self,alpha,delta_t):
-        K = np.identity(self.n) - delta_t * self.M + alpha * delta_t**2 * self.M@self.M
-        rho = eigs(K, k = 1, which='LM', return_eigenvectors=False, tol=1e-2)
-        return np.abs(rho)
+    def step(self):
+        """
+        Experimental too, use the compute spectral radius above
+        """
+        #Get the action taken
+        alpha, delta_t = self.policy(self.b, self.n)
+        rho = self.compute_spectral_radius(alpha, delta_t)
+        reward = 1-rho
+        return alpha, delta_t , reward
+    
     
 ##### THIS IS WHERE RL HAPPENS
 
@@ -212,8 +216,8 @@ class TestProblem:
             b_history[i] = self.b
             n_history[i] = self.n
             # Compute action and reward
-            #alpha, delta_t, reward = self._get_action_and_reward()
-            alpha, delta_t, reward = self.step()
+            #alpha, delta_t, reward = self.step() #Experimental mode
+            alpha, delta_t, reward = self._get_action_and_reward()
             alpha_history[i] = alpha
             delta_t_history[i] = delta_t
             reward_history[i] = reward
