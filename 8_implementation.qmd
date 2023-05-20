@@ -21,10 +21,14 @@ from plotnine import *
 
 ## A linear approximation of the policy {#sec-linear_policy}
 
+We have now defined policy gradient methods as a way to address two issues that happened when we translated the problem as defined in the beginning of the last chapter. These issues being the need for a model free method, and dealing with large, and even infinite state and action set.  
 
-We want to have a policy of the form $(\Delta t, \alpha) =A(b,n)' + \text{c}$, where $A$ is a two by two matrix and $c$ a 2-vector.
 
-We first define the deterministic policy 
+We need to define a policy of the form $\pi(a|s,\mathbfit{\theta})$, where $a=(\Delta t, \alpha)$ is the action of choosing the solver parameters, given a pair of problem parameters, that is some state, $s=(b,n)$. We choose to have a policy of the form $(\Delta t, \alpha) \approx A(b,n)^\intercal + c$, where $A$ is a two by two matrix and $c$ a 2-vector. Furthermore, this policy need to be stochastic for the REINFORCE algorithm to work. 
+
+We remark that the action space is, in our case, continuous, so the policy has to be over a continuous action space. In the discrete case, the policy is $\pi(a|s,\mathbfit{\theta})$ is a probability mass function, so that $\sum_a\pi(a|s,\mathbfit{\theta}) = 1$. We extend it to continuous action space by considering $\pi$ as a probability density function instead, and replacing the sum by an integral, that is $\int_{a\in \mathcal{A}}\pi(a|s,\mathbfit{\theta}) = 1$[@lillicrap2019continuous].
+
+Let $s$ be a given state, $s=(b,n)$. We first define the values $\mu_\alpha$ and $\mu_{\Delta t}$:
 
 $$
 \begin{pmatrix}
@@ -45,10 +49,22 @@ n
 \end{pmatrix}.
 $${#eq-policy_deterministic_part}
 
-As we need a stochastic policy in the REINFORCE algorithm, we add some Gaussian noise to the policy $\alpha \sim \mu_\alpha + \mathcal{N}(0,\sigma^2)$,and similarly $\Delta t \sim \mu_{\Delta t} +  \mathcal{N}(0, \sigma^2)$. The term $\sigma^2$, which is the variance of the policy is chosen fixed in this thesis. Since $\alpha$ and $\Delta t$ are chosen independently, the joint probability density of both parameters is the product of both marginal pdf, that is 
+
+where $\mathbfit{\theta} = (\theta_0,\theta_1,\dots, \theta_5)^\intercal \in \mathbb{R}^6$. $\mu_\alpha$ and $\mu_{\Delta_t}$ can be regarded as "the deterministic policy". Around this deterministic policy, we add some noise, specifically Gaussian noise to get the stochastic policy
 
 $$
-f(\alpha,\Delta t) = f_{1}(\alpha)\cdot f_{2}(\Delta t),
+\alpha \sim  \mathcal{N}(\mu_\alpha,\sigma^2),
+$$
+
+and independently,
+$$
+\Delta t \sim  \mathcal{N}(\mu_{\Delta t}, \sigma^2).
+$$ 
+
+Here $\mathcal{N}(\mu,\sigma^2)$ is the normal distribution, with mean $\mu$ and standard deviation $\sigma$, and we choose $\sigma$ fixed in this thesis. We thus have a policy of the Since $\alpha$ and $\Delta t$ are chosen independently, the joint probability density of both parameters is the product of both marginal probability density function, that is 
+
+$$
+\pi(a = (\Delta t, \alpha)|s,\mathbfit{\theta})  = f_{1}(\alpha)\cdot f_{2}(\Delta t),
 $$
 
 where 
@@ -68,10 +84,10 @@ $$
 \ln(f_1(\alpha)) = \ln(\frac{1}{\sqrt{2\pi}\sigma}) - \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2}.
 $$.
 
-We now take the gradient w.r.t $\theta$ to get
+We now take the gradient w.r.t $\mathbfit{\theta}$ to get
 
 $$
-\nabla_\theta \ln(f_1(\alpha)) = \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^\intercal,
+\nabla_{\mathbfit{\theta}} \ln(f_1(\alpha)) = \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^\intercal,
 $${#eq-nabla_xi_alpha}
 
 where $\xi_\alpha = \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)}{\sigma^2}$.
@@ -79,84 +95,108 @@ where $\xi_\alpha = \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)}{\sigma^2}$.
 Doing a similar thing with $\Delta t$, we get the gradient,
 
 $$
-\nabla_\theta \ln(f_2(\Delta t)) = \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^\intercal,
+\nabla_{\mathbfit{\theta}} \ln(f_2(\Delta t)) = \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^\intercal,
 $${#eq-nabla_xi_delta_t}
 
 where $\xi_{\Delta t} = \frac{(\Delta t - \theta_2b-\theta_3n-\theta_5)}{\sigma^2}$.
-We now add both gradients together to we get the gradient of the policy, for a specific action $a = (\alpha, \Delta t)$ and state $s=(b,n)$:
+We now add both gradients together to get the gradient of the policy, for a specific action $a = (\alpha, \Delta t)$ and state $s=(b,n)$:
 
 $$
-\nabla_\theta \ln\pi(a|s,\theta) =  \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T+ \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^\intercal.
+\nabla_{\mathbfit{\theta}} \ln\pi(a|s,{\mathbfit{\theta}}) =  \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T+ \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^\intercal.
 $$ {#eq-policyGradient}
 
 
 
 
-
-
-
-
-:::{.remark}
-One may remark that the REINFORCE algorithm uses a discrete policy space. This is not an issue. Instead of using the probability mass function of the policy, we will instead use the probability density function as a substitute(@lillicrap2019continuous). The fact that the probability density function admits values $>1$ is not an issue as we can adjust the learning rate accordingly. 
-:::
-
-## State Space
-
-In the test problem, the $b$ parameter is a physical parameter and can take any value in $[0,1]$, while the value of $n$ depends on the discretization of the differential equation, and can be any integer value. As the value of $n$ get bigger, computation of a single time step in the RK solver can take quite a bit more time, and we will be doing a lot of those computations in the coming section! Therefore, we decide to limit the value of $n$ to an arbitrary maximum of $200$. We also cap the minimum value of $n$ to an arbitrary minimum of $5$ as those values are simply too low to get a acceptable discretization error, and we do not want to train an agent to solve for these states. 
-
-In the last chapter, we wrote that the state transitions were random, more precisely, this now means that a state transition is defined as
-
-- choosing a new value of $b\sim \mathcal{U}(0,1)$, and 
-- choosing a new value of $n$ randomly, between $5$ and $200$.  
-
-## Computing the reward.
-
-Once a state and action is chosen, the reward need to be computed. For each state and action, we compute the residual ratio after 10 iterations $\rho_{10}$. With that ratio, we need to define an appropriate reward metrics. We design the reward such that:
-
-- The lower the ratio $\rho_{10}$, the better the convergence rate and the better the reward should be.
-- It appears natural to have a positive reward when $\rho_{10}<1$, which implies convergence, and a negative reward otherwise.
-
-The reward is then set to be
-
-$$
-r(\rho_{10}) = 1-\rho_{10}.
-$$
-
-When $\rho_{10}<1$, the reward is positive as we are currently converging, and the lower the ratio, the better the convergence and thus we want a better reward. When, on the other hand $\rho_{10}\geq 1$, the reward is negative as we are diverging. The higher the ratio, the lower the reward. As the ratio can get very big with very bad parameters, we cap the negative reward at $-3$.
-
-
-
 ## Implementation of the REINFORCE algorithm.
 
-Now that everything as been defined, the REINFORCE algorithm can be applied to find an optimal policy.
+Now that everything as been defined, the REINFORCE algorithm can be applied to find an optimal policy. 
+
+### Algorithm code. 
+We present in this section the full training in a pseudo code format. The full code is written in a more modular way, and is available on the appendix, as well as on [GitHub](https://github.com/MelanieInky/ThesisBook). 
+
+
+```{python}
+#| eval: false
+
+##Doesn't run, as it needs other functions
+##but is a good bridge between pseudocode and the
+##full code
+learning_rate = 1e-8
+gamma = 0 #Discount factor
+initial_theta = [0,0,0,0,0.3,2] #Good enough theta
+sigma = 0.1 #Standard dev for the policy
+number_of_episodes = 1000 
+episode_length = 20
+
+
+for i in range(number_of_episodes):
+    #Generate an episode
+    #Choose an initial starting state, at random(uniformly)
+    b , n = state_transition()
+    #Create an episode object, which will have 
+    #The history of the trajectory
+    episode = Episode(length = episode_length)
+    for j in range(episode_length):
+        #Get the action, according to the policy we defined before
+        delta_t, alpha = get_action(b,n,sigma,theta) #pi(a|s,theta)
+        #Then compute the residual ratio, after n_iter of the RK2 solver.
+        res_ratio = compute_res_ratio(b,n,delta_t,alpha,n_iter = 10)
+        reward = 1 - res_ratio #The lower the res ratio, the better the reward
+        #Save the state action and rewards inside the episode object
+        #so that we can access it later
+        episode.save(b,n,alpha,delta_t,reward, position = j)
+        #Then get to a new state, at random
+        b , n = state_transition()
+    #Now that we have an episode, we can apply REINFORCE
+    #and update our policy accordingly
+    for k in range(episode_length):
+        #Get access to s_k, a_k, r_{k+1}
+        b , n , delta_t, alpha , reward = episode.get(k)
+        #Get the log likelihood of the action a_k, as in Eq 6.4
+        log_lik_gradient = get_log_lik_gradient(b,n,alpha,delta_t,sigma)
+        #Estimage the return Eq 5.9
+        estimated_return = 0
+        for l in range(k, episode_length):
+            #episode.reward_hist[l] is R_{l+1}
+            estimated_return += episode.reward_hist[l] * (gamma**(l-t))
+        ##Update the policy
+        theta = theta + learning_rate * log_lik_gradient * estimated_return
+#We end up with an updated theta, that is a better policy.
+
+
+```
+
+1. This imports numpy, eh
+
 
 ### A first experiment
 
 We implement the REINFORCE algorithm to the test problem. There are a few hyperparameters to set.
 
 - The learning rate is set to $\alpha=1\times10^{-8}$.
-- The discount rate is set to $\gamma = 0$, as the state transitions are completely random, there is no reason to prefer long term rewards.
+- The discount rate is set to $\gamma = 0$, as the state transitions have no relationship with the actions taken, there is no reason to prefer long term rewards.
 - Because the discount rate is so low, there is no bias added by estimating the returns at the end of the episodes. The episodes length is set to $20$ as we want to use the updated policy as often as possible.
 - The standard deviation of the policy parameters is set to $\sigma = 0.1$.
 
 This leaves the choice of the initial value for $\theta$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-res_ratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is a reasonable choice. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.3$, and $\theta_5=2$, the other parameters are set to 0.
 
-The algorithm is run for 50000 episodes, and we observe the evolution of the theta parameters(@fig-theta_evolution_exp1). 
+The algorithm is run for 50000 episodes, and we observe the evolution of the parameters theta(@fig-theta_evolution_exp1). 
 
 Since the discount rate is set to $0$, in any state, the return is the instant reward received by the agent over a single episode. So, for an episode of length $l$, we have the rewards $r_1, r_2, \dots, r_l$. Then, we can plot the average reward $r_{av} = \frac{r_1 + r_2 +\dots + r_l}{l}$ over each episode. Because the variance of $r_{av}$ is still high, we use the rolling average of $r_{av}$ over the last $k = 50$ episodes as a smoother. 
 
 The average reward is the no scaling reward in @fig-experimentreward and is trending upward with successive episodes, which is the intended behavior of the algorithm. However, there are certain problems that have been made apparent by the two plots:
 
-- Despite running the algorithm for a long time, some of the $\theta$ parameters have barely changed, and it is clear that we are far from any convergence of the reward function. 
+- Despite running the algorithm for a long time, some of the  parameters $\theta$ have barely changed, and it is clear that we are far from any convergence of the reward function. 
 - Even with smoothing, it is apparent that the method has a high variance.
-- After the full It seems that $\theta_1$ and $\theta_3$ vary quite a bit over time whereas the other parameters have a steady rate of change.
+- It seems that $\theta_1$ and $\theta_3$ vary quite a bit over time whereas the other parameters have a steady rate of change.
 
 ```{python}
 #| echo: false
 #| warning: false
 #| fig-cap: Evolution of the $\theta$ parameters in a first experiment.
 #| label: fig-theta_evolution_exp1
-#| out-width: "50%"
+#| out-width: "100%"
 
 exp2_file = 'experiment_data/exp2/log.csv'
 exp1_file = 'experiment_data/exp1/log.csv'
@@ -187,7 +227,7 @@ df_theta_exp1 = df_exp_tidy.filter(pl.col('experiment_number') == "1")
 p1 = (ggplot(df_theta_exp1, aes(x = 'episode_no_1000', y = 'value'))
 + geom_line()
 + facet_wrap('~variable', scales='free_y')
-+ theme_seaborn()
++ theme_bw()
 + theme(panel_spacing_x= 0.8)
 + xlab('Episode no. / 1000')
 + ylab('Theta')
@@ -213,10 +253,10 @@ df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','experiment_number').
 
 p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = 'experiment_number'))
 + geom_line()
-+ theme_seaborn()
++ theme_bw()
++ labs(fill='')
 + xlab('Episode number')
 + xlim(0,50000)
-+ labs(color = 'Re-scaling?')
 + scale_color_discrete(labels = ['No scaling','Scaling for $n$']))
 # + coord_cartesian(ylim=(-0.1,0.01)))
 
@@ -227,14 +267,16 @@ fig.show()
 
 The slow apparent convergence rate can not be mitigated by a higher learning rate, as this empirically leads to divergence issues. 
 
-The high variance is typical of reinforcement learning tasks, and in particular Monte Carlo based methods, which REINFORCE is a part of. That being said, there exists much better methods that can reduce this variance, at the expense of introducing some bias, such as for example actor-critics methods [@Sutton1998, chap. 13.5], or proximal policy optimization(PPO) @DBLP:journals/corr/SchulmanWDRK17. Both of these methods are not explored in this thesis.
+The high variance is typical of reinforcement learning tasks, and in particular Monte Carlo based methods, which REINFORCE is a part of. That being said, there exists much better methods that can reduce this variance, at the expense of introducing some bias, such as for example actor-critics methods [@Sutton1998, chap. 13.5], or proximal policy optimization (PPO) @DBLP:journals/corr/SchulmanWDRK17. Both of these methods are not explored in this thesis.
 
 
 ## Scaling the parameters 
 
-### An example of gradient descent
+To address the slow convergence problem, we start with a motivating example.
 
-Consider the objective function $f(x,y) = x^2 + 9y^2$. The function admits a global minimum at $x = y = 0$, and its gradient given by 
+### A motivating example of gradient descent
+
+Consider the loss function $f(x,y) = x^2 + 9y^2$. The function admits a global minimum at $x = y = 0$, and its gradient given by 
 
 $$
 \nabla f(x,y) = (2x,18y)^\intercal.
@@ -255,7 +297,7 @@ y_t
 \end{pmatrix}.
 $$
 
-That is $x_{t+1} = (1-2\alpha)x_t$ and $y_{t+1} = (1-18\alpha)y_t$. The algorithms converge to $x=y=0$ if and only if $\alpha<1/9$. If however, $\frac{1}{9}<\alpha<1$, we will have convergence for $x$, but not for $y$.
+That is $x_{t+1} = (1-2\alpha)x_t$ and $y_{t+1} = (1-18\alpha)y_t$. The iterates converge to $x=y=0$ if and only if $\alpha<1/9$. If however, $\frac{1}{9}<\alpha<1$, we will have convergence for $x$, but not for $y$.
 
 The reason for this is that the gradient is steeper in the $y$ direction than the $x$ direction, which leads to comparatively bigger change in $y$ than $x$ in the gradient descent iterations.
 
@@ -279,15 +321,27 @@ That is, $x_{t+1} = (1-2\alpha_x)x_t$ and $z_{t+1} = (1-2\alpha_y)y_t$. This con
 
 ### Changing the variable
 
-We have an expression for the policy of the gradient of the policy in @eq-policyGradient. In particular, in @eq-nabla_xi_alpha and @eq-nabla_xi_delta_t, we remark that the gradient value in the directions of $\theta_1$ and $\theta_3$ have a similar expression. Namely, it "depends" strongly on $n$, which can get up to values of $200$. Similarly, $\theta_0$ and $\theta_2$ depends on $b$, and $\theta_4$ and $\theta_5$ depend on neither. However, $b$ can only take values between $0$ and $1$. This motivates the idea that the gradient may be in practice way steeper in the $\theta_1$ and $\theta_3$ directions than the other ones.
-
-Therefore, instead of using $n$ directly, we implement the scaled variable
+This section is born from an intuitive idea and is for this reason less formal than the rest. Looking at the equation for the gradient of the log policy (@eq-policyGradient), we notice that the gradient has a similar expression in each direction. More particularly, the gradient in the direction $i$ is given by the partial derivative
 
 $$
-n' = \frac{n-5}{200},
+\frac{\partial \ln \pi(a|s,\mathbfit{\theta})}{\partial \theta_i} = \xi_{\alpha,\Delta t} (\_) \theta_i
 $$
 
-which can now vary  between $0$ and $1$. Everything then follows by simply replacing $n$ by $n'$ in @sec-linear_policy. The new deterministic policy is 
+where $\xi_{\alpha,\Delta t}$ is either $\xi_\alpha$ (@eq-nabla_xi_alpha) or $\xi_{\Delta t}$ (@eq-nabla_xi_delta_t), and $(\_)$ is either:
+
+- $b$ in the directions $\theta_0$ and $\theta_2$.
+- $n$ in the directions $\theta_1$ and $\theta_3$.
+- $1$ in the directions $\theta_4$ and $\theta_5$.
+
+Using the motivating example above, we've seen that it can be a good idea to rescale some variables so that the gradient is as "steep" in all directions. However, in this case, $n$ can vary between $5$ and $200$, while $b$ only varies between $0$ and $1$. This motivate the idea that, in order to make a gradient "as steep" in all directions.
+
+Instead of using $n$ directly, we now use the scaled variable
+
+$$
+n' = \frac{n-5}{200}.
+$$
+
+Since $n$ can vary between $5$ and $200$, $n'$ can have values between $0$ and $1$, just like the values of $b$. Everything then follows by simply replacing $n$ by $n'$ in @sec-linear_policy. The new deterministic policy is 
 
 $$
 \begin{pmatrix}
@@ -309,9 +363,9 @@ n'
 $${#eq-policy2_deterministic_part}
 
 
-and the expression of the gradient is unchanged, with the exception of replacing $n$ by $n'$ everywhere. 
+and the equation of the gradient  is unchanged, with the exception of replacing $n$ by $n'$ everywhere. 
 
-With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to $\alpha = 2\times 10^{-4}$ without divergence. Compared to the first experiment, the evolution of the policy parameters is much higher(see @fig-variable_theta)! The average episode reward is also much better, as seen in @fig-experimentreward.
+With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to $\alpha = 2\times 10^{-4}$ without divergence. Compared to the first experiment, the evolution of the parameters is much more marked (see @fig-variable_theta)! The average episode reward is also much better, as seen in @fig-experimentreward.
 
 
 ```{python}
@@ -320,6 +374,7 @@ With this change implemented, we rerun the first experiment. All the parameters 
 #| fig-cap: Evolution of the theta parameters with different initial parameters.
 #| label: fig-variable_theta
 #| cache: true
+#| fig-height: '20%'
 
 exp2_file = 'experiment_data/exp2/log.csv'
 exp_initial_param1_file = 'experiment_data/exp_initial_param1/log.csv'
@@ -343,22 +398,26 @@ df_exp_p2 = df_exp_p2.with_columns(pl.lit(initial_theta_p2).alias('Initial theta
 
 df_exp = pl.concat([df_exp2,df_exp_p1, df_exp_p2],rechunk=True)
 
-#Make it tidy + ep/1000
+#Make it tidy + ep/10000
 df_exp_tidy = df_exp.melt(
     id_vars=['ep_number','avg_ep_reward','Initial theta'],
     value_vars=['theta_0', 'theta_1', 'theta_2', 'theta_3', 'theta_4', 'theta_5']
     ).with_columns(
-        (pl.col('ep_number')/10000).alias('episode_no_10000')
+        (pl.col('ep_number')/1000).alias('episode_no_1000')
     )
+    
 
 
-p1 = (ggplot(df_exp_tidy, aes(x = 'episode_no_10000', y = 'value', colour = 'Initial theta'))
-+ geom_line()
+
+p1 = (ggplot(df_exp_tidy, aes(x = 'episode_no_1000', y = 'value', color = 'Initial theta'))
++ geom_line(aes(colour = 'Initial theta'))
 + facet_wrap('~variable', scales='free_y')
-+ theme_seaborn()
-+ theme(panel_spacing_x= 0.7)
-+ xlab('Episode no. / 10000')
++ theme_bw()
++ theme(panel_spacing_x= 0.4)
++ xlab('Episode no. / 1000')
 + ylab('Theta')
++ scale_color_manual(values = ['#1d493bff', '#fc9167ff', '#506fb0ff'])
++ theme(legend_position=[0.5,-0.04],figure_size=(6,3.5))
 )
 
 fig = p1.draw()
@@ -370,15 +429,19 @@ fig.show()
 #| warning: false
 #| fig-cap: Evolution of the rolling average($k=1000$) of the average episode reward for different initial parameters. 
 #| label: fig-reward_initial_theta
+#| cache: true
 
 #Don't use the tidy data 
 df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','Initial theta').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=1000).alias('rolling reward'))
 
+
+
 p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = 'Initial theta'))
 + geom_line()
-+ theme_seaborn()
++ theme_bw()
 + xlab('Episode number')
-+ coord_cartesian(ylim=(0,0.0075)))
++ coord_cartesian(ylim=(-0.001,0.0075))
++ scale_color_manual(values = ['#1d493bff', '#fc9167ff', '#506fb0ff']))
 
 fig = p2.draw()
 fig.show()
@@ -390,7 +453,7 @@ fig.show()
 
 ## Impact of initial conditions
 
-Gradient descent algorithms use the local information about an objective function $J(\theta)$ to compute the update $\theta \rightarrow \theta - \alpha \nabla J(\theta)$. This local behavior also means that any convergence of gradient descent is to a local minimum, and we can't be certain that this mimimum is a global mimimum.
+Gradient based iterations use the local information about an objective(or loss) function $J(\theta)$ to compute the update $\theta \rightarrow \theta \pm \alpha \nabla J(\theta)$. This local behavior also means that any convergence of gradient descent is to a local minimum, and we can't be certain that this mimimum is a global mimimum.
 
  Therefore, it is interesting to test whether the algorithm converges to the same values regardless of initial conditions. The third experiment is then to run the algorithm with the same parameters as before, but with varied initial conditions for the $\theta$ vector, and to visualize the results, both in the average rewards and the evolution of $\theta$ parameters over 200000 episodes. 
 

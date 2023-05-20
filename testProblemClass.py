@@ -90,9 +90,12 @@ class TestProblem:
 
     def main_solver(self, n_iter=10, deterministic_policy = False):
         """ 
-         Main solver for the problem, 
+        Main solver for the problem, 
         use the current Policy to calculate the approximated solution
-        after n_iter pseudo time steps. """
+        after n_iter pseudo time steps. 
+        Set deterministic policy to True to get the mu_alpha, mu_delta_t,
+        aka the mean in the policy normal distribution.
+        """
         t = 0
         # Initial guess y = e
         y = np.copy(self.e)

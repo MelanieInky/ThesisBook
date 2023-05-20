@@ -46,7 +46,7 @@ We start by modelling the states. The most natural way of defining the states is
 
 ### Modelling the actions and the policy {.unnumbered}
 
-Once we know a specific state, that is the problem parameters, we need to choose the two solver parameters $\Delta t$ and $\alpha$. A specific action is then a pair $a = (\Delta t, \alpha) \in \mathbb{R^+}\times [0,1]$. The policy is then denoted by $\pi(a = (\Delta t, \alpha) |s = (b,n))$.
+Once we know a specific state, that is the problem parameters, we need to choose the two solver parameters $\Delta t$ and $\alpha$. A specific action is then a pair $a = (\Delta t, \alpha) \in \mathbb{R^+}\times [0,1]$. The policy is then denoted by $\pi(a = (\Delta t, \alpha) |s = (b,n))$. We will discuss the policy more in depth in the next chapter.
 
 ### Modelling the rewards {.unnumbered}
 
@@ -62,7 +62,7 @@ This reward is positive when the residual ratio is less than one, and negative o
  
 In the definition of a Markov decision process (@def-Markov_decision_process), we also have a probabilistic model of the state and rewards transition $p(s',r|s,a)$. Right away, we can see that this model is difficult to define, as we can not now, for a specific state and action, what reward we will get. 
 
-On the other hand, we can still control the state transitions. In this regard, we choose a new state, at random, after an action and reward is computed. More precisely, we choose a new parameter $b$, uniformly between 0 and 1, and a new parameter $n$, between $5$ and $200$, following a discrete uniform distribution as well.
+On the other hand, we can still control the state transitions. In this regard, we choose a new state, at random, after an action and reward is computed. More precisely, we choose a new parameter $b$, uniformly between 0 and 1, and a new parameter $n$, between $5$ and $200$, following a discrete uniform distribution as well. These values for $n$ are arbitrary, with a maximum of $200$ to spare us of long computational time when computing the rewards. We also cap the minimum value of $n$ to an arbitrary minimum of $5$ as those values are simply too low to get a acceptable discretization error, and we do not want to train an agent to solve for these states. 
 
 
 ### Other challenges {.unnumbered}
@@ -82,7 +82,7 @@ Similarly, the policy is defined by choosing the values $(\alpha,\Delta t) \in [
 
 One approach would be to discretize the entire state $\times$ action space, and then to apply classical dynamic programming algorithms to get some results. Then, after an optimal policy is found, do some form of interpolation for problem parameters outside of the discretized space. This approach has its own merit, as there are 3 dimensions that need to be discretized, and $n$ can be chosen within a finite range. 
 
-Another approach is to use an approximation function. One way to do that is to approximate the value function $v(s)$ by some parametrization $v(s) \approx \hat{v}(s,\omega)$ where $\omega \in \mathbb{R}^d$ are $d$ parameters. Such methods are called *value based*. The method we use in this thesis, on the other hand, use an approximation of the policy function defined as $\pi(a|s,\theta)$, where $\theta\in \mathbb{R}^d$ is a parameter vector is dimension $d$. Such methods are called *policy based*. The reason to chose from this class of algorithm is two-fold.
+Another approach is to use an approximation function. One way to do that is to approximate the value function $v(s)$ by some parametrization $v(s) \approx \hat{v}(s,\omega)$ where $\omega \in \mathbb{R}^d$ are $d$ parameters. Such methods are called *value based*. The method we use in this thesis, on the other hand, use an approximation of the policy function defined as $\pi(a|s,\mathbfit{\theta})$, where $\mathbfit{\theta}\in \mathbb{R}^d$ is a parameter vector. Such methods are called *policy based*. The reason to chose from this class of algorithm is two-fold.
 
 - When thinking about the test problem, a straightforward approach is to choose the solver parameters as a linear function of the problem parameters. A policy based approach allow us to do exactly this. 
 
@@ -218,7 +218,8 @@ This is a particular expression of the policy gradient theorem. The reason to pu
 We state the policy gradient theorem in a more general form.
 
 :::{#thm-policyGradient}
-**Policy gradient theorem**(For continuing cases, with discount factor $\gamma < 1$.)
+**Policy gradient theorem** (For continuing cases, with discount factor $\gamma < 1$.)
+
 Let $\pi(a|s,\mathbfit{\theta})$ be a stochastic policy that is derivable w.r.t $\mathbfit{\theta}$.
 
 Let $\mu(s)$ be the probability mass function of the stationary distribution of the states, following the policy $\pi$.
@@ -247,7 +248,7 @@ The policy gradient theorem is powerful in the sense that we can derive the grad
 Here, we introduce reinforce the classic REINFORCE algorithm @Williams1992. Even with the policy gradient theorem, we are still faced with the problem of estimating the action values $q_\pi$. We remark that the formula in the policy gradient is an expectation:
 
 $$
-\nabla_{\mathbfit{\theta}} J(\theta) \propto E\left[\sum_a q_\pi(a,S)\nabla \pi(a|S, {\mathbfit{\theta}})\right],
+\nabla_{\mathbfit{\theta}} J(\mathbfit{\theta}) \propto E\left[\sum_a q_\pi(a,S)\nabla \pi(a|S, \mathbfit{\theta})\right],
 $$
  
 where $S$ is the random variable with probability mass function $\mu(s)$.
@@ -303,7 +304,7 @@ $$
 S_0,A_0 \to S_{1}, A_{1} \to S_{2},A_{2} \dots .
 $$
 
-Then, we can estimate, via Monte Carlo estimation, the return $G_0$.Doing this, we also have access to the trajectory 
+Then, we can estimate, via Monte Carlo estimation, the return $G_0$. Doing this, we also have access to the trajectory 
 
 $$
 S_{1}, A_{1} \to S_{2},A_{2} \dots,
@@ -315,7 +316,7 @@ $$
 S_0,A_0 \to S_1,A_1,R_1 \to S_2,A_2,R_2 \to \dots \to S_{\tau +1}, R_{\tau +1}.
 $$
 
-For any $t = 0,\dots ,T$, the estimated return is then defined as 
+For any $t = 0,\dots ,T$, the estimated return is then defined as
 
 $$
 \hat{G}_t = \sum_{k=t}^\tau \gamma^{t-k}R_{k+1}.
@@ -326,24 +327,25 @@ Because the initial state is chosen following a stationary distribution, we also
 :::
 
 
-We can now state the REINFORCE algorithm@Williams1992, also called policy gradient Monte-Carlo in pseudo code format:
+We can now state the REINFORCE algorithm [@Williams1992], also called policy gradient Monte-Carlo in pseudo code format:
 
 ---
 
 | **REINFORCE algorithm pseudocode**
 | **INPUT:** 
-| - A parameter vector $\theta \in\mathbb{R}^d$, and a parametrized policy $\pi(a|s,\theta)$ with computable gradient $\nabla_\theta \pi(a|s,\theta)$.
-| - Learning rate $\alpha$
-| - Discount rate $\gamma$
-| - Episode length $\tau+1$
-| **OUTPUT:** The updated $\theta$ parameters ;  
+| - A parameter vector $\theta \in\mathbb{R}^d$, and a parametrized policy $\pi(a|s,\theta)$ with computable gradient $\nabla_\theta \pi(a|s,\theta)$;
+| - Learning rate $\alpha$;
+| - Discount rate $\gamma$;
+| - Episode length $\tau+1$;
+| - Number of episode to iterate for $n$;
+| **OUTPUT:** The updated parameter $\mathbfit{\theta}$;  
 | 
-| **FOR** any number of episode:  
+| **FOR** $n$ episodes:  
 |       Compute an episode, following $\pi(a|s,\theta)$, of length T+2 the form  $S_0,A_0 \to S_1,A_1,R_1 \to S_2,A_2,R_2 \to \dots \to S_{\tau+1}, R_{\tau+1}$;
 |       **FOR** t=0 ... \tau:
 |           Compute the estimated return $\hat{G_t} = \sum_{k=t}^\tau \gamma^{t-k}R_{k+1}$;  
 |           Compute the log gradient $\nabla \ln \pi(A_t|S_t,\theta)$;  
-|           Update $\theta \leftarrow \theta + \alpha \hat{G_t} \nabla \ln \pi(A_t|S_t,\theta)$;
+|           Update $\theta \leftarrow \theta + \alpha \hat{G_t} \nabla \ln \pi(A_t|S_t,\mathbfit{\theta})$;
 |
 
 ---
@@ -351,11 +353,11 @@ We can now state the REINFORCE algorithm@Williams1992, also called policy gradie
 
 :::{.remark}
 
-Because of the finite episode length. The REINFORCE algorithm is more suited for episodic tasks, but it is also usable for continuing tasks, if we accept some bias. Another alternative would be to discard the last few estimated returns $\hat{G}_\tau, \hat{G}_{\tau-1}, \dots$ as they are the most biased. 
+Because of the finite episode length, the REINFORCE algorithm is more suited for episodic tasks, but it is also usable for continuing tasks, if we accept some bias. Another alternative to reduce bias would be to discard the last few estimated returns $\hat{G}_\tau, \hat{G}_{\tau-1}, \dots$ as they are the most biased. 
 :::
 
 
-The REINFORCE update can be interpreted as updating the parameters to make it more likely to take an action if the estimated sample return is good, and the opposite otherwise. Furthermore, by looking at the term $\nabla \ln \pi = \frac{\nabla \pi}{\pi}$, we can see that if the probability of taking the action is rare, then the gradient becomes bigger! That way, this gradient act as a balance between exploration and exploitation. Otherwise we would update the parameters as much for a rare action than a common one, and the common action is taken more often which lead to the common action having much more sway in the process.
+The REINFORCE update can be interpreted as updating the parameters to make it more likely to take an action if the estimated sample return is good, and the opposite otherwise. Furthermore, by looking at the term $\nabla \ln \pi = \frac{\nabla \pi}{\pi}$, we can see that if the probability of taking the action is low, then the gradient becomes bigger! That way, this gradient act as a balance between exploration and exploitation. Otherwise we would update the parameters as much for a rare action than a common one, and the common action is taken more often which lead to the common action having much more sway in the process.
 
 
 
