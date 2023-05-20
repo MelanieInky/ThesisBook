@@ -58,7 +58,7 @@ $$
 
 This reward is positive when the residual ratio is less than one, and negative otherwise. This mean that a reinforcement learning agent, which seek to maximize the reward it gets, will aim to minimize the residual ratio. 
 
-### State transitions 
+### State transitions {.unnumbered}
  
 In the definition of a Markov decision process (@def-Markov_decision_process), we also have a probabilistic model of the state and rewards transition $p(s',r|s,a)$. Right away, we can see that this model is difficult to define, as we can not now, for a specific state and action, what reward we will get. 
 

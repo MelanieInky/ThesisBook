@@ -167,8 +167,6 @@ for i in range(number_of_episodes):
 
 ```
 
-1. This imports numpy, eh
-
 
 ### A first experiment
 
@@ -257,7 +255,9 @@ p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = '
 + labs(fill='')
 + xlab('Episode number')
 + xlim(0,50000)
-+ scale_color_discrete(labels = ['No scaling','Scaling for $n$']))
++ scale_color_manual(values = ['#1d493bff', '#fc9167ff'], labels = ['No scaling','Scaling for $n$'])
++ theme(legend_title=element_blank())
+)
 # + coord_cartesian(ylim=(-0.1,0.01)))
 
 fig = p2.draw()
@@ -365,7 +365,7 @@ $${#eq-policy2_deterministic_part}
 
 and the equation of the gradient  is unchanged, with the exception of replacing $n$ by $n'$ everywhere. 
 
-With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to $\alpha = 2\times 10^{-4}$ without divergence. Compared to the first experiment, the evolution of the parameters is much more marked (see @fig-variable_theta)! The average episode reward is also much better, as seen in @fig-experimentreward.
+With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to $\alpha = 2\times 10^{-4}$ without divergence. Compared to the first experiment, the average episode reward is much better, as seen in @fig-experimentreward.
 
 
 ```{python}
@@ -380,10 +380,17 @@ exp2_file = 'experiment_data/exp2/log.csv'
 exp_initial_param1_file = 'experiment_data/exp_initial_param1/log.csv'
 exp_initial_param2_file = 'experiment_data/exp_initial_param2/log.csv'
 
-#flksjdfl
-df_exp2 = pl.read_csv(exp2_file)
-df_exp_p1 = pl.read_csv(exp_initial_param1_file)
-df_exp_p2 = pl.read_csv(exp_initial_param2_file)
+k = 500
+#get the data, compute rolling avg and only keep a 10th of the data for speed
+df_exp2 = pl.read_csv(exp2_file) \
+    .with_columns(pl.col('avg_ep_reward').rolling_mean(k).alias('Rolling avg')) \
+    .filter(pl.col('ep_number') % 10 == 0) 
+df_exp_p1 = pl.read_csv(exp_initial_param1_file) \
+    .with_columns(pl.col('avg_ep_reward').rolling_mean(k).alias('Rolling avg')) \
+    .filter(pl.col('ep_number') % 10 == 0)
+df_exp_p2 = pl.read_csv(exp_initial_param2_file) \
+    .with_columns(pl.col('avg_ep_reward').rolling_mean(k).alias('Rolling avg')) \
+    .filter(pl.col('ep_number') % 10 == 0)
 
 
 initial_theta_exp2 = '[0,0,0,0,0.3,2]'
@@ -427,20 +434,20 @@ fig.show()
 ```{python}
 #| echo: false
 #| warning: false
-#| fig-cap: Evolution of the rolling average($k=1000$) of the average episode reward for different initial parameters. 
+#| fig-cap: Evolution of the rolling average($k=500$) of the average episode reward for different initial parameters. 
 #| label: fig-reward_initial_theta
 #| cache: true
 
 #Don't use the tidy data 
-df_exp_reward = df_exp.select('ep_number', 'avg_ep_reward','Initial theta').with_columns(pl.col('avg_ep_reward').rolling_mean(window_size=1000).alias('rolling reward'))
+df_exp_reward = df_exp.select('ep_number', 'Rolling avg','Initial theta')
 
 
 
-p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = 'Initial theta'))
+p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'Rolling avg', color = 'Initial theta'))
 + geom_line()
 + theme_bw()
 + xlab('Episode number')
-+ coord_cartesian(ylim=(-0.001,0.0075))
++ coord_cartesian( ylim=(0,0.01))
 + scale_color_manual(values = ['#1d493bff', '#fc9167ff', '#506fb0ff']))
 
 fig = p2.draw()
@@ -466,19 +473,21 @@ Gradient based iterations use the local information about an objective(or loss) 
 
 ## Further results
 
-The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how exactly the model is performing once we have some found some optimal parameters $\theta^*$. 
-
-In particular, while the policy function is stochastic during training, the actual policy we choose can be deterministic. So, at the risk of adding some bias, we simply remove the noise $\sigma$ in the policy and chose to use the  deterministic policy $\alpha = \mu_\alpha$, $\Delta t = \mu_{\Delta t}$, as in @eq-policy_deterministic_part, and we note this policy $\pi_d(a|s,\theta^*)$. For the value of the parameters, we use their last values in the second experiment, which are(with some rounding off)
+The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how the model performs once we have some found some optimal parameters $\theta^*$. In particular, by using the REINFORCE algorithm, the policy function has to be stochastic during training. The actual policy we choose can, however, be deterministic. So, at the risk of adding some bias, we remove the noise $\sigma$ in the policy and choose to use the  "deterministic policy" $\alpha = \mu_\alpha$, $\Delta t = \mu_{\Delta t}$, as in @eq-policy_deterministic_part, and we denote this policy by $\pi_d(a|s,\theta^*)$. For the value of $\mathbfit{\theta}^*$, we use its last value in the second experiment, which is (with some rounding off)
 
 $$
-\theta^* = (-3.606 \times 10^{-3},4.476\times 10^{-3},-3.598\times 10^{-4},-0.3542 ,0.2435,1.1305)^\intercal.
+\mathbfit{\theta}^* = (-3.606 \times 10^{-3},4.476\times 10^{-3},-3.598\times 10^{-4},-0.3542 ,0.2435,1.1305)^\intercal.
 $$
 
-Then, we compute the value of $\rho_{10}$, for this policy and for different values of $n$ and $b$, the results are as below in @fig-learned_policy. While we have convergence at any point, the convergence is slow, and the maximum value for $\rho_{10}$ is $0.99917$. Referring back to the grid search experiment(see @fig-res_ratio_comparison), this slow convergence is also partly an issue with the solver itself.
+Then, we compute the value of $\rho_{10,b,n}$ using this policy and for different values of $n$ and $b$, the results are as below in @fig-learned_policy. While we have convergence at any point, the convergence is slow, and the maximum value for $\rho_{10}$ is $0.99917$. Referring back to the grid search experiment(see @fig-res_ratio_comparison), this slow convergence is also partly an issue with the solver itself.
 
-Since we trained the policy on $\rho_{10}$, it may be a good idea to check if the convergence still holds when we compute more iterations of the solver. The result are in @fig-learned_policy. There are some points where the solver diverges, which is a problem in particular because the point where it diverges are for small values of $b$, which is often the case physically. 
+Since we trained the policy on $\rho_{10}$, it may be a good idea to check if the solver still converges when we compute more iterations. The result are in @fig-learned_policy. There are some points where the solver diverges, which is a problem in particular because the point where it diverges are for small values of $b$, which is often the case physically. 
 
-This divergence indicates that it may be a good idea, as a further study to further train the learned policy by computing $\rho_{100}$, and having a reward of $1-\rho_{100}$ instead of $1-\rho_{10}$. This of course mean that the training time will be longer. 
+This divergence indicates that it may be a good idea to further train the learned policy by computing $\rho_{100}$, and having a reward of $1-\rho_{100}$ instead of $1-\rho_{10}$. This of course means that the training time will have to be longer. In that case, we can set $\mathbfit{\theta}^*$ as a starting parameter for the policy.
+
+
+
+
 
 ```{python}
 #| echo: false
@@ -566,7 +575,7 @@ plot1 = ggplot(df, aes(x = "b", y = "n", fill ="factor(res_ratio_10)")) \
     + xlab('b') \
     + ylab('n') \
     + labs(fill = 'Residual ratio.') \
-    + theme_seaborn()\
+    + theme_classic()\
     + scale_fill_manual(values = ['#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#b10026'], labels = level_order1) \
     + theme(legend_background=element_rect(fill='#EBEBEB'))
 
@@ -581,7 +590,7 @@ plot2 = ggplot(df, aes(x = 'b', y = 'n', fill ='factor(res_ratio_100)')) \
     + ylab('n') \
     + labs(fill = 'Residual ratio.') \
     + scale_fill_manual(values = ['#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','black'], labels = level_order2)\
-    + theme_seaborn() \
+    + theme_classic() \
     + theme(legend_background=element_rect(fill='#EBEBEB'))
 
 
@@ -602,6 +611,3 @@ Evolution of the residual ratio $\rho_{10}$ and $\rho_{100}$, with the learned p
 
 
 
-## (Possible section with comparison of results).
-
-This possible section is to see if we can compare results.
