@@ -108,11 +108,11 @@ $$ {#eq-policyGradient}
 
 
 
-## Implementation of the REINFORCE algorithm.
+## Implementation of the REINFORCE algorithm
 
 Now that everything as been defined, the REINFORCE algorithm can be applied to find an optimal policy. 
 
-### Algorithm code. 
+### Algorithm code
 We present in this section the full training in a pseudo code format. The full code is written in a more modular way, and is available on the appendix, as well as on [GitHub](https://github.com/MelanieInky/ThesisBook). 
 
 
