@@ -1,16 +1,24 @@
-## Abstract {.unnumbered}
-
-Under some stability condition on a matrix $A$, solving the linear system $Ax = b$ can be done by solving the initial value problem $x' = Ax-b$. In this bachelor thesis, we study the use of this method to solve linear systems which arise from the discretization via finite differences of the one dimensional, steady state convection diffusion equation. These systems depend on two problem parameters.
-To solve these initial value problems, we use a two stages explicit Runge-Kutta method with two parameters to chose, which we aim to optimize using reinforcement learning. 
-
-Using policy gradient methods, and in particular the REINFORCE algorithm, we find that with some care, reinforcement learning can be used to learn the 
-solver parameters as a function of the two problem parameters. These results are however tempered by some limitations, as the solver can diverge in certain cases, and convergence speed remains low in general. Some different approach to using reinforcement learning are thus suggested.
-
-## Acknowledgements {.unnumbered}
+# Introduction {.unnumbered}
 
 
-I would like to express my deepest thanks to my supervisor Philipp Birken at the university of Lund for the regular discussion sessions, and without which I could not have written this thesis.
+Machine learning is everywhere. It has applications in computer vision @rombach2022highresolution, robotic [@RL_robotics], finance [@RL_finance_review], recommender systems[@chen2021survey], playing games at a high level[@Silver2016] or even discovering new matrix multiplication  algorithms @Fawzi2022. The use of machine learning in scientific problems which has been aptly called  *scientific machine learning* is also growing, with the most important example being combining neural network and physic laws to either discover or solve partial differential equations [@cuomo2022scientific]. 
 
-I would also like to thank my partner Sarah (who also fixed an issue I struggled with for weeks in a matter of minutes), for being an amazing partner who is always there to help and encourage me in all aspects of my life. My gratitude also goes to our cat Alyx for her emotional support and the deep talks we have. 
+In this thesis, we focus on studying reinforcement learning, which is one of the three main machine learning paradigm. The three main paradigm are as follow[@Sutton1998, Chap. 1.1]:
 
-Finally, I would like to thank Paulina Ibek, who worked on a similar thesis at the same time, for the discussions which led to exchanging ideas.
+- Supervised learning, where learn using data containing an input, and a desired output. Regression models are an example of a supervised learning.
+- Unsupervised learning, where the data only has an input but no desired output. Example include clustering algorithms.
+- Reinforcement learning, in which we have an intelligent agent who learns to do something by interacting with its environment, receiving feedback in the form of rewards which the agent want to maximize.
+
+What sets apart reinforcement learning from its cousins unsupervised and supervised learning is the introduction of the concept of reward. The agent learns by trial and error, and want to maximizes the rewards it gets over time. This is, in essence, quite similar to how we animals learn to do things, and it is no surprise that reinforcement learning traces its roots from the field of animal learning @towardsdatascienceReinforcementLearning. Another important root of reinforcement learning comes from the field of optimal control, where the agent and environment of reinforcement learning are respectively the controller and controlled system in control theory [@Sutton1998, Chap. 1.7].  
+
+To study reinforcement learning, we need a playground. That playground could be an already established playground (such as the Gymnasium API), but in this thesis we use our own playground, which we find in the realm of numerical differential equation solvers. 
+
+Numerical methods for differential equations are amongst the most important methods in numerical analysis. All of these methods have specific strengths and weaknesses. They all have, however, some parameters that need to be chosen, if only for the step size. These parameters have to be chosen to maximize performances, and depend on the problem. In some cases they are taken using some heuristics, but they can also be searched for computationally, which is an issue, as any computation means more time to get to the solution. It would therefore be a great time saver if a computer could *learn* these heuristics, for example using reinforcement learning! This is the playground we use in this thesis, albeit with a reduced scope. 
+
+We start by motivating the use of numerical ODE solvers to solve linear systems. As a case study, we have a specific type of linear systems, which appears when discretizing the steady state, one dimensional convection diffusion equation $u_{x} = bu_{xx} +1$. Doing so, we end up with two *problem parameters*, $b$, which is a physical constant, and $n$, stemming from the discretization. The studied numerical solver is an explicit Runge-Kutta method, and has two parameters, a (pseudo-) time step $\Delta t$ and another parameter $\alpha$, which need to be chosen. How to choose these *solver parameters*, as a function of the *problem parameters* is then left to the realm of reinforcement learning.
+
+We then introduce through intuitive examples (and a very cute bunny) the main concepts of reinforcement learning, such as states, actions, state transitions and rewards which are then formalized as a Markov decision process. We then introduce policy gradient methods, and in particular we introduce the classical REINFORCE [@Williams1992] algorithm, which we use to optimize the solver parameters for the studied linear systems. 
+
+The results are positive, are hampered mainly by the fact that the method used in this thesis makes poor use of what make reinforcement learning powerful in some cases. A discussion on how to redefine the problem to make better use of reinforcement learning follows. 
+
+

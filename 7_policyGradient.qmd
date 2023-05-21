@@ -195,7 +195,7 @@ $$
 Since the policy $\pi(a|s)$ is a probability over the action space, it sums to $1$ and we can get the second part of the RHS out of the sum
 
 $$
-\nabla_{\mathbfit{\theta}} v_\pi(s) = \gamma J({\mathbfit{\theta}}) + \sum_{a\in\mathcal{A}}\nabla_{\mathbfit{\theta}}\pi(a|s,{\mathbfit{\theta}})q_\pi(a,s)
+\nabla_{\mathbfit{\theta}} v_\pi(s) = \gamma J({\mathbfit{\theta}}) + \sum_{a\in\mathcal{A}}\nabla_{\mathbfit{\theta}}\pi(a|s,{\mathbfit{\theta}})q_\pi(a,s).
 $$
 
 Using $\nabla J({\mathbfit{\theta}}) = \frac{1}{|\mathcal{S}|}\sum_{s\in\mathcal{S}}\nabla_{\mathbfit{\theta}} v_\pi(s)$, we get
@@ -227,7 +227,7 @@ Let $\mu(s)$ be the probability mass function of the stationary distribution of 
 Define the objective function $J(\mathbfit{\theta}) = \overline{v_\pi(S)} = \sum_{s\in \mathcal{S}}\mu(s)v_\pi(s)$. The gradient of $J$ w.r.t $\mathbfit{\theta}$  is then proportional to the weighted sum
 
 $$
-\nabla_{\mathbfit{\theta}} J({\mathbfit{\theta}}) \propto \sum_s \mu(s) \sum_a q_\pi(a,s, {\mathbfit{\theta}})\nabla \pi(a|s, {\mathbfit{\theta}})
+\nabla_{\mathbfit{\theta}} J({\mathbfit{\theta}}) \propto \sum_s \mu(s) \sum_a q_\pi(a,s, {\mathbfit{\theta}})\nabla \pi(a|s, {\mathbfit{\theta}}).
 $$
 
 

@@ -11,7 +11,7 @@ format:
 jupyter: python3
 ---
 
-# Basics of Reinforcement Learning(RL)
+# Basics of Reinforcement Learning (RL)
 In this section, we outline the main ideas behind reinforcement learning and how they can be applied in the context of this thesis. The reader familiar with the material may skip this section. 
 
 
@@ -156,7 +156,7 @@ Finally, a Markov decision process has the Markov property, or lack of memory. T
 
 An example of Markov decision process with two states can be seen in @fig-MDP_example.
 
-![An example of Markov decision process with two states and two possible actions for each state. The dashed lines represent the model. After each action, a reward is given, here in dark red.](images/MDP.pdf){#fig-MDP_example width="40%"}
+![An example of a Markov decision process with two states $s_1$ and $s_2$ and two possible actions $a_0$ and $a_1$ for each states. The dashed lines represent the model transitions.  After each action, the process get to a new state and a reward is given, here in dark red.](images/MDP.pdf){#fig-MDP_example width="40%"}
 
 
 :::{.remark}

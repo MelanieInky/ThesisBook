@@ -81,7 +81,7 @@ where the stage values $\xi_j$ are computed sequentially as follow
 ## Application to the test problem {#sec-RK_solver_test_problem}
 
 
-We now have to solve the ODE $u'(t) = e - Mu(t)$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, and $n$ is the chosen number of subdivisions of $[0,1]$. We consider in this thesis the following RK method with two stages @BirkenNotes:
+We now have to solve the ODE $u'(t) = e - Mu(t)$ where $M$ depends on the problem parameters $b$ and $\Delta x = 1 / (n+1)$, and $n$ is the chosen number of subdivisions of $[0,1]$. We consider in this thesis the following RK method with two stages @BirkenNotes;
 
 $$
 \begin{array}
@@ -98,7 +98,7 @@ This RK method can be extended to more stages. We only need the last stage value
 
 This solver has two parameters, namely the (pseudo) time step $\Delta t$ and $\alpha$, where $\alpha \in [0,1]$. 
 
-The goal is for the solver to converge to a steady state solution as fast as possible. 
+The goal is for the solver to converge to a steady state solution in as few iterations as possible. 
 
 ### A note on stability
 
@@ -114,20 +114,20 @@ $$
 u_{n+1} = u_n + \Delta t f(t_n+\alpha \Delta t, \xi_2).
 $$
 
-In the test problem case, $f(t_n,\mathbfit{u_n}) = \mathbfit{e} - \mathbfit{Mu_n}$, and we get the update
+In the test problem case, $f(t_n,\mathbfit{u}_n) = \mathbfit{e} - \mathbfit{Mu}_n$, and we get the update
 
 $$
-\mathbfit{u_{n+1}} = \mathbfit{u_n} + \Delta t\left[\mathbfit{e}-\mathbfit{M}(\mathbfit{u}_n+\alpha\Delta t(\mathbfit{e}-\mathbfit{Mu_n}))\right].
+\mathbfit{u}_{n+1} = \mathbfit{u}_n + \Delta t\left[\mathbfit{e}-\mathbfit{M}(\mathbfit{u}_n+\alpha\Delta t(\mathbfit{e}-\mathbfit{Mu_n}))\right].
 $$
 
 After a few lines of computation, we get the following iteration:
 
 $$
-\mathbfit{u}_{n+1} = \left[\mathbfit{I}- \Delta t(\mathbfit{I}- \alpha \Delta t \mathbfit{M})\mathbfit{M}\right]\mathbfit{u_n} + \left[\Delta t(\mathbfit{I} - \alpha \Delta t \mathbfit{M})\right]\mathbfit{e}.
+\mathbfit{u}_{n+1} = \left[\mathbfit{I}- \Delta t(\mathbfit{I}- \alpha \Delta t \mathbfit{M})\mathbfit{M}\right]\mathbfit{u}_n + \left[\Delta t(\mathbfit{I} - \alpha \Delta t \mathbfit{M})\right]\mathbfit{e}.
 $${#eq-stationary_linear_iter}
 
 
-This iteration is of the form $\mathbfit{u_{n+1}} =\mathbfit{Ku_n}  + \mathbfit{Le}$, where 
+This iteration is of the form $\mathbfit{u}_{n+1} =\mathbfit{Ku}_n  + \mathbfit{Le}$, where 
 
 $$
 \mathbfit{L} = \Delta t\left[ \mathbfit{I} - \alpha \Delta t \mathbfit{M}\right]
@@ -138,18 +138,20 @@ $$
 $${#eq-K}
 
 
-We recognize this iteration as a linear stationary iteration, which converges to $\mathbfit{u}^* = \mathbfit{M}^{-1}\mathbfit{e}$ if and only if $\rho(K)<1$, [@iterative_method_book, chap. 2.2], where $\rho(\mathbfit{K})$ is the spectral radius of $\mathbfit{K}$. 
+We recognize this iteration as a linear stationary iteration, which converges to a unique fixed point for any starting value $\mathbfit{u}_0$ if and only if $\rho(K)<1$, [@iterative_method_book, chap. 2.2], where $\rho(\mathbfit{K})$ is the spectral radius of $\mathbfit{K}$. Furthermore, this iteration satisfies the consistency requirement $\mathbfit{K} = \mathbfit{I}-\mathbfit{LM}$, so the fixed point, when it exists, is $\mathbfit{u}^* = \mathbfit{M}^{-1}\mathbfit{e}$.
 
 :::{.remark}
-One may remark that $\mathbfit{K} = p(\Delta t \mathbfit{M})$ with $p(z) = 1- \alpha z + z^2$ a polynomial. This polynomial is also the stability polynomial of the RK method [@BirkenNotes].
+One may remark that $\mathbfit{K} = p(\Delta t \mathbfit{M})$ with $p(z) = 1- z + \alpha z^2$ a polynomial. This polynomial is also the stability polynomial of the RK method [@BirkenNotes].
 :::
 
 ### Residual ratios
 
-We set $\mathbfit{u_0} = \mathbfit{u(}0\mathbfit{)} = \mathbfit{e}$ as an initial value. We define the relative residual after $k$ steps as 
+We have shown in the last section the sufficient and necessary condition for the solver to converge to the desired solution $\mathbfit{u}^* = \mathbfit{M}^{-1}\mathbfit{e}$. This condition is that $\rho(\mathbfit{K})<1$. The spectral radius can be computed with power iterations [@NLA_book, Part V], but this is an expensive task that we may not be able to do in practice. Furthermore, the derivation of $\mathbfit{K}$ is specific to this method, and may not be as accessible with other methods. We instead turn our attention to another method. 
+
+We set $\mathbfit{u}_0 = \mathbfit{e}$ as an initial value. We define the relative residual after $k$ steps as 
 
 $$
-r_k = \frac{||\mathbfit{M}u_k - \mathbfit{e}||}{||\mathbfit{e}||},
+r_k = \frac{||\mathbfit{M}\mathbfit{u}_k - \mathbfit{e}||}{||\mathbfit{e}||},
 $${#eq-relative_residual}
 
 where $||.||$ is the 2-norm.
@@ -157,10 +159,10 @@ where $||.||$ is the 2-norm.
 If the solver we chose is stable, then $||r_k|| \to 0$ as $k \to \infty$. We define now the residual ratio at step $k$ to be the ratio of the residuals at step $k$ and $k-1$. That is 
 
 $$
-\rho_k = \frac{||r_k||}{||r_{k-1}||} = \frac{||\mathbfit{M}u_k - \mathbfit{e}||}{||\mathbfit{M}u_{k-1}-\mathbfit{e}||}.
+\rho_k = \frac{r_k}{r_{k-1}} = \frac{||\mathbfit{Mu}_k - \mathbfit{e}||}{||\mathbfit{Mu}_{k-1}-\mathbfit{e}||}.
 $${#eq-residual_ratio_equation}
 
-@fig-residual_ratio_evolution shows the evolution of the relative residual, as well as the residual ratio for specific parameters. After a certain number of iterations, the residual ratio stabilizes. This can be however be after a large amount of iterations, so the rate of convergence can be costly to compute. 
+Note that the residual ratio depends on both the problem parameters and the solver parameters. It will be useful in future sections to make that relation evident by using the notation $\rho_{k,b,n}(\alpha, \Delta t)$. $@fig-residual_ratio_evolution shows the evolution of the relative residual, as well as the residual ratio for specific parameters. After a certain number of iterations, the residual ratio stabilizes. This can be however be after a large amount of iterations, so the rate of convergence can be costly to compute. 
 
 
 
@@ -216,6 +218,7 @@ plt.show()
 ```
 
 
+
 ## A small experiment {#sec-small_experiment}
 
 We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b,n)$. Ideally, we should minimize the asymptotic residual ratio $\rho_\infty$, but this is computationally intensive, so we restrict ourselves to minimizing the residual ratio $\rho_i$ after a fixed amount of iterations. 
@@ -224,7 +227,7 @@ As we've seen in @fig-residual_ratio_evolution, $\rho_i$ can vary quite a bit de
 
 We wish to find the optimal parameters for this specific problem, that is, the ones that minimize $\rho_{k}$, for different values of $k$. We are also interested in seeing how much the optimal parameters depend on $k$. 
 
-After 100 iterations, we see that we need to choose the parameters in more narrow region than after 10 iterations to get $\rho_{100}<1$, suggesting that convergence may not hold even if it seems to hold for the first few iterations. However, this doesn't seem to be the case when we consider higher values of $k$. Nevertheless, we can see how the solver parameters interact with the residual ratio. 
+After 100 iterations, we see that we need to choose the parameters in more narrow region than after 10 iterations to get $\rho_{100}<1$, suggesting that convergence of the solver may not hold even if it seems to hold for the first few iterations. However, this doesn't seem to be the case when we consider higher values of $k$. Nevertheless, we can see how the solver parameters interact with the residual ratio. 
 
 By doing this experiment, we motivate the following method: using a grid search, look for the solver parameters that minimize $\rho_k$, where $k$ has to be chosen as low as possible to minimize computing time, but also high enough to ensure that the solver won't diverge after more iterations. This method however need to be repeated for each individual problem parameters. We therefore explore a possible solution to this problem by using a reinforcement learning algorithm to "learn" the optimal solver parameters.
 

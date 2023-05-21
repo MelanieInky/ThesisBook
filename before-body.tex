@@ -1,0 +1,61 @@
+$if(has-frontmatter)$
+\frontmatter
+$endif$
+
+$if(title)$
+\maketitle
+$endif$
+
+\newpage
+
+%----------------------------------------------
+%   Abstract
+%----------------------------------------------
+
+\begin{center}
+\huge{Abstract}
+\end{center}
+
+\vspace*{\baselineskip}
+
+Reinforcement learning is one of the three main paradigms in machine learning, which is increasingly used as a method to approach scientific problems. In this thesis, we introduce and use reinforcement learning to find the optimal parameters of a numerical solver.
+
+We first motivate that solving the linear systems can be done by solving initial value problems. These initial values problems can then be solved with an explicit, two stages Runge-Kutta solver, for which we need to find the optimal parameters for the solver, depending on the parameters of the problem.   
+
+Using reinforcement learning, and in particular policy gradient methods, we find that with some care, reinforcement learning can be used to learn the 
+solver parameters as a function of the problem parameters. These results are however tempered by some limitations, as the solver can diverge in certain cases, and convergence speed remains low in general.
+
+\vspace*{\baselineskip}
+
+\begin{center}
+\huge{Popular abstract}
+\end{center}
+
+\vspace*{\baselineskip}
+
+As animals, we learn about the world and how to interact with the world by trial and errors, and are "rewarded" when it goes well. This idea, applied to computer program is called reinforcement learning, and it does not take long nowadays to find applications of it, be it for interacting with a chat bot or when activating the adaptative cruise control of a car.
+
+In this thesis, we study differential equations, which are equations that, when solved, help us understand physical phenomena, for example the trajectory of a ball when it is kicked, or how the temperature in the room changes when we turn on the AC. While solving these equations on a computer is possible, some parameters need to be chosen judiciously, as the wrong solution can be found otherwise. To mitigate this issue, we use reinforcement learning in this thesis to train a program that find these parameters automatically for some specific equations.
+
+
+\newpage
+
+
+%----------------------------------------------
+%   Acknowledgement
+%----------------------------------------------
+
+\begin{center}
+\huge{Acknowledgement}
+\end{center}
+
+\vspace*{\baselineskip}
+
+I would like to express my deepest thanks to my supervisor Philipp Birken at the university of Lund for the regular discussion sessions, and without which I could not have written this thesis.
+
+I would also like to thank my partner Sarah (who also fixed an issue I struggled with for weeks in a matter of minutes), for being an amazing partner who is always there to help and encourage me in all aspects of my life. My gratitude also goes to our cat Alyx for her emotional support and the deep talks we have. 
+
+Finally, I would like to thank Paulina Ibek, who worked on a similar thesis at the same time, for the discussions which led to exchanging ideas.
+
+\newpage
+

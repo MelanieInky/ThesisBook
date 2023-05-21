@@ -8,7 +8,6 @@ book:
   date: "03/05/2023"
   chapters:
     - index.qmd
-    - 2_intro.qmd
     - 3_motivation.qmd
     - 4_convecDiff.qmd
     - 5_solverExploration.qmd
@@ -25,6 +24,8 @@ format:
   html:
     theme: cosmo
   pdf:
+    template-partials:
+      - before-body.tex
     documentclass: report
     geometry: 
     - top=30mm

@@ -460,11 +460,11 @@ fig.show()
 
 ## Impact of initial conditions
 
-Gradient based iterations use the local information about an objective(or loss) function $J(\theta)$ to compute the update $\theta \rightarrow \theta \pm \alpha \nabla J(\theta)$. This local behavior also means that any convergence of gradient descent is to a local minimum, and we can't be certain that this mimimum is a global mimimum.
+Gradient based iterations use the local information about an objective (or loss) function $J(\theta)$ to compute the update $\mathbfit{\theta} \rightarrow \mathbfit{\theta} \pm \alpha \nabla J(\mathbfit{\theta})$. This local behavior also means that any convergence of gradient descent is to a local minimum, and we can't be certain that this mimimum is a global minimum.
 
- Therefore, it is interesting to test whether the algorithm converges to the same values regardless of initial conditions. The third experiment is then to run the algorithm with the same parameters as before, but with varied initial conditions for the $\theta$ vector, and to visualize the results, both in the average rewards and the evolution of $\theta$ parameters over 200000 episodes. 
+Let us test whether the algorithm converges to the same values regardless of initial conditions. The third experiment is then to run the algorithm with the same parameters, but with varied initial conditions, and to visualize the results, both in the average rewards and the evolution of $\mathbfit{\theta}$ over 200000 episodes. 
 
- The evolution of the $\theta$ parameters is in @fig-variable_theta, and the rolling average of the average episode reward is plotted in @fig-reward_initial_theta for different initial value for $\theta$. It turns out that while convergence in reward is to the same values, the $\theta_3$ parameter does not seem to converge to the same value. Furthermore, even with such a large amount of episodes, it is not clear if the other parameters converged. 
+ The evolution of $\mathbfit{\theta}$ is in @fig-variable_theta, and the rolling average of the average episode reward is plotted in @fig-reward_initial_theta for different initial value for $\mathbfit{\theta}$. It turns out that while convergence in reward is to the same values, the parameter $\theta_3$ does not seem to converge to the same value. Furthermore, even with such a large amount of episodes, it is not clear if the other parameters converged. 
 
 
 
@@ -473,7 +473,7 @@ Gradient based iterations use the local information about an objective(or loss) 
 
 ## Further results
 
-The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how the model performs once we have some found some optimal parameters $\theta^*$. In particular, by using the REINFORCE algorithm, the policy function has to be stochastic during training. The actual policy we choose can, however, be deterministic. So, at the risk of adding some bias, we remove the noise $\sigma$ in the policy and choose to use the  "deterministic policy" $\alpha = \mu_\alpha$, $\Delta t = \mu_{\Delta t}$, as in @eq-policy_deterministic_part, and we denote this policy by $\pi_d(a|s,\theta^*)$. For the value of $\mathbfit{\theta}^*$, we use its last value in the second experiment, which is (with some rounding off)
+The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how the model performs once we have some found some optimal parameters $\mathbfit{\theta}^*$. In particular, by using the REINFORCE algorithm, the policy function has to be stochastic during training. The actual policy we choose can, however, be deterministic. So, at the risk of adding some bias, we remove the noise $\sigma$ in the policy and choose to use the  "deterministic policy" $\alpha = \mu_\alpha$, $\Delta t = \mu_{\Delta t}$, as in @eq-policy_deterministic_part, and we denote this policy by $\pi_d(a|s,\mathbfit{\theta}^*)$. For the value of $\mathbfit{\theta}^*$, we use its last value in the second experiment, which is (with some rounding off)
 
 $$
 \mathbfit{\theta}^* = (-3.606 \times 10^{-3},4.476\times 10^{-3},-3.598\times 10^{-4},-0.3542 ,0.2435,1.1305)^\intercal.
