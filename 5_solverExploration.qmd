@@ -5,6 +5,8 @@ jupyter: python3
 
 # Explicit Runge-Kutta Method
 
+
+
 ## A small introduction to explicit Runge-Kutta methods
 
 This section aims to introduce explicit Runge-Kutta methods, [@NumDiffEqBook, chap. 3], which we use in this paper. We consider solving a generic initial value problem of the form
@@ -36,7 +38,7 @@ $$
 \int_0^1 f(t_n+\Delta t \tau,y(t_n+\Delta t\tau))\; d\tau \approx \sum_{j=1}^\nu b_j f(t_n + \Delta t c_j,y(t_n+\Delta t c_j)).
 $$
 
-This is all well and good, except that we have to know the values $y(t_n+\Delta c_j)$, which we do not possess. We can however, play pretend and compute an approximation of these values $\xi_j \approx y(t_n+\Delta t c_j), j=1,\dots, \nu$. The $\xi_j$ are called *stage values*. [@BirkenNotes]. The main idea to use the $\xi_i$'s  to compute $\xi_j$, using a linear combinations of the terms $f(t_n + \Delta t c_j, \xi_i)$. That is 
+This is all well and good, except that we have to know the values $y(t_n+\Delta c_j)$, which we do not possess. We can however, play pretend and compute an approximation of these values $\xi_j \approx y(t_n+\Delta t c_j), j=1,\dots, \nu$. The $\xi_j$ are called *stage values*. [@BirkenNotes]. The main idea to use the $\xi_i$'s  to compute $\xi_j$, using a linear combination of the terms $f(t_n + \Delta t c_j, \xi_i)$. That is 
 
 $$
 \xi_i = y_n + \Delta t \sum_{j=1}^\nu a_{ij}f(t_n+\Delta t c_j, \xi_j),
@@ -74,10 +76,6 @@ where the stage values $\xi_j$ are computed sequentially as follow
 
 
 
-## Stability theory for numerical solver
-
-This is where we do the stability theory.
-
 
 
 ## Application to the test problem {#sec-RK_solver_test_problem}
@@ -94,17 +92,64 @@ $$
 \end{array}.
 $$
 
-
 :::{.remark}
 This RK method can be extended to more stages. We only need the last stage value to compute the time step update, and we only need to compute the stage values sequentially using only the last stage value calculated. This makes it possible, when programming the method, to simply to do the update of the variable $\xi$ in place inside the computer memory. Such methods are thus memory efficient.  
 :::
 
 This solver has two parameters, namely the (pseudo) time step $\Delta t$ and $\alpha$, where $\alpha \in [0,1]$. 
 
-The goal is for the solver to converge to a steady state solution as fast as possible. We set $u_0 = u(0) = e$ as an initial value. We define the relative residual after $k$ steps as 
+The goal is for the solver to converge to a steady state solution as fast as possible. 
+
+### A note on stability
+
+Using the same notation as before for the stage values and the studied RK method, for the equation $u'(t) = f(t,u(t))$, we have $\xi_1 = u_n$,
 
 $$
-r_k = \frac{||Mu_k - e||}{||e||},
+\xi_2 = u_n + \Delta t \alpha f(t_n,\xi_1) = u_n + \Delta t \alpha f(t_n,u_n).
+$$
+
+The update is thus;
+
+$$
+u_{n+1} = u_n + \Delta t f(t_n+\alpha \Delta t, \xi_2).
+$$
+
+In the test problem case, $f(t_n,\mathbfit{u_n}) = \mathbfit{e} - \mathbfit{Mu_n}$, and we get the update
+
+$$
+\mathbfit{u_{n+1}} = \mathbfit{u_n} + \Delta t\left[\mathbfit{e}-\mathbfit{M}(\mathbfit{u}_n+\alpha\Delta t(\mathbfit{e}-\mathbfit{Mu_n}))\right].
+$$
+
+After a few lines of computation, we get the following iteration:
+
+$$
+\mathbfit{u}_{n+1} = \left[\mathbfit{I}- \Delta t(\mathbfit{I}- \alpha \Delta t \mathbfit{M})\mathbfit{M}\right]\mathbfit{u_n} + \left[\Delta t(\mathbfit{I} - \alpha \Delta t \mathbfit{M})\right]\mathbfit{e}.
+$${#eq-stationary_linear_iter}
+
+
+This iteration is of the form $\mathbfit{u_{n+1}} =\mathbfit{Ku_n}  + \mathbfit{Le}$, where 
+
+$$
+\mathbfit{L} = \Delta t\left[ \mathbfit{I} - \alpha \Delta t \mathbfit{M}\right]
+$${#eq-L}
+and 
+$$
+\mathbfit{K} = \mathbfit{I}- \mathbfit{LM} = \left[\mathbfit{I}- \Delta t(\mathbfit{I}- \alpha \Delta t \mathbfit{M})\mathbfit{M}\right].
+$${#eq-K}
+
+
+We recognize this iteration as a linear stationary iteration, which converges to $\mathbfit{u}^* = \mathbfit{M}^{-1}\mathbfit{e}$ if and only if $\rho(K)<1$, [@iterative_method_book, chap. 2.2], where $\rho(\mathbfit{K})$ is the spectral radius of $\mathbfit{K}$. 
+
+:::{.remark}
+One may remark that $\mathbfit{K} = p(\Delta t \mathbfit{M})$ with $p(z) = 1- \alpha z + z^2$ a polynomial. This polynomial is also the stability polynomial of the RK method [@BirkenNotes].
+:::
+
+### Residual ratios
+
+We set $\mathbfit{u_0} = \mathbfit{u(}0\mathbfit{)} = \mathbfit{e}$ as an initial value. We define the relative residual after $k$ steps as 
+
+$$
+r_k = \frac{||\mathbfit{M}u_k - \mathbfit{e}||}{||\mathbfit{e}||},
 $${#eq-relative_residual}
 
 where $||.||$ is the 2-norm.
@@ -112,7 +157,7 @@ where $||.||$ is the 2-norm.
 If the solver we chose is stable, then $||r_k|| \to 0$ as $k \to \infty$. We define now the residual ratio at step $k$ to be the ratio of the residuals at step $k$ and $k-1$. That is 
 
 $$
-\rho_k = \frac{||r_k||}{||r_{k-1}||} = \frac{||Mu_k - e||}{||Mu_{k-1}-e||}.
+\rho_k = \frac{||r_k||}{||r_{k-1}||} = \frac{||\mathbfit{M}u_k - \mathbfit{e}||}{||\mathbfit{M}u_{k-1}-\mathbfit{e}||}.
 $${#eq-residual_ratio_equation}
 
 @fig-residual_ratio_evolution shows the evolution of the relative residual, as well as the residual ratio for specific parameters. After a certain number of iterations, the residual ratio stabilizes. This can be however be after a large amount of iterations, so the rate of convergence can be costly to compute. 
@@ -170,49 +215,6 @@ ax2.set_xlabel('Iteration')
 plt.show()
 ```
 
-
-:::{.remark}
-Using the same notation as before for the stage values and the studied RK method, for the equation $u'(t) = f(t,u(t))$, we have $\xi_1 = u_n$,
-
-$$
-\xi_2 = u_n + \Delta t \alpha f(t_n,\xi_1) = u_n + \Delta t \alpha f(t_n,u_n).
-$$
-
-The update is thus;
-
-$$
-u_{n+1} = u_n + \Delta t f(t_n+\alpha \Delta t, \xi_2).
-$$
-
-In the test problem case, $f(t_n,u_n) = e - Mu_n$, and we get the update
-
-$$
-u_{n+1} = u_n + \Delta t\left[e-M(u_n+\alpha\Delta t(e-Mu_n))\right].
-$$
-
-After a few lines of computation, we get the following iteration:
-
-$$
-u_{n+1} = \left[I- \Delta t(I- \alpha \Delta t M)M\right]u_n + \left[\Delta t(I - \alpha \Delta t M)\right]e.
-$${#eq-stationary_linear_iter}
-
-
-This iteration is of the form $u_{n+1} = Ku_n + Le$, where 
-
-$$
-L = \Delta t\left[ I - \alpha \Delta t M\right]
-$${#eq-L}
-and 
-$$
-K = I- LM = \left[I- \Delta t(I- \alpha \Delta t M)M\right].
-$${#eq-K}
-
-
-We recognize this iteration as a linear stationary iteration, which converges to $u^* = M^{-1}e$ if and only if $\rho(K)<1$, [@iterative_method_book, chap. 2.2], where $\rho(K)$ is the spectral radius of $K$. 
-
-
-
-:::
 
 ## A small experiment {#sec-small_experiment}
 

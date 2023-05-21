@@ -11,7 +11,7 @@ $$
     u_x = bu_{xx} + 1 ,  \quad u(0) = u(1) = 0.
 $${#eq-convec_diff_steady}
 
-Here $b$ is some physical parameter. Moreover, $u(x)$ is defined on the interval $[0,1]$. This equation has an exact solution that is given by
+Here $b$ is some physical parameter. Moreover, $u(x)$ is defined on the interval $[0,1]$. This equation has a solution that is given by
 
 $$
 u(x) = x - \frac{e^{-(1-x)/b} - e^{-1/b}}{1-e^{-1/b}}.
@@ -36,16 +36,16 @@ $$
 
 \vspace{3cm}
 
-This can be given in a matrix-vector format by letting $u = (u^1,\dots, u^{n})^\intercal$:
+This can be given in a matrix-vector format,  by letting $\mathbfit{u} = (u^1,\dots, u^{n})^\intercal$:
 
 $$
-    Au = Bu + d,
+    \mathbfit{Au} = \mathbfit{Bu}+\mathbfit{d},
 $$
 
-where $d = (1,1,\dots , 1)^\intercal$,
+where $\mathbfit{d} = (1,1,\dots , 1)^\intercal$,
 
 $$
-A = \frac{1}{\Delta x}\begin{pmatrix}
+\mathbfit{A} = \frac{1}{\Delta x}\begin{pmatrix}
     1 &  &&&\\
     -1 & 1 &&\\
     & -1 & 1 &\\
@@ -57,7 +57,7 @@ $$
 and 
 
 $$
-B =  \frac{b}{\Delta x ^2}\begin{pmatrix}
+\mathbfit{B} =  \frac{b}{\Delta x ^2}\begin{pmatrix}
     -2 & 1 &&&\\
     1 & \ddots & \ddots &&\\
     & \ddots & \ddots & \ddots&\\
@@ -66,16 +66,16 @@ B =  \frac{b}{\Delta x ^2}\begin{pmatrix}
 \end{pmatrix} .
 $$
 
-With $N = A-B$, the approximate solution of @eq-convec_diff_steady is then the solution of the linear system
+Note that from now on, matrices and vector are denoted in bold italic. With $N = A-B$, the approximate solution of @eq-convec_diff_steady is then the solution of the linear system
 
 $$
-Nu = d,
+\mathbfit{Nu} = \mathbfit{d},
 $$ {#eq-UnscaledSystem}
 
-where $N$ is a square matrix of dimension $n \times n$ and $d$ is the one vector of dimension $n$.
+where $\mathbfit{N}$ is a square matrix of dimension $n \times n$ and $\mathbfit{d}$ is the vector of ones of dimension $n$.
 
 :::{.remark}
-It is apparent that $N$ is diagonally dominant. Since all elements of the diagonal are positive, we can use Gershgorin circle theorem to prove that all the eigenvalues of $N$ have a positive real part. We thus only need to assume $N$ is non singular to prove that $-N$ is stable.
+$\mathbfit{N}$ is diagonally dominant. Since all elements of the diagonal are positive, we can use Gershgorin circle theorem to prove that all the eigenvalues of $\mathbfit{N}$ have a positive real part. We thus only need to assume $\mathbfit{N}$ is non singular to prove that $-\mathbfit{N}$ is stable.
 :::
 
 We plot two examples of what the exact solution (@eq-convec_diff_th_solution) and the discretized solution (@eq-UnscaledSystem) look like for different values of $b$ in @fig-th_vs_dis
@@ -111,8 +111,8 @@ x = np.linspace(0,1,n)
 y_th = x - (np.exp(-(1-x)/b) - np.exp(-1/b))/(1-np.exp(-1/b))
 
 fig , ax = plt.subplots()
-ax.plot(x,y_th,label='exact solution')
-ax.plot(x,y,label='discretized solution')
+ax.plot(x,y_th,label='exact solution', color = '#1d493bff')
+ax.plot(x,y,label='discretized solution', color = '#fc9167ff')
 ax.legend()
 ax.set_xlabel('x')
 ax.set_ylabel('u(x)')
@@ -133,8 +133,8 @@ x = np.linspace(0,1,n)
 y_th = x - (np.exp(-(1-x)/b) - np.exp(-1/b))/(1-np.exp(-1/b))
 
 fig , ax = plt.subplots()
-ax.plot(x,y_th,label='exact solution')
-ax.plot(x,y,label='discretized solution')
+ax.plot(x,y_th,label='exact solution', color = '#1d493bff')
+ax.plot(x,y,label='discretized solution', color = '#fc9167ff')
 ax.legend()
 ax.set_xlabel('x')
 ax.set_ylabel('u(x)')
@@ -146,18 +146,18 @@ plt.show()
 To solve this linear system, we use the method highlighted before. To make it easier for later, we choose to scale $N$ so that its diagonal elements are $1$. This allows us to have all eigenvalues in the circle centered around $1$ with radius $1$ independently of the parametrization. Setting $\eta = \frac{1}{\Delta x} + \frac{2b}{\Delta x^2}$, solving @eq-UnscaledSystem is equivalent to solving the system
 
 $$
-M u = e,
+\mathbfit{M} \mathbfit{u} = \mathbfit{e},
 $${#eq-test_problem_scaled_system}
 
-where with $M = \frac{N}{\eta}$, $e = \frac{d}{\eta}$. The eigenvalues of $N$ are also scaled by $\frac{1}{\eta}$, and therefore $-M$ is stable, assuming it is non singular. We are now ready to solve the system iteratively using an ODE solver. To do that, we introduce a (pseudo) time variable $t$ and we consider the ODE
+where with $\mathbfit{M} = \frac{\mathbfit{N}}{\eta}$, $\mathbfit{e} = \frac{\mathbfit{d}}{\eta}$. The eigenvalues of $\mathbfit{N}$ are also scaled by $\frac{1}{\eta}$, and therefore $-\mathbfit{M}$ is stable, assuming it is non singular. We are now ready to solve the system iteratively using an ODE solver. To do that, we introduce a (pseudo) time variable $t$ and we consider the ODE
 
 $$
-u'(t) = e - Mu(t).
+\mathbfit{u'(t)} = \mathbfit{e} - \mathbfit{Mu(t)}.
 $${#eq-test_problem_diff_eq}
 
 
-where $M$ and $e$ depends on both $n$ and $b$, which we will call the problem parameters.
-We can use @thm-steadyState with the non singularity assumption to guarantee that  $u(t)$ will converge to a steady state independently of its chosen initial value. In the next chapter, we will then introduce the numerical method to solve this differential equation.
+where $\mathbfit{M}$ and $\mathbfit{e}$ depends on both $n$ and $b$. From now on, we call $b$ and $n$ the problem parameters.
+We can use @thm-steadyState with the non singularity assumption to guarantee that  $\mathbfit{u(t)}$ converges to a steady state independently of its chosen initial value. In the next chapter, we  introduce a numerical method to solve this differential equation, which we will use in this thesis.
 
 
 :::{.remark}

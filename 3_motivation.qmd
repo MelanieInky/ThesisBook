@@ -22,18 +22,18 @@ jupyter: python3
 
 
 
-Let $A$ be non singular square matrix of dimension $n\geq 1$ and let $b\in\mathbb{R}^n$. We consider the linear system $Ay = b$, where $y \in \mathbb{R}^n$. The system has the unique solution $y^* = A^{-1}b$. As directly inverting the matrix is a terrible idea, a fundamental problem in numerical analysis is to find numerical methods to solve this. This can be done with the use of direct methods or iterative methods. In this thesis, we consider an iterative method. Consider now the initial value problem(IVP):
+Let $A$ be a non singular square matrix of dimension $n\geq 1$ and let $b\in\mathbb{R}^n$. We consider the linear system $Ay = b$, where $b \in \mathbb{R}^n$. The system has the unique solution $y^* = A^{-1}b$. As directly inverting the matrix is a terrible idea, a fundamental problem in numerical analysis is to find numerical methods to solve this. This can be done with the use of direct methods or iterative methods. In this thesis, we consider an iterative method. Consider now the initial value problem(IVP):
 
 $$
 y'(t) = Ay(t)- b, \; \;  y(0) = y_0,
 $$
 
-where $y_0\in \mathbb{R}^n$ and $t\in \mathbb{R}$. We adapt the result below from [@ODE_book, chap. 9.5]. 
+where $\mathbfit{y}_0\in \mathbb{R}^n$ and $t\in \mathbb{R}$. We adapt the result below from [@ODE_book, chap. 9.5]. 
 
 Multiplying the equation by $e^{-At}$, where $e^{-At}$ is the usual matrix exponential, and rearranging the terms yields 
 
 $$
-e^{-At}y'(t) - Ae^{-At}y(t) = e^{-At}b.
+e^{-At}y'(t) - Ae^{-At}y(t) = -e^{-At}b.
 $$
 
 We recognize on the left hand side the derivative of the product $e^{-At}y(t)$, and thus, by the fundamental theorem of calculus,
@@ -62,7 +62,7 @@ $$
 y(t) = e^{At}(y_0 - A^{-1}b) + A^{-1}b.
 $${#eq-unique_solution_theoretical}
 
-Here, we also used the fact that $e^{At}A^{-1} = A^{-1}e^{At}$. This gives an expression for the solution of the IVP.Since each of those step can be taken backward , the solution we get is unique. We have thus proved:
+Here, we also used the fact that $e^{At}A^{-1} = A^{-1}e^{At}$. This gives an expression for the solution of the IVP. Since each of those steps can be taken backward , the solution we get is unique. We have thus proved:
 
 ::: {#thm-ODEtheoretical}
 
@@ -83,7 +83,7 @@ where $y^* = A^{-1}b$, and $e^{At}$ is defined using the usual matrix exponentia
 :::
 
 
-Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarily distinct) eigenvalues of $A$. We write $\lambda_i = x_i + iy_i$, where $x_i,y_i \in \mathbb{R}$ and are respectively the real part and the imaginary parts of the $i^{th}$ eigenvalue. Then, the following results holds[@BellmanStab, chap. 1]:
+Let $\lambda_1 , \lambda_2 , \dots , \lambda_n$ be the (not necessarily distinct) eigenvalues of $A$. We write $\lambda_i = a_i + ib_i$, where $a_i,b_i \in \mathbb{R}$ and are respectively the real part and the imaginary parts of the $i^{th}$ eigenvalue. Then, the following results holds[@BellmanStab, chap. 1]:
 
 
 
