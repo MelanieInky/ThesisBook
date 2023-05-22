@@ -18,7 +18,7 @@ u(x) = x - \frac{e^{-(1-x)/b} - e^{-1/b}}{1-e^{-1/b}}.
 $${#eq-convec_diff_th_solution}
 
 
-We are however interested in solving this numerically, with a finite difference approach. We partition the interval $[0,1]$ using $n+2$ equidistant points $x_i, i = 0, \dots n+1$. We denote the distance between each points as $\Delta x = \frac{1}{n+1}$. The approximated value of $u$ at the point $x_i$ is denoted by $u^i$ and we have $u^0 = u(0) = 0$ and $u^{n+1} = u(1) = 0$. We approximate, for $i \geq 1$ the derivative 
+We are however interested in solving this numerically, with a finite difference approach. We partition the interval $[0,1]$ using $n+2$ equidistant points $x_i, i = 0, \dots n+1$. We denote the distance between each points as $\Delta x = \frac{1}{n+1}$. The approximated value of $u$ at the point $x_i$ is denoted by $u^i$ and we have $u^0 = u(0) = 0$ and $u^{n+1} = u(1) = 0$. We approximate, for $i \geq 1$, the derivative as
 
 $$
     u_x^i = \frac{u^i - u^{i-1}}{\Delta x},
@@ -66,7 +66,7 @@ $$
 \end{pmatrix} .
 $$
 
-Note that from now on, matrices and vector are denoted in bold italic. With $N = A-B$, the approximate solution of @eq-convec_diff_steady is then the solution of the linear system
+Note that from now on, matrices and vector are denoted in bold italic. With $\mathbfit{N} = \mathbfit{A}-\mathbfit{B}$, the approximate solution of @eq-convec_diff_steady is then the solution of the linear system
 
 $$
 \mathbfit{Nu} = \mathbfit{d},

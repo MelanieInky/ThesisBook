@@ -156,10 +156,6 @@ This is also a necessary condition. Indeed, since $y_0$ is arbitrary, we can cho
 :::
 
 
-:::{.remark}
-
-:::
-
 
 We now go back to the original problem of solving the linear system $Ay = b$. If all the eigenvalues of $A$ have a strictly negative real part, then, any numerical solver for the initial value problem $y'(t) = Ay(t) - b$ with $y(0) = y_0$, where $t$ is a pseudo-time variable also becomes an iterative solver for the linear system $Ay = b$, as $y(t) \to y^*$. 
 

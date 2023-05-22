@@ -162,7 +162,7 @@ $$
 \rho_k = \frac{r_k}{r_{k-1}} = \frac{||\mathbfit{Mu}_k - \mathbfit{e}||}{||\mathbfit{Mu}_{k-1}-\mathbfit{e}||}.
 $${#eq-residual_ratio_equation}
 
-Note that the residual ratio depends on both the problem parameters and the solver parameters. It will be useful in future sections to make that relation evident by using the notation $\rho_{k,b,n}(\alpha, \Delta t)$. $@fig-residual_ratio_evolution shows the evolution of the relative residual, as well as the residual ratio for specific parameters. After a certain number of iterations, the residual ratio stabilizes. This can be however be after a large amount of iterations, so the rate of convergence can be costly to compute. 
+Note that the residual ratio depends on both the problem parameters and the solver parameters. It will be useful in future sections to make that relation evident by using the notation $\rho_{k,b,n}(\alpha, \Delta t)$. @fig-residual_ratio_evolution shows the evolution of the relative residual, as well as the residual ratio for specific parameters. After a certain number of iterations, the residual ratio stabilizes. This can be however be after a large amount of iterations, so the rate of convergence can be costly to compute. 
 
 
 
@@ -221,15 +221,15 @@ plt.show()
 
 ## A small experiment {#sec-small_experiment}
 
-We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b,n)$. Ideally, we should minimize the asymptotic residual ratio $\rho_\infty$, but this is computationally intensive, so we restrict ourselves to minimizing the residual ratio $\rho_i$ after a fixed amount of iterations. 
+We are interested in finding the best parameters $(\Delta t, \alpha)$ to use for some specific problem parameters $(b,n)$. Ideally, we should minimize the asymptotic residual ratio $\rho_\infty$, but this is computationally intensive, so we restrict ourselves to minimizing the residual ratio $\rho_k$ after a fixed amount of iterations. 
 
-As we've seen in @fig-residual_ratio_evolution, $\rho_i$ can vary quite a bit depending on $i$, so we decide to investigate the residual ratio after 10 iterations and 100 iterations. We set the problem parameters $b = 0.05$, and $n = 100$, and we plot $\rho_{k}= f_k(\Delta t, \alpha)$ for different values of $k$. This is achieved by making a linear grid for parameters $\Delta t$ and $\alpha$ of size $100\times 100$, where $\alpha$ varies between $0$ and $1$, and $\Delta t$ varies between $0$ and $5$, then computing the residual ratios on that grid. 
+As we've seen in @fig-residual_ratio_evolution, $\rho_k$ can vary quite a bit depending on $k$, so we decide to investigate the residual ratio after 10 iterations and 100 iterations. We set the problem parameters $b = 0.05$, and $n = 100$, and we plot $\rho_{k,0.05,100}(\Delta t, \alpha)$ for different values of $k$. This is achieved by making a linear grid for parameters $\Delta t$ and $\alpha$ of size $100\times 100$, where $\alpha$ varies between $0$ and $1$, and $\Delta t$ varies between $0$ and $5$, then computing the residual ratios on that grid. 
 
 We wish to find the optimal parameters for this specific problem, that is, the ones that minimize $\rho_{k}$, for different values of $k$. We are also interested in seeing how much the optimal parameters depend on $k$. 
 
 After 100 iterations, we see that we need to choose the parameters in more narrow region than after 10 iterations to get $\rho_{100}<1$, suggesting that convergence of the solver may not hold even if it seems to hold for the first few iterations. However, this doesn't seem to be the case when we consider higher values of $k$. Nevertheless, we can see how the solver parameters interact with the residual ratio. 
 
-By doing this experiment, we motivate the following method: using a grid search, look for the solver parameters that minimize $\rho_k$, where $k$ has to be chosen as low as possible to minimize computing time, but also high enough to ensure that the solver won't diverge after more iterations. This method however need to be repeated for each individual problem parameters. We therefore explore a possible solution to this problem by using a reinforcement learning algorithm to "learn" the optimal solver parameters.
+By doing this experiment, we motivate the following method: using a grid search, look for the solver parameters that minimize $\rho_k$, where $k$ has to be chosen as low as possible to minimize computing time, but also high enough to ensure that the solver won't diverge after more iterations. This method however need to be repeated for each individual problem parameters. We therefore explore a possible solution to this problem by using a reinforcement learning algorithm to "learn" the optimal solver parameters $\alpha$ and $\Delta t$, as a function of the problem parameters $b$ and $n$.
 
 
 ```{python}

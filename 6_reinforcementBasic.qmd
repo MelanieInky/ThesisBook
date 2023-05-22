@@ -71,7 +71,7 @@ $S_t$ and $A_t$ are random variables, which is we note in uppercase. Specific ob
 
 ### Policy
 
-Leonardo, as the agent, only has access to his current state $S_t$. He has to take an action $A_t$, but how does he know which action to take? To do that, he uses a policy, which we denote by a function $\pi$. More formally, $\pi$ is a function that defines the probability of taking the action $A_t = a$ if the state is $S_t = s$. We denote this by $\pi(a,s)$. 
+Leonardo, as the agent, only has access to his current state $S_t$. He has to take an action $A_t$, but how does he know which action to take? To do that, he uses a policy, which we denote by a function $\pi$. More formally, $\pi$ is a function that defines the probability of taking the action $A_t = a$ if the state is $S_t = s$. We denote this by $\pi(a|s)$. 
 
 Suppose for example that $S_t = 3$. Leonardo has no idea of where the carrot is, but he knows that he can not go up nor to the right, so his policy is to go down, or right at random. Then:
 
@@ -79,7 +79,7 @@ Suppose for example that $S_t = 3$. Leonardo has no idea of where the carrot is,
 - The probability to go down is $\pi(\text{down}, 3) = 0.5$.
 
 
-More specifically, for any state $s$, we define the conditional probability mass function $\pi(a,s) = \Pr(A_t = a | S_t = s)$, where $\Pr$ denote a probability. Hence, for any fixed state $s$, $\sum_{a\in\mathcal{A}} \pi(a,s) = 1$.
+More specifically, for any state $s$, we define the conditional probability mass function $\pi(a|s) = \Pr(A_t = a | S_t = s)$, where $\Pr$ denote a probability. Hence, for any fixed state $s$, $\sum_{a\in\mathcal{A}} \pi(a|s) = 1$.
 
 
 
@@ -129,7 +129,7 @@ $$
 ## Finite Markov decision process
 
 
-We formalize the above example by defining a Markov decision process (MDP) @reinforcementBookShiyuZhao.
+We formalize the above example by defining a Markov decision process (MDP). This definition and the ones up until the end of this chapter are adapted from @reinforcementBookShiyuZhao.
 
 :::{#def-Markov_decision_process}
 **(Markov decision process)**. 
@@ -146,7 +146,7 @@ A Markov decision process also has a model, which consists of the state and rewa
 
 - The probability, given that the current state is $s$, and that the action taken is $a$, that the next state is $s'$ and the next reward is $r$. That is $p(s',r|s,a) = \Pr(S_{t+1} = s', R_{t+1} = r | S_t = s, A_t = a)$.
 
-Furthermore, a Markov decision process has a policy that governs, for any state $s\in\mathcal{S}$, the probability of taking action $a\in\mathcal{A}$, that probability is $\pi(a,s) = \Pr(A_t = a|S_t = s)$. We assume that the policy is not dependent on time. 
+Furthermore, a Markov decision process has a policy that governs, for any state $s\in\mathcal{S}$, the probability of taking action $a\in\mathcal{A}$, that probability is $\pi(a|s) = \Pr(A_t = a|S_t = s)$. We assume that the policy is not dependent on time. 
 
 Finally, a Markov decision process has the Markov property, or lack of memory. The state transition and rewards probabilities are only dependent on the current state $S_t$  and action $A_t$, and not the states and actions that preceeded. Mathematically, $\Pr(S_{t+1} = s', R_{t+1} = r|S_t, A_t, S_{t-1}, A_{t-1}, \dots , S_0, A_0) = \Pr(S_{t+1} = s', R_{t+1} = r | S_t, A_t)$.
 
@@ -256,7 +256,7 @@ $$
 Using this, the expectation of immediate reward is
 
 $$
-E[R_{t+1}| S_t = s] = E\big[E[R_{t+1}|S_t = s,A_t]\big] = \sum_{a\in\mathcal{A}}\pi(a,s)\sum_{r\in\mathcal{R}} \sum_{s'\in \mathcal{S}}rp(s',r|s,a).
+E[R_{t+1}| S_t = s] = E\big[E[R_{t+1}|S_t = s,A_t]\big] = \sum_{a\in\mathcal{A}}\pi(a|s)\sum_{r\in\mathcal{R}} \sum_{s'\in \mathcal{S}}rp(s',r|s,a).
 $$
 
 
@@ -266,7 +266,7 @@ $$
 E[G_{t+1} | S_t = s] = E\big[E[G_{t+1} | S_t = s , S_{t+1}]\big] = \sum_{s'\in\mathcal{S}}p(s'|s)E[G_{t+1}|S_t = s, S_{t+1} = s'],
 $$
 
-where $p(s'|s) = \sum_{a\in\mathcal{A}} \sum_{r\in\mathcal{R}}p(s',r|s,a)\pi(a,s)$ is the probability of the next state being $s'$ if the current state is $s$. Because of the Markov property of the MDP, we can remove the conditioning $S_t = s$ and thus, $E[G_{t+1}|S_t = s, S_{t+1} = s'] = E[G_{t+1}|S_{t+1} = s] = v_\pi(s')$. Then 
+where $p(s'|s) = \sum_{a\in\mathcal{A}} \sum_{r\in\mathcal{R}}p(s',r|s,a)\pi(a|s)$ is the probability of the next state being $s'$ if the current state is $s$. Because of the Markov property of the MDP, we can remove the conditioning $S_t = s$ and thus, $E[G_{t+1}|S_t = s, S_{t+1} = s'] = E[G_{t+1}|S_{t+1} = s] = v_\pi(s')$. Then 
 $$
 E[G_{t+1} | S_t = s] = \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A}}\sum_{r\in\mathcal{R}}v_\pi(s')\pi(a|s)p(s',r|s,a).
 $${#eq-state_value_part2}
@@ -275,22 +275,22 @@ Putting @eq-state_value_part1 and @eq-state_value_part2 together, we get Bellman
 
 
 $$
-v_\pi(s) = \sum_{a\in\mathcal{A}}\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}\pi(a,s)p(s',r|s,a)\left[ r + \gamma v_\pi(s')\right].
+v_\pi(s) = \sum_{a\in\mathcal{A}}\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}\pi(a|s)p(s',r|s,a)\left[ r + \gamma v_\pi(s')\right].
 $$ {#eq-Bellman}
 
 :::{.remark}
-Bellman's equation is dependent on the given policy and gives a recursive relation for the state values. Solving this equation is called policy evaluation which involves fixed point iterations(see example below). 
+The Bellman equation depends on the given policy and gives a recursive relation for the state values. Solving this equation is called policy evaluation which involves fixed point iterations (see example below). 
 :::
 
 
 :::{#exm-the_example}
 
-We can derive directly the state values in the MDP in @fig-MDP_example. We remark that in this example, given a specific state transition, the reward we get is deterministic, which simplifies the computations. 
+We can directly derive the state values in the MDP in @fig-MDP_example. We remark that in this example, given a specific state transition, the reward we get is deterministic, which simplifies the computations. 
 
  In particular, for the state $s_2$, There are two possible actions $a_0$ and $a_1$ we can take. The policy is to take action $a_0$ with a probability $0.6$, and action $a_1$ with a probability $0.4$. When we take  for example action $a_0$, the probability of the next state being $s_1$ is $0.3$, in which case the reward is $5$. Proceeding similarly for all the possible actions and rewards, we get
 
 \begin{align*}
-v_\pi(s_2) &= \sum_{a=0}^1\sum_{r\in\mathcal{R}}\sum_{s'=1}^2\pi(a,s)p(s',r|s_2,a)\left[ r + \gamma v_\pi(s')\right]\\
+v_\pi(s_2) &= \sum_{a=0}^1\sum_{r\in\mathcal{R}}\sum_{s'=1}^2\pi(a|s)p(s',r|s_2,a)\left[ r + \gamma v_\pi(s')\right]\\
 &= 0.6 \sum_{r\in\mathcal{R}}\sum_{s'=1}^2 p(s',r|s_2,a=0)\left[ r + \gamma v_\pi(s')\right] + 0.4 \sum_{r\in\mathcal{R}}\sum_{s'=1}^2 p(s',r|s_2,a=1)\left[ r + \gamma v_\pi(s')\right]\\
 &= 0.6 \left[0.3(5 + \gamma v_\pi(s_1)) + 0.7(-2 + \gamma v_\pi(s_2))\right] + 0.4\left[ 0.2(-2 + \gamma v_\pi(s_2)) + 0.8(5+\gamma v_\pi(s_1) \right].
 \end{align*}
@@ -324,7 +324,7 @@ v_\pi(s_2)
 \end{pmatrix}.
 $$
 
-We stop here to remark that this equation is of the form $v_\pi = r_\pi + \gamma P_\pi v_\pi$. $P_\pi$ is row stochastic. Furthermore, since $\gamma<1$, we motivate solving the equation by using fixed point iterations. This is the main idea behind *dynamic programming* @bellman1957dynamic. In this case, we can simply solve the system directly. With $\gamma= 0.5$, we get the state values $v_\pi(s_1) = 7.875$, $v_\pi(s_2) = 4.625$. There is, for the given policy, more value in being in the first state than the second. 
+We stop here to remark that this equation is of the form $v_\pi = r_\pi + \gamma \mathbfit{P}_\pi v_\pi$. $\mathbfit{P}_\pi$ can be related to a state transition matrix in a markov chain and is row stochastic. Furthermore, since $\gamma<1$, we motivate solving the equation by using fixed point iterations. This is the main idea behind *dynamic programming* @bellman1957dynamic. In this case, we can simply solve the system directly. For example, with $\gamma=0.5$, we get the state values $v_\pi(s_1) = 7.875$, $v_\pi(s_2) = 4.625$.
 
 ```{python}
 #| echo: false
@@ -345,9 +345,6 @@ print(v)
 :::
 
 
-
-
-
 ## Action Value
 
 The state value gives information about a specific state, however, we are also often interested in knowing how much we stand to gain by taking a particular action at a particular state. This lead to the definition of the action value.
@@ -358,8 +355,11 @@ The state value gives information about a specific state, however, we are also o
 The action value is defined as the expectation of discounted return $G_t$, given a specific action $a$, taken at the current state $s$:
 
 $$
-q_\pi(a,s) = E\left[G_t|A_t=a,S_t=s\right].
+q_\pi(a|s) = E\left[G_t|A_t=a,S_t=s\right] = E\left[\sum_|A_t=a,S_t=s\right],
 $$
+
+where $G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2R_{t+3} + \dots$.
+
 :::
 
 
@@ -371,25 +371,25 @@ $$
 
 Then,
 $$
-v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a,s)E\left[G_t|S_t=s,A_t =a\right],
+v_\pi(s) = \sum_{a\in\mathcal{A}}\pi(a|s)E\left[G_t|S_t=s,A_t =a\right],
 $$
 
 and we can get the relation between state value and action value:
 
 $$
-v_\pi(s) = \sum_{a\in\mathcal{A}} \pi(a,s)q_\pi(a,s).
+v_\pi(s) = \sum_{a\in\mathcal{A}} \pi(a|s)q_\pi(a|s).
 $${#eq-state_value_action_relation}
 
-We remark that by viewing $\pi(a,s)$ as a probability mass function, we can express the state values as another expectation:
+We remark that by viewing $\pi(a|s)$ as a probability mass function, we can express the state values as another expectation:
 
 $$
-v_\pi(s) = E[q_\pi(A,s)],
+v_\pi(s) = E[q_\pi(a|s)],
 $$
 
-where $A$ is random variable with p.m.f $\pi(a,s)$. Actions values are important in the sense that they tell us of the "value of taking an action over another", and they appear naturally in almost all reinforcement learning algorithms. One important thing to note is that, by "comparing"  @eq-state_value_action_relation and @eq-Bellman, we get an equivalent definitions of the action values as:
+where $A$ is random variable with p.m.f $\pi(a|s)$. Actions values are important in the sense that they tell us of the "value of taking an action over another", and they appear naturally in almost all reinforcement learning algorithms. One important thing to note is that, by "comparing"  @eq-state_value_action_relation and @eq-Bellman, we get an equivalent definitions of the action values as:
 
 $$
-q_\pi(a,s) = \sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}p(s',r|s,a)\left[ r + \gamma v_\pi(s')\right].
+q_\pi(a|s) = \sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}p(s',r|s,a)\left[ r + \gamma v_\pi(s')\right].
 $${#eq-action_value_to_state_value}
 
 @eq-action_value_to_state_value means that if we have access to the state values, we can compute the action values, while @eq-state_value_action_relation works in the opposite way, deriving state values from the action values. 
@@ -400,7 +400,7 @@ A more rigorous approach to derive @eq-action_value_to_state_value would be simi
 
 ## Optimal policy and value iteration
 
-Now that we have defined to the state values, we want to find a policy that maximizes them, that is, find a policy which we denote by $\pi^*(a,s)$ such that, for any state $s$ and for any policy $\pi(a,s)$, $v_{\pi^*}(s)\geq v_\pi(s)$. It turns out that not only this optimal policy exist, but that we can find it by repeating the following steps, starting from any policy $\pi_0$:
+Now that we have defined to the state values, we want to find a policy that maximizes them, that is, find a policy which we denote by $\pi^*(a,s)$ such that, for any state $s$ and for any policy $\pi(a|s)$, $v_{\pi^*}(s)\geq v_\pi(s)$. It turns out that not only this optimal policy exist, but that we can find it by repeating the following steps, starting from any policy $\pi_0$:
 
 - Test the current policy, that is evaluate the state values.
 - From these state values, compute the action values.
@@ -421,7 +421,7 @@ More specifically, we present the pseudo code for the value iteration algorithm.
 | **DO**:  
 |       Compute the state values $v_{\pi_i}(s)$, using fixed point iterations;
 |       **FOR** all state $s$:
-|                Compute, for all $a\in\mathcal{A}$,the action values $q_{\pi_i}(a,s)$;
+|                Compute, for all $a\in\mathcal{A}$,the action values $q_{\pi_i}(a,s)$ using @eq-action_value_to_state_value and the computed state values;
 |                Denote by $a^*$ the action with the best action value $q_{\pi_i}(a^*,s)$;
 |                Set the new policy $\pi_{i+1}(a^*,s) = 1$, and set for all the other actions $\pi_{i+1}(a,s) = 0$;
 |       **END FOR**
@@ -430,5 +430,5 @@ More specifically, we present the pseudo code for the value iteration algorithm.
 
 ---
 
-This algorithm is important in the sense that we can prove that it converges to an optimal policy, that maximizes every state values! Unfortunately, this algorithm scales poorly. In @exm-the_example, we found that computing the state values is equivalent to solving a $2\times 2$ linear system. In the general case, this system as the same dimensions as the number of states. Depending on the problem, solving this linear system can becomes prohibitively expensive (for example, there are several order of magnitude more legal board states in a game of go than atoms in the observable universe @trompCountingLegal)! Nevertheless, the main idea of starting with an initial policy, then getting a better and better policy over time is a fundamental idea in reinforcement learning. 
+This algorithm is important in the sense that we can prove that it converges to an optimal policy, that maximizes every state values! Unfortunately, this algorithm scales poorly. In @exm-the_example, we found that computing the state values is equivalent to solving a $2\times 2$ linear system. In the general case, this system as the same dimensions as the number of states. Depending on the problem, solving this linear system can becomes prohibitively expensive (for example, there are several order of magnitude more legal board states in a game of go than atoms in the observable universe @trompCountingLegal), and yet we can design a program that can beat the best human players handily @Silver2016! Nevertheless, the main idea of starting with an initial policy, then getting a better and better policy over time is a fundamental idea in reinforcement learning. 
 

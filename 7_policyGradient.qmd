@@ -18,7 +18,7 @@ We end up with a linear system  of the form $\mathbfit{Mu} = \mathbfit{e}$ (@eq-
 - $\alpha$, a parameter specific to the Runge Kutta method used.
 
 
-We relate this solver to a stationary iterative method of the form $\mathbfit{u}_{n+1} = \mathbfit{Ku}_n + \mathbfit{Le}$, where $\mathbfit{K} = \mathbfit{I}-\mathbfit{LM}$. This method is convergent if and only if the spectral radius of $\mathbfit{K}$ is strictly less than one. We could compute this spectral radius, but this is an computationally intensive task, so we use an approximation. This approximation is the residual ratio after 10 iterations of the Runge-Kutta solver, starting with $\mathbfit{u}_0 = e$.
+We relate this solver to a stationary iterative method of the form $\mathbfit{u}_{n+1} = \mathbfit{Ku}_n + \mathbfit{Le}$, where $\mathbfit{K} = \mathbfit{I}-\mathbfit{LM}$. This method is convergent if and only if the spectral radius of $\mathbfit{K}$ is strictly less than one. We could compute this spectral radius, but this is an computationally intensive task, so we use an approximation. This approximation is the residual ratio after 10 iterations of the Runge-Kutta solver, starting with $\mathbfit{u}_0 = \mathbfit{e}$.
 
 
 We define this ratio as $\rho_{10, b, n}(\Delta t, \alpha)$, a function parametrized by $b$ and $n$, with arguments $\Delta t$ and $\alpha$. We are faced with the following optimization problem:
@@ -174,7 +174,7 @@ $$
 \nabla_{\mathbfit{\theta}} q_\pi(a,s) = \nabla_{\mathbfit{\theta}} \left[ \sum_{r}\sum_{s'} p(s',r|s,a)(r + \gamma v_\pi(s'))\right].
 $$
 
-Both $p(s',r|s,a)$ and the reward $r$ are not dependent on the policy, and therefore $\theta$. The gradient is thus
+Both $p(s',r|s,a)$ and the reward $r$ do not depend on the policy, and therefore not on  $\mathbfit{\theta}$. The gradient is thus
 
 $$
 \nabla_{\mathbfit{\theta}} q_\pi(a,s) =  \gamma\sum_{s'}\left[\sum_{r}p(s',r|a,s)\right]\nabla_{\mathbfit{\theta}} v_\pi(s').
@@ -210,10 +210,10 @@ Using $\nabla J({\mathbfit{\theta}}) = \frac{1}{|\mathcal{S}|}\sum_{s\in\mathcal
 And after a small rearrangement of the terms,
 
 $$
-\nabla_{\mathbfit{\theta}} J(\theta) = \frac{1}{1-\gamma}\sum_{s\in \mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|s,{\mathbfit{\theta}})q_\pi(a,s,{\mathbfit{\theta}}).
+\nabla_{\mathbfit{\theta}} J(\mathbfit{\theta}) = \frac{1}{1-\gamma}\sum_{s\in \mathcal{S}}\frac{1}{|\mathcal{S}|}\sum_{a\in\mathcal{A}}\nabla\pi(a|s,{\mathbfit{\theta}})q_\pi(a,s,{\mathbfit{\theta}}).
 $$
 
-This is a particular expression of the policy gradient theorem. The reason to put the fraction $1/|\mathcal{S}|$ inside the first sum is to get a parallel with the more general expression, where in general, we have a weighted sum with different weight depending on the state. Depending on the objective function used, this can be for example the stationary distribution of the states for a given policy.
+This is a special case of the policy gradient theorem. The reason to put the fraction $1/|\mathcal{S}|$ inside the first sum is to get a parallel with the more general expression, where in general, we have a weighted sum with different weight depending on the state. Depending on the objective function used, this can be for example the stationary distribution of the states for a given policy.
 
 We state the policy gradient theorem in a more general form.
 
@@ -251,7 +251,7 @@ $$
 \nabla_{\mathbfit{\theta}} J(\mathbfit{\theta}) \propto E\left[\sum_a q_\pi(a,S)\nabla \pi(a|S, \mathbfit{\theta})\right],
 $$
  
-where $S$ is the random variable with probability mass function $\mu(s)$.
+where $S$ is the random variable given by the probability mass function $\mu(s)$.
 By using the identity $\frac{\nabla f}{f} = \nabla \ln f$, we can also rewrite the inner term as
 
 $$
@@ -284,10 +284,10 @@ $$
 \hat{E}_n = \frac{1}{n}\sum_{k=1}^n e_k,
 $$
 
-where $n$ is the number of samples we have. Using the gradient ascent algorithm in @eq-gradient_ascent_algorithm, we can update the parameters $\theta$:
+where $n$ is the number of samples we have. Using a gradient ascent algorithm, we can update the parameters $\mathbfit{\theta}$:
 
 $$
-\theta_{t+1} = \theta_t + \alpha\frac{1}{n}\sum_{k=1}^n e_k.
+\mathbfit{\theta}_{t+1} = \mathbfit{\theta}_t + \alpha\frac{1}{n}\sum_{k=1}^n e_k.
 $$
 
 This method has three problems:
@@ -301,25 +301,25 @@ This method has three problems:
 Let us forget about the truncations issues for now. When we sample the expectation in @eq-policy_gradient_expectation, we get a trajectory
 
 $$
-S_0,A_0 \to S_{1}, A_{1} \to S_{2},A_{2} \dots .
+s_0,a_0 \to s_{1}, a_{1} \to s_{2},a_{2} \dots .
 $$
 
 Then, we can estimate, via Monte Carlo estimation, the return $G_0$. Doing this, we also have access to the trajectory 
 
 $$
-S_{1}, A_{1} \to S_{2},A_{2} \dots,
+s_{1}, a_{1} \to s_{2},a_{2} \dots,
 $$
 
 and thus we can also estimate the return $G_{1}$! Therefore, we can use a single episode to estimate multiple samples! Using this idea, we can generate an episode of length $\tau +1$:
 
 $$
-S_0,A_0 \to S_1,A_1,R_1 \to S_2,A_2,R_2 \to \dots \to S_{\tau +1}, R_{\tau +1}.
+s_0,a_0 \to s_1,a_1,r_1 \to s_2,a_2,r_2 \to \dots \to s_{\tau +1}, r_{\tau +1}.
 $$
 
 For any $t = 0,\dots ,T$, the estimated return is then defined as
 
 $$
-\hat{G}_t = \sum_{k=t}^\tau \gamma^{t-k}R_{k+1}.
+\hat{G}_t = \sum_{k=t}^\tau \gamma^{t-k}r_{k+1}.
 $$
 
 :::{.remark}
@@ -333,7 +333,7 @@ We can now state the REINFORCE algorithm [@Williams1992], also called policy gra
 
 | **REINFORCE algorithm pseudocode**
 | **INPUT:** 
-| - A parameter vector $\theta \in\mathbb{R}^d$, and a parametrized policy $\pi(a|s,\theta)$ with computable gradient $\nabla_\theta \pi(a|s,\theta)$;
+| - A parameter vector $\mathbfit{\theta} \in\mathbb{R}^d$, and a parametrized policy $\pi(a|s,\mathbfit{\theta})$ with computable gradient $\nabla_{\mathbfit{\theta}} \pi(a|s,\mathbfit{\theta})$;
 | - Learning rate $\alpha$;
 | - Discount rate $\gamma$;
 | - Episode length $\tau+1$;
@@ -341,11 +341,11 @@ We can now state the REINFORCE algorithm [@Williams1992], also called policy gra
 | **OUTPUT:** The updated parameter $\mathbfit{\theta}$;  
 | 
 | **FOR** $n$ episodes:  
-|       Compute an episode, following $\pi(a|s,\theta)$, of length T+2 the form  $S_0,A_0 \to S_1,A_1,R_1 \to S_2,A_2,R_2 \to \dots \to S_{\tau+1}, R_{\tau+1}$;
+|       Generate an episode, following $\pi(a|s,\mathbfit{\theta})$, of length T+2 the form  $s_0,a_0 \to s_1,a_1,r_1 \to s_2,a_2,r_2 \to \dots \to s_{\tau+1}, r_{\tau+1}$;
 |       **FOR** t=0 ... \tau:
-|           Compute the estimated return $\hat{G_t} = \sum_{k=t}^\tau \gamma^{t-k}R_{k+1}$;  
-|           Compute the log gradient $\nabla \ln \pi(A_t|S_t,\theta)$;  
-|           Update $\theta \leftarrow \theta + \alpha \hat{G_t} \nabla \ln \pi(A_t|S_t,\mathbfit{\theta})$;
+|           Compute the estimated return $\hat{G_t} = \sum_{k=t}^\tau \gamma^{t-k}r_{k+1}$;  
+|           Compute the log gradient $\nabla \ln \pi(a_t|s_t,\theta)$;  
+|           Update $\theta \leftarrow \theta + \alpha \hat{G_t} \nabla \ln \pi(a_t|s_t,\mathbfit{\theta})$;
 |
 
 ---
