@@ -50,7 +50,7 @@ Once we know a specific state, that is the problem parameters, we need to choose
 
 ### Modelling the rewards {.unnumbered}
 
-Once a state-action pair is chosen, the residual ratio $\rho_{10,b,n}(\Delta t, \alpha)$ is computed. The reward can then be defined as a function of the computed residual ratio:
+Once a state-action pair is chosen, the residual ratio $\rho_{10,b,n}(\Delta t, \alpha)$ is computed. The reward can then be defined as a function of the computed residual ratio,
 
 $$
 r = 1 - \rho_{10,b,n}(\Delta t, \alpha).
@@ -168,7 +168,7 @@ $$
 \nabla_{\mathbfit{\theta}} v_\pi(s) = \sum_{a\in\mathcal{A}}\nabla_{\mathbfit{\theta}}\pi(a|s, {\mathbfit{\theta}})q_\pi(a,s) + \pi(a|s,{\mathbfit{\theta}})\nabla_{\mathbfit{\theta}} q_\pi(a,s).
 $${#eq-gradient_wrt_theta}
 
-We now turn our attention to the $\nabla q_\pi(a,s)$ term above. We use the expression of the actions value in @eq-action_value_to_state_value:
+We now turn our attention to the $\nabla q_\pi(a,s)$ term above. We use the expression of the actions value in @eq-action_value_to_state_value,
 
 $$
 \nabla_{\mathbfit{\theta}} q_\pi(a,s) = \nabla_{\mathbfit{\theta}} \left[ \sum_{r}\sum_{s'} p(s',r|s,a)(r + \gamma v_\pi(s'))\right].
@@ -245,7 +245,7 @@ The policy gradient theorem is powerful in the sense that we can derive the grad
 ### REINFORCE algorithm 
 
 
-Here, we introduce reinforce the classic REINFORCE algorithm @Williams1992. Even with the policy gradient theorem, we are still faced with the problem of estimating the action values $q_\pi$. We remark that the formula in the policy gradient is an expectation:
+Here, we introduce reinforce the classic REINFORCE algorithm @Williams1992. Even with the policy gradient theorem, we are still faced with the problem of estimating the action values $q_\pi$. We remark that the formula in the policy gradient is an expectation,
 
 $$
 \nabla_{\mathbfit{\theta}} J(\mathbfit{\theta}) \propto E\left[\sum_a q_\pi(a,S)\nabla \pi(a|S, \mathbfit{\theta})\right],
@@ -284,7 +284,7 @@ $$
 \hat{E}_n = \frac{1}{n}\sum_{k=1}^n e_k,
 $$
 
-where $n$ is the number of samples we have. Using a gradient ascent algorithm, we can update the parameters $\mathbfit{\theta}$:
+where $n$ is the number of samples we have. Using a gradient ascent algorithm, we can update the parameters $\mathbfit{\theta}$,
 
 $$
 \mathbfit{\theta}_{t+1} = \mathbfit{\theta}_t + \alpha\frac{1}{n}\sum_{k=1}^n e_k.

@@ -120,7 +120,7 @@ $$
 \mathbfit{u}_{n+1} = \mathbfit{u}_n + \Delta t\left[\mathbfit{e}-\mathbfit{M}(\mathbfit{u}_n+\alpha\Delta t(\mathbfit{e}-\mathbfit{Mu_n}))\right].
 $$
 
-After a few lines of computation, we get the following iteration:
+After a few lines of computation, we get the following iteration,
 
 $$
 \mathbfit{u}_{n+1} = \left[\mathbfit{I}- \Delta t(\mathbfit{I}- \alpha \Delta t \mathbfit{M})\mathbfit{M}\right]\mathbfit{u}_n + \left[\Delta t(\mathbfit{I} - \alpha \Delta t \mathbfit{M})\right]\mathbfit{e}.
@@ -260,11 +260,12 @@ def make_res_ratio_grid(l,n_iter = 10):
     res_ratio_grid = np.zeros((l,l))
     for i in range(l):
         for j in range(l):
-            #print('alpha', alpha_grid[j,0])
-            #print('deltaT', delta_t_grid[0,i])
+            print('alpha', alpha_grid[j,i])
+            print('deltaT', delta_t_grid[j,i])
             try:
                 _ , res_norm_list = problem.main_solver2(alpha_grid[j,i],delta_t_grid[j,i],n_iter)
                 ratio = resRatio(res_norm_list)
+                #print('ratio: ', ratio)
                 res_ratio_grid[j,i] = ratio
             except ValueError: #Catch when it diverges really badly
                 res_ratio_grid[j,i] = np.Inf   
@@ -282,7 +283,7 @@ def visualize_res_ratio(l, n_iter):
             if res_ratio_grid[i,j] > 1:
                 res_ratio_grid[i,j] = np.NAN
     fig, ax = plt.subplots(figsize=(3,3))
-    c = ax.pcolor(delta_t_grid,alpha_grid, res_ratio_grid, vmax = 1)
+    c = ax.pcolor(delta_t_grid,alpha_grid, res_ratio_grid)
     label = '$\\rho_{%s}$' % n_iter
     fig.colorbar(c, ax = ax, label = label)
     ax.set_ylabel('$\\alpha$')

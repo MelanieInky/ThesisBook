@@ -28,7 +28,7 @@ We need to define a policy of the form $\pi(a|s,\mathbfit{\theta})$, where $a=(\
 
 We remark that the action space is, in our case, continuous, so the policy has to be over a continuous action space. In the discrete case, the policy is $\pi(a|s,\mathbfit{\theta})$ is a probability mass function, so that $\sum_a\pi(a|s,\mathbfit{\theta}) = 1$. We extend it to continuous action space by considering $\pi$ as a probability density function instead, and replacing the sum by an integral, that is $\int_{a\in \mathcal{A}}\pi(a|s,\mathbfit{\theta}) = 1$[@lillicrap2019continuous].
 
-Let $s$ be a given state, $s=(b,n)$. We first define the values $\mu_\alpha$ and $\mu_{\Delta t}$:
+Let $s$ be a given state, $s=(b,n)$. We first define the values $\mu_\alpha$ and $\mu_{\Delta t}$,
 
 $$
 \begin{pmatrix}
@@ -76,13 +76,13 @@ and similarly,
 
 $$
 f_2(\Delta t) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\Delta t - \theta_2b-\theta_3n-\theta_5)^2}{2\sigma^2}\right).
-$$.
+$$
 
-Taking the logarithm, we get $\ln(f(\alpha,\Delta t) = \ln(f_1(\alpha)) + \ln(f_2(\Delta t))$. Thus,
+Taking the logarithm, we get $\ln(f(\alpha,\Delta t)) = \ln(f_1(\alpha)) + \ln(f_2(\Delta t))$. Thus,
 
 $$
 \ln(f_1(\alpha)) = \ln(\frac{1}{\sqrt{2\pi}\sigma}) - \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2}.
-$$.
+$$
 
 We now take the gradient w.r.t $\mathbfit{\theta}$ to get
 
@@ -110,7 +110,7 @@ $$ {#eq-policyGradient}
 
 ## Implementation of the REINFORCE algorithm
 
-Now that everything as been defined, the REINFORCE algorithm can be applied to find an optimal policy. 
+Now that everything has been defined, the REINFORCE algorithm can be applied to find an optimal policy. 
 
 ### Algorithm code
 We present in this section the full training in a pseudo code format. The full code is written in a more modular way, and is available on the appendix, as well as on [GitHub](https://github.com/MelanieInky/ThesisBook). 
@@ -177,7 +177,7 @@ We implement the REINFORCE algorithm to the test problem. There are a few hyperp
 - Because the discount rate is so low, there is no bias added by estimating the returns at the end of the episodes. The episodes length is set to $20$ as we want to use the updated policy as often as possible.
 - The standard deviation of the policy parameters is set to $\sigma = 0.1$.
 
-This leaves the choice of the initial value for $\theta$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-res_ratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is a reasonable choice. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.3$, and $\theta_5=2$, the other parameters are set to 0.
+This leaves the choice of the initial value for $\mathbfit{\theta}$. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In @fig-res_ratio10, it seems that a policy of $\alpha = 0.3$ and $\Delta t = 2$ is a reasonable choice. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter $\theta_4 = 0.3$, and $\theta_5=2$, the other parameters are set to 0.
 
 The algorithm is run for 50000 episodes, and we observe the evolution of the parameters theta(@fig-theta_evolution_exp1). 
 
@@ -185,7 +185,7 @@ Since the discount rate is set to $0$, in any state, the return is the instant r
 
 The average reward is the no scaling reward in @fig-experimentreward and is trending upward with successive episodes, which is the intended behavior of the algorithm. However, there are certain problems that have been made apparent by the two plots:
 
-- Despite running the algorithm for a long time, some of the  parameters $\theta$ have barely changed, and it is clear that we are far from any convergence of the reward function. 
+- Despite running the algorithm for a long time, some of the  elements of $\mathbfit{\theta}$ have barely changed, and it is clear that we are far from any convergence of the reward function. 
 - Even with smoothing, it is apparent that the method has a high variance.
 - It seems that $\theta_1$ and $\theta_3$ vary quite a bit over time whereas the other parameters have a steady rate of change.
 
@@ -218,9 +218,9 @@ df_exp_tidy = df_exp.melt(
 
 
 
-
-
 df_theta_exp1 = df_exp_tidy.filter(pl.col('experiment_number') == "1")
+
+
 
 p1 = (ggplot(df_theta_exp1, aes(x = 'episode_no_1000', y = 'value'))
 + geom_line()
@@ -473,7 +473,7 @@ Let us test whether the algorithm converges to the same values regardless of ini
 
 ## Further results
 
-The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how the model performs once we have some found some optimal parameters $\mathbfit{\theta}^*$. In particular, by using the REINFORCE algorithm, the policy function has to be stochastic during training. The actual policy we choose can, however, be deterministic. So, at the risk of adding some bias, we remove the noise $\sigma$ in the policy and choose to use the  "deterministic policy" $\alpha = \mu_\alpha$, $\Delta t = \mu_{\Delta t}$, as in @eq-policy_deterministic_part, and we denote this policy by $\pi_d(a|s,\mathbfit{\theta}^*)$. For the value of $\mathbfit{\theta}^*$, we use its last value in the second experiment, which is (with some rounding off)
+The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how the model performs once we have found some optimal parameters $\mathbfit{\theta}^*$. In particular, by using the REINFORCE algorithm, the policy function has to be stochastic during training. The actual policy we choose can, however, be deterministic. So, at the risk of adding some bias, we remove the noise $\sigma$ in the policy and choose to use the  "deterministic policy" $\alpha = \mu_\alpha$, $\Delta t = \mu_{\Delta t}$, as in @eq-policy_deterministic_part, and we denote this policy by $\pi_d(a|s,\mathbfit{\theta}^*)$. For the value of $\mathbfit{\theta}^*$, we use its last value in the second experiment, which is (with some rounding off)
 
 $$
 \mathbfit{\theta}^* = (-3.606 \times 10^{-3},4.476\times 10^{-3},-3.598\times 10^{-4},-0.3542 ,0.2435,1.1305)^\intercal.
@@ -579,7 +579,8 @@ plot1 = ggplot(df, aes(x = "b", y = "n", fill ="factor(res_ratio_10)")) \
     + labs(fill = 'Residual ratio.') \
     + theme_classic()\
     + scale_fill_manual(values = ['#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#b10026'], labels = level_order1) \
-    + theme(legend_background=element_rect(fill='#EBEBEB'))
+    #+ theme(legend_background=element_rect(fill='#EBEBEB'))\
+    + theme(legend_position = 'top')
 
 
 level_order2 = ["<0.99", "[0.99,0.992)", "[0.992,0.994)", "[0.994,0.996)","[0.996,0.998)", "[0.998,1)", ">1"]
@@ -612,4 +613,154 @@ Evolution of the residual ratio $\rho_{10}$ and $\rho_{100}$, with the learned p
 :::
 
 
+```{python}
+#| echo: false
+#| eval: false
+#| output: false
+exp2_file = 'experiment_data/exp2/log.csv'
+exp1_file = 'experiment_data/exp1/log.csv'
+#lbjal
+df_exp1 = pl.read_csv(exp1_file)
+df_exp2 = pl.read_csv(exp2_file)
 
+## Add the experiment number
+df_exp1 = df_exp1.with_columns(pl.lit('1').alias('experiment_number'))
+df_exp2 = df_exp2.with_columns(pl.lit('2').alias('experiment_number'))
+
+df_exp = pl.concat([df_exp1,df_exp2],rechunk=True)
+
+#Make it tidy + ep/1000
+df_exp_tidy = df_exp.melt(
+    id_vars=['ep_number','avg_ep_reward','experiment_number'],
+    value_vars=['theta_0', 'theta_1', 'theta_2', 'theta_3', 'theta_4', 'theta_5']
+    ).with_columns(
+        (pl.col('ep_number')/1000).alias('episode_no_1000')
+    )
+
+
+
+df_theta_exp1 = df_exp_tidy.filter(pl.col('experiment_number') == "2")\
+    .filter(pl.col('ep_number') < 50000)
+
+
+
+p1 = (ggplot(df_theta_exp1, aes(x = 'episode_no_1000', y = 'value'))
++ geom_line()
++ facet_wrap('~variable', scales='free_y')
++ theme_bw()
++ theme(panel_spacing_x= 0.8)
++ xlab('Iteration / 1000')
++ ylab('Theta')
++ theme(figure_size=(6,3))
+)
+
+fig = p1.draw()
+fig.show()
+```
+
+
+
+```{python}
+#| output: false
+#| echo: false
+#| eval: false
+
+## For the presentation. 
+def res_ratio(res_norm_list):
+    return res_norm_list[-1] / res_norm_list[-2]
+
+problem = TestProblem()
+
+
+policy_type = 'learned'
+
+### Setting the policy
+if(policy_type == 'learned'):
+    problem.policy.theta = np.array([-3.60642577e-03,4.47643004e-03,-3.59883026e-04,-3.54240053e-01,2.43498188e-01,1.13051680e+00])
+else:
+    problem.policy.theta = np.array([0,0,0,0,0.3,2])
+
+problem.policy.version = 2
+
+l = 50
+
+n_grid = np.arange(5,200,1)
+b_grid = np.linspace(0,1,l)
+
+
+n_grid , b_grid = np.meshgrid(n_grid, b_grid)
+ratio_grid1 = np.zeros((len(b_grid), len(n_grid[0])))
+
+for i in range(len(n_grid[0])):
+    for j in range(len(b_grid)):
+        n = n_grid[j,i]
+        b = b_grid[j,i]
+        problem.update(b = b, n = n)
+        
+        _ , res_ratio_var1 = problem.main_solver(n_iter = 10, deterministic_policy=True)
+        #For rho10, then rho100
+        ratio_grid1[j,i] = res_ratio_var1
+
+
+### Useful binning function that could have been np.bins
+def continuous_to_level(res_ratio):
+    if(res_ratio < 0.99):
+        return 0
+    elif(res_ratio < 0.992):
+        return 1
+    elif(res_ratio < 0.994):
+        return 2 
+    elif(res_ratio < 0.996):
+        return 3
+    elif(res_ratio < 0.998):
+        return 4
+    elif(res_ratio < 1):
+        return 5
+    return 6 
+#Vectorized
+vec_continuous_to_level = np.vectorize(continuous_to_level)
+
+
+##Prepare tiny data, make it one dimensional
+flat_ratio_grid1 = ratio_grid1.flatten()
+flat_b_grid = b_grid.flatten()
+flat_n_grid = n_grid.flatten().astype('float')
+
+## And now put everything in bins, so it looks better
+flat_ratio_grid1_factor = vec_continuous_to_level(flat_ratio_grid1)
+#print(np.max(flat_ratio_grid))
+
+#Make the dataframe
+data = {"n":flat_n_grid, "b":flat_b_grid,             "res_ratio_10":flat_ratio_grid1_factor}
+
+df = pl.DataFrame(data)
+
+#Just to label the legend, instead of the hideous factors
+level_order = ["<0.99",">1"]
+
+if(policy_type == 'learned'):
+    level_order = ["<0.99", "[0.99,0.992)", "[0.992,0.994)", "[0.994,0.996)","[0.996,0.998)", "[0.998,1)"]
+    plot1 = ggplot(df, aes(x = "b", y = "n", fill ="factor(res_ratio_10)")) \
+        + geom_tile() \
+        + xlab('b') \
+        + ylab('n') \
+        + labs(fill = 'Residual ratio.') \
+        + theme_bw()\
+        + scale_fill_manual(values = ['#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#b10026'], labels = level_order) \
+        + theme(legend_position = 'bottom')
+else:
+    plot1 = ggplot(df, aes(x = "b", y = "n", fill ="factor(res_ratio_10)")) \
+        + geom_tile() \
+        + xlab('b') \
+        + ylab('n') \
+        + labs(fill = 'Residual ratio.') \
+        + theme_bw()\
+        + scale_fill_manual(values = ['#ffffb2','#b10026'], labels = level_order) \
+        + theme(legend_position = 'bottom')
+
+
+if(policy_type == 'learned'):
+    plot1.save(filename='images/learned_policy_10.png')
+else:
+    plot1.save(filename='images/initial_policy_10.png')
+```

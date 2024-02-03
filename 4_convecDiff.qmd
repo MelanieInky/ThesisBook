@@ -36,7 +36,7 @@ $$
 
 \vspace{3cm}
 
-This can be given in a matrix-vector format,  by letting $\mathbfit{u} = (u^1,\dots, u^{n})^\intercal$:
+This can be given in a matrix-vector format,  by letting $\mathbfit{u} = (u^1,\dots, u^{n})^\intercal$,
 
 $$
     \mathbfit{Au} = \mathbfit{Bu}+\mathbfit{d},

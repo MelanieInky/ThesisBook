@@ -22,7 +22,7 @@ jupyter: python3
 
 
 
-Let $A$ be a non singular square matrix of dimension $n\geq 1$ and let $b\in\mathbb{R}^n$. We consider the linear system $Ay = b$, where $b \in \mathbb{R}^n$. The system has the unique solution $y^* = A^{-1}b$. As directly inverting the matrix is a terrible idea, a fundamental problem in numerical analysis is to find numerical methods to solve this. This can be done with the use of direct methods or iterative methods. In this thesis, we consider an iterative method. Consider now the initial value problem(IVP):
+Let $A$ be a non singular square matrix of dimension $n\geq 1$ and let $b\in\mathbb{R}^n$. We consider the linear system $Ay = b$, where $b \in \mathbb{R}^n$. The system has the unique solution $y^* = A^{-1}b$. As directly inverting the matrix is a terrible idea, a fundamental problem in numerical analysis is to find numerical methods to solve this. This can be done with the use of direct methods or iterative methods. In this thesis, we consider an iterative method. Consider now the initial value problem(IVP),
 
 $$
 y'(t) = Ay(t)- b, \; \;  y(0) = y_0,

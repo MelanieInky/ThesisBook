@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Reinforcement Learning for the Optimization of Explicit Runge Kutta Method Parameters - 6&nbsp; Implementation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./9_summary.html" rel="next">
+<link href="./7_policyGradient.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./8_implementation.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Implementation</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Reinforcement Learning for the Optimization of Explicit Runge Kutta Method Parameters</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./3_motivation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Motivation : Pseudo time iterations</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./4_convecDiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">A Test Problem, the Convection Diffusion Equation</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./5_solverExploration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Explicit Runge-Kutta Method</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./6_reinforcementBasic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Basics of Reinforcement Learning (RL)</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./7_policyGradient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Policy Gradient Method</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./8_implementation.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Implementation</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./9_summary.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Summary and Discussion</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10_references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-linear_policy" id="toc-sec-linear_policy" class="nav-link active" data-scroll-target="#sec-linear_policy"><span class="header-section-number">6.1</span> A linear approximation of the policy</a></li>
+  <li><a href="#implementation-of-the-reinforce-algorithm" id="toc-implementation-of-the-reinforce-algorithm" class="nav-link" data-scroll-target="#implementation-of-the-reinforce-algorithm"><span class="header-section-number">6.2</span> Implementation of the REINFORCE algorithm</a>
+  <ul class="collapse">
+  <li><a href="#algorithm-code" id="toc-algorithm-code" class="nav-link" data-scroll-target="#algorithm-code"><span class="header-section-number">6.2.1</span> Algorithm code</a></li>
+  <li><a href="#a-first-experiment" id="toc-a-first-experiment" class="nav-link" data-scroll-target="#a-first-experiment"><span class="header-section-number">6.2.2</span> A first experiment</a></li>
+  </ul></li>
+  <li><a href="#scaling-the-parameters" id="toc-scaling-the-parameters" class="nav-link" data-scroll-target="#scaling-the-parameters"><span class="header-section-number">6.3</span> Scaling the parameters</a>
+  <ul class="collapse">
+  <li><a href="#a-motivating-example-of-gradient-descent" id="toc-a-motivating-example-of-gradient-descent" class="nav-link" data-scroll-target="#a-motivating-example-of-gradient-descent"><span class="header-section-number">6.3.1</span> A motivating example of gradient descent</a></li>
+  <li><a href="#changing-the-variable" id="toc-changing-the-variable" class="nav-link" data-scroll-target="#changing-the-variable"><span class="header-section-number">6.3.2</span> Changing the variable</a></li>
+  </ul></li>
+  <li><a href="#impact-of-initial-conditions" id="toc-impact-of-initial-conditions" class="nav-link" data-scroll-target="#impact-of-initial-conditions"><span class="header-section-number">6.4</span> Impact of initial conditions</a></li>
+  <li><a href="#further-results" id="toc-further-results" class="nav-link" data-scroll-target="#further-results"><span class="header-section-number">6.5</span> Further results</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Implementation</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="sec-linear_policy" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="sec-linear_policy"><span class="header-section-number">6.1</span> A linear approximation of the policy</h2>
+<p>We have now defined policy gradient methods as a way to address two issues that happened when we translated the problem as defined in the beginning of the last chapter. These issues being the need for a model free method, and dealing with large, and even infinite state and action set.</p>
+<p>We need to define a policy of the form <span class="math inline">\(\pi(a|s,\mathbfit{\theta})\)</span>, where <span class="math inline">\(a=(\Delta t, \alpha)\)</span> is the action of choosing the solver parameters, given a pair of problem parameters, that is some state, <span class="math inline">\(s=(b,n)\)</span>. We choose to have a policy of the form <span class="math inline">\((\Delta t, \alpha) \approx A(b,n)^\intercal + c\)</span>, where <span class="math inline">\(A\)</span> is a two by two matrix and <span class="math inline">\(c\)</span> a 2-vector. Furthermore, this policy need to be stochastic for the REINFORCE algorithm to work.</p>
+<p>We remark that the action space is, in our case, continuous, so the policy has to be over a continuous action space. In the discrete case, the policy is <span class="math inline">\(\pi(a|s,\mathbfit{\theta})\)</span> is a probability mass function, so that <span class="math inline">\(\sum_a\pi(a|s,\mathbfit{\theta}) = 1\)</span>. We extend it to continuous action space by considering <span class="math inline">\(\pi\)</span> as a probability density function instead, and replacing the sum by an integral, that is <span class="math inline">\(\int_{a\in \mathcal{A}}\pi(a|s,\mathbfit{\theta}) = 1\)</span><span class="citation" data-cites="lillicrap2019continuous"><a href="#ref-lillicrap2019continuous" role="doc-biblioref">[1]</a></span>.</p>
+<p>Let <span class="math inline">\(s\)</span> be a given state, <span class="math inline">\(s=(b,n)\)</span>. We first define the values <span class="math inline">\(\mu_\alpha\)</span> and <span class="math inline">\(\mu_{\Delta t}\)</span>,</p>
+<p><span id="eq-policy_deterministic_part"><span class="math display">\[
+\begin{pmatrix}
+\mu_\alpha \\
+\mu_{\Delta t}
+\end{pmatrix} =
+\begin{pmatrix}
+\theta_0 &amp; \theta_1\\
+\theta_2 &amp; \theta_3
+\end{pmatrix}
+\begin{pmatrix}
+b\\
+n
+\end{pmatrix} +
+\begin{pmatrix}
+\theta_4\\
+\theta_5
+\end{pmatrix}.
+\tag{6.1}\]</span></span></p>
+<p>where <span class="math inline">\(\mathbfit{\theta} = (\theta_0,\theta_1,\dots, \theta_5)^\intercal \in \mathbb{R}^6\)</span>. <span class="math inline">\(\mu_\alpha\)</span> and <span class="math inline">\(\mu_{\Delta_t}\)</span> can be regarded as “the deterministic policy”. Around this deterministic policy, we add some noise, specifically Gaussian noise to get the stochastic policy</p>
+<p><span class="math display">\[
+\alpha \sim  \mathcal{N}(\mu_\alpha,\sigma^2),
+\]</span></p>
+<p>and independently, <span class="math display">\[
+\Delta t \sim  \mathcal{N}(\mu_{\Delta t}, \sigma^2).
+\]</span></p>
+<p>Here <span class="math inline">\(\mathcal{N}(\mu,\sigma^2)\)</span> is the normal distribution, with mean <span class="math inline">\(\mu\)</span> and standard deviation <span class="math inline">\(\sigma\)</span>, and we choose <span class="math inline">\(\sigma\)</span> fixed in this thesis. We thus have a policy of the Since <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\Delta t\)</span> are chosen independently, the joint probability density of both parameters is the product of both marginal probability density function, that is</p>
+<p><span class="math display">\[
+\pi(a = (\Delta t, \alpha)|s,\mathbfit{\theta})  = f_{1}(\alpha)\cdot f_{2}(\Delta t),
+\]</span></p>
+<p>where <span class="math display">\[
+f_1(\alpha) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2}\right),
+\]</span></p>
+<p>and similarly,</p>
+<p><span class="math display">\[
+f_2(\Delta t) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\Delta t - \theta_2b-\theta_3n-\theta_5)^2}{2\sigma^2}\right).
+\]</span></p>
+<p>Taking the logarithm, we get <span class="math inline">\(\ln(f(\alpha,\Delta t)) = \ln(f_1(\alpha)) + \ln(f_2(\Delta t))\)</span>. Thus,</p>
+<p><span class="math display">\[
+\ln(f_1(\alpha)) = \ln(\frac{1}{\sqrt{2\pi}\sigma}) - \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)^2}{2\sigma^2}.
+\]</span></p>
+<p>We now take the gradient w.r.t <span class="math inline">\(\mathbfit{\theta}\)</span> to get</p>
+<p><span id="eq-nabla_xi_alpha"><span class="math display">\[
+\nabla_{\mathbfit{\theta}} \ln(f_1(\alpha)) = \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^\intercal,
+\tag{6.2}\]</span></span></p>
+<p>where <span class="math inline">\(\xi_\alpha = \frac{(\alpha - \theta_0b-\theta_1n-\theta_4)}{\sigma^2}\)</span>.</p>
+<p>Doing a similar thing with <span class="math inline">\(\Delta t\)</span>, we get the gradient,</p>
+<p><span id="eq-nabla_xi_delta_t"><span class="math display">\[
+\nabla_{\mathbfit{\theta}} \ln(f_2(\Delta t)) = \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^\intercal,
+\tag{6.3}\]</span></span></p>
+<p>where <span class="math inline">\(\xi_{\Delta t} = \frac{(\Delta t - \theta_2b-\theta_3n-\theta_5)}{\sigma^2}\)</span>. We now add both gradients together to get the gradient of the policy, for a specific action <span class="math inline">\(a = (\alpha, \Delta t)\)</span> and state <span class="math inline">\(s=(b,n)\)</span>:</p>
+<p><span id="eq-policyGradient"><span class="math display">\[
+\nabla_{\mathbfit{\theta}} \ln\pi(a|s,{\mathbfit{\theta}}) =  \xi_\alpha (b\theta_0,n\theta_1,0,0,\theta_4,0)^T+ \xi_{\Delta t}(0,0,b\theta_2,n\theta_3,0,\theta_5)^\intercal.
+\tag{6.4}\]</span></span></p>
+</section>
+<section id="implementation-of-the-reinforce-algorithm" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="implementation-of-the-reinforce-algorithm"><span class="header-section-number">6.2</span> Implementation of the REINFORCE algorithm</h2>
+<p>Now that everything has been defined, the REINFORCE algorithm can be applied to find an optimal policy.</p>
+<section id="algorithm-code" class="level3" data-number="6.2.1">
+<h3 data-number="6.2.1" class="anchored" data-anchor-id="algorithm-code"><span class="header-section-number">6.2.1</span> Algorithm code</h3>
+<p>We present in this section the full training in a pseudo code format. The full code is written in a more modular way, and is available on the appendix, as well as on <a href="https://github.com/MelanieInky/ThesisBook">GitHub</a>.</p>
+<div id="ab0b26eb" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">##Doesn't run, as it needs other functions</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">##but is a good bridge between pseudocode and the</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">##full code</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>learning_rate <span class="op">=</span> <span class="fl">1e-8</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>gamma <span class="op">=</span> <span class="dv">0</span> <span class="co">#Discount factor</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>initial_theta <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>,<span class="dv">2</span>] <span class="co">#Good enough theta</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> <span class="fl">0.1</span> <span class="co">#Standard dev for the policy</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>number_of_episodes <span class="op">=</span> <span class="dv">1000</span> </span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>episode_length <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(number_of_episodes):</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Generate an episode</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Choose an initial starting state, at random(uniformly)</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    b , n <span class="op">=</span> state_transition()</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Create an episode object, which will have </span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">#The history of the trajectory</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    episode <span class="op">=</span> Episode(length <span class="op">=</span> episode_length)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(episode_length):</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="co">#Get the action, according to the policy we defined before</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        delta_t, alpha <span class="op">=</span> get_action(b,n,sigma,theta) <span class="co">#pi(a|s,theta)</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>        <span class="co">#Then compute the residual ratio, after n_iter of the RK2 solver.</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        res_ratio <span class="op">=</span> compute_res_ratio(b,n,delta_t,alpha,n_iter <span class="op">=</span> <span class="dv">10</span>)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        reward <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> res_ratio <span class="co">#The lower the res ratio, the better the reward</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="co">#Save the state action and rewards inside the episode object</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        <span class="co">#so that we can access it later</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        episode.save(b,n,alpha,delta_t,reward, position <span class="op">=</span> j)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="co">#Then get to a new state, at random</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        b , n <span class="op">=</span> state_transition()</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Now that we have an episode, we can apply REINFORCE</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">#and update our policy accordingly</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(episode_length):</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>        <span class="co">#Get access to s_k, a_k, r_{k+1}</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        b , n , delta_t, alpha , reward <span class="op">=</span> episode.get(k)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        <span class="co">#Get the log likelihood of the action a_k, as in Eq 6.4</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        log_lik_gradient <span class="op">=</span> get_log_lik_gradient(b,n,alpha,delta_t,sigma)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        <span class="co">#Estimage the return Eq 5.9</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        estimated_return <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> l <span class="kw">in</span> <span class="bu">range</span>(k, episode_length):</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>            <span class="co">#episode.reward_hist[l] is R_{l+1}</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>            estimated_return <span class="op">+=</span> episode.reward_hist[l] <span class="op">*</span> (gamma<span class="op">**</span>(l<span class="op">-</span>t))</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        <span class="co">##Update the policy</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>        theta <span class="op">=</span> theta <span class="op">+</span> learning_rate <span class="op">*</span> log_lik_gradient <span class="op">*</span> estimated_return</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="co">#We end up with an updated theta, that is a better policy.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="a-first-experiment" class="level3" data-number="6.2.2">
+<h3 data-number="6.2.2" class="anchored" data-anchor-id="a-first-experiment"><span class="header-section-number">6.2.2</span> A first experiment</h3>
+<p>We implement the REINFORCE algorithm to the test problem. There are a few hyperparameters to set.</p>
+<ul>
+<li>The learning rate is set to <span class="math inline">\(\alpha=1\times10^{-8}\)</span>.</li>
+<li>The discount rate is set to <span class="math inline">\(\gamma = 0\)</span>, as the state transitions have no relationship with the actions taken, there is no reason to prefer long term rewards.</li>
+<li>Because the discount rate is so low, there is no bias added by estimating the returns at the end of the episodes. The episodes length is set to <span class="math inline">\(20\)</span> as we want to use the updated policy as often as possible.</li>
+<li>The standard deviation of the policy parameters is set to <span class="math inline">\(\sigma = 0.1\)</span>.</li>
+</ul>
+<p>This leaves the choice of the initial value for <span class="math inline">\(\mathbfit{\theta}\)</span>. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In <a href="#fig-res_ratio10" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-res_ratio10</span></a>, it seems that a policy of <span class="math inline">\(\alpha = 0.3\)</span> and <span class="math inline">\(\Delta t = 2\)</span> is a reasonable choice. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter <span class="math inline">\(\theta_4 = 0.3\)</span>, and <span class="math inline">\(\theta_5=2\)</span>, the other parameters are set to 0.</p>
+<p>The algorithm is run for 50000 episodes, and we observe the evolution of the parameters theta(<a href="#fig-theta_evolution_exp1" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-theta_evolution_exp1</span></a>).</p>
+<p>Since the discount rate is set to <span class="math inline">\(0\)</span>, in any state, the return is the instant reward received by the agent over a single episode. So, for an episode of length <span class="math inline">\(l\)</span>, we have the rewards <span class="math inline">\(r_1, r_2, \dots, r_l\)</span>. Then, we can plot the average reward <span class="math inline">\(r_{av} = \frac{r_1 + r_2 +\dots + r_l}{l}\)</span> over each episode. Because the variance of <span class="math inline">\(r_{av}\)</span> is still high, we use the rolling average of <span class="math inline">\(r_{av}\)</span> over the last <span class="math inline">\(k = 50\)</span> episodes as a smoother.</p>
+<p>The average reward is the no scaling reward in <a href="#fig-experimentreward" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-experimentreward</span></a> and is trending upward with successive episodes, which is the intended behavior of the algorithm. However, there are certain problems that have been made apparent by the two plots:</p>
+<ul>
+<li>Despite running the algorithm for a long time, some of the elements of <span class="math inline">\(\mathbfit{\theta}\)</span> have barely changed, and it is clear that we are far from any convergence of the reward function.</li>
+<li>Even with smoothing, it is apparent that the method has a high variance.</li>
+<li>It seems that <span class="math inline">\(\theta_1\)</span> and <span class="math inline">\(\theta_3\)</span> vary quite a bit over time whereas the other parameters have a steady rate of change.</li>
+</ul>
+<p>The slow apparent convergence rate can not be mitigated by a higher learning rate, as this empirically leads to divergence issues.</p>
+<p>The high variance is typical of reinforcement learning tasks, and in particular Monte Carlo based methods, which REINFORCE is a part of. That being said, there exists much better methods that can reduce this variance, at the expense of introducing some bias, such as for example actor-critics methods <span class="citation" data-cites="Sutton1998"><a href="#ref-Sutton1998" role="doc-biblioref">[2, Ch. 13.5]</a></span>, or proximal policy optimization (PPO) <span class="citation" data-cites="DBLP:journals/corr/SchulmanWDRK17"><a href="#ref-DBLP:journals/corr/SchulmanWDRK17" role="doc-biblioref">[3]</a></span>. Both of these methods are not explored in this thesis.</p>
+</section>
+</section>
+<section id="scaling-the-parameters" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="scaling-the-parameters"><span class="header-section-number">6.3</span> Scaling the parameters</h2>
+<p>To address the slow convergence problem, we start with a motivating example.</p>
+<section id="a-motivating-example-of-gradient-descent" class="level3" data-number="6.3.1">
+<h3 data-number="6.3.1" class="anchored" data-anchor-id="a-motivating-example-of-gradient-descent"><span class="header-section-number">6.3.1</span> A motivating example of gradient descent</h3>
+<p>Consider the loss function <span class="math inline">\(f(x,y) = x^2 + 9y^2\)</span>. The function admits a global minimum at <span class="math inline">\(x = y = 0\)</span>, and its gradient given by</p>
+<p><span class="math display">\[
+\nabla f(x,y) = (2x,18y)^\intercal.
+\]</span></p>
+<p>Therefore, the gradient descent iteration, with learning rate <span class="math inline">\(\alpha&gt;0\)</span>, is the iteration</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+x_{t+1}\\
+y_{t+1}
+\end{pmatrix} = \begin{pmatrix}
+x_t\\
+y_t
+\end{pmatrix} - \alpha \begin{pmatrix}
+2x_t\\
+18y_t
+\end{pmatrix}.
+\]</span></p>
+<p>That is <span class="math inline">\(x_{t+1} = (1-2\alpha)x_t\)</span> and <span class="math inline">\(y_{t+1} = (1-18\alpha)y_t\)</span>. The iterates converge to <span class="math inline">\(x=y=0\)</span> if and only if <span class="math inline">\(\alpha&lt;1/9\)</span>. If however, <span class="math inline">\(\frac{1}{9}&lt;\alpha&lt;1\)</span>, we will have convergence for <span class="math inline">\(x\)</span>, but not for <span class="math inline">\(y\)</span>.</p>
+<p>The reason for this is that the gradient is steeper in the <span class="math inline">\(y\)</span> direction than the <span class="math inline">\(x\)</span> direction, which leads to comparatively bigger change in <span class="math inline">\(y\)</span> than <span class="math inline">\(x\)</span> in the gradient descent iterations.</p>
+<p>To remedy this, we can use a change of variable <span class="math inline">\(z = 3y\)</span>. Then <span class="math inline">\(f(x,z) = x^2 + z^2\)</span>. The gradient descent iteration is then given by</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+x_{t+1}\\
+y_{t+1}
+\end{pmatrix} = \begin{pmatrix}
+x_t\\
+y_t
+\end{pmatrix} - \alpha
+\begin{pmatrix}
+2x_t\\
+2y_t
+\end{pmatrix}.
+\]</span></p>
+<p>That is, <span class="math inline">\(x_{t+1} = (1-2\alpha_x)x_t\)</span> and <span class="math inline">\(z_{t+1} = (1-2\alpha_y)y_t\)</span>. This converges to <span class="math inline">\(0\)</span> if and only if <span class="math inline">\(0&lt;\alpha&lt;\frac{1}{2}\)</span>, which means we can afford a much bigger learning rate. With <span class="math inline">\(\alpha = \frac{1}{2}\)</span>, the gradient descent algorithm can now converge to <span class="math inline">\(0\)</span> in a single iteration!</p>
+</section>
+<section id="changing-the-variable" class="level3" data-number="6.3.2">
+<h3 data-number="6.3.2" class="anchored" data-anchor-id="changing-the-variable"><span class="header-section-number">6.3.2</span> Changing the variable</h3>
+<p>This section is born from an intuitive idea and is for this reason less formal than the rest. Looking at the equation for the gradient of the log policy (<a href="#eq-policyGradient" class="quarto-xref">Equation&nbsp;<span class="quarto-unresolved-ref">eq-policyGradient</span></a>), we notice that the gradient has a similar expression in each direction. More particularly, the gradient in the direction <span class="math inline">\(i\)</span> is given by the partial derivative</p>
+<p><span class="math display">\[
+\frac{\partial \ln \pi(a|s,\mathbfit{\theta})}{\partial \theta_i} = \xi_{\alpha,\Delta t} (\_) \theta_i
+\]</span></p>
+<p>where <span class="math inline">\(\xi_{\alpha,\Delta t}\)</span> is either <span class="math inline">\(\xi_\alpha\)</span> (<a href="#eq-nabla_xi_alpha" class="quarto-xref">Equation&nbsp;<span class="quarto-unresolved-ref">eq-nabla_xi_alpha</span></a>) or <span class="math inline">\(\xi_{\Delta t}\)</span> (<a href="#eq-nabla_xi_delta_t" class="quarto-xref">Equation&nbsp;<span class="quarto-unresolved-ref">eq-nabla_xi_delta_t</span></a>), and <span class="math inline">\((\_)\)</span> is either:</p>
+<ul>
+<li><span class="math inline">\(b\)</span> in the directions <span class="math inline">\(\theta_0\)</span> and <span class="math inline">\(\theta_2\)</span>.</li>
+<li><span class="math inline">\(n\)</span> in the directions <span class="math inline">\(\theta_1\)</span> and <span class="math inline">\(\theta_3\)</span>.</li>
+<li><span class="math inline">\(1\)</span> in the directions <span class="math inline">\(\theta_4\)</span> and <span class="math inline">\(\theta_5\)</span>.</li>
+</ul>
+<p>Using the motivating example above, we’ve seen that it can be a good idea to rescale some variables so that the gradient is as “steep” in all directions. However, in this case, <span class="math inline">\(n\)</span> can vary between <span class="math inline">\(5\)</span> and <span class="math inline">\(200\)</span>, while <span class="math inline">\(b\)</span> only varies between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>. This motivate the idea that, in order to make a gradient “as steep” in all directions.</p>
+<p>Instead of using <span class="math inline">\(n\)</span> directly, we now use the scaled variable</p>
+<p><span class="math display">\[
+n' = \frac{n-5}{200}.
+\]</span></p>
+<p>Since <span class="math inline">\(n\)</span> can vary between <span class="math inline">\(5\)</span> and <span class="math inline">\(200\)</span>, <span class="math inline">\(n'\)</span> can have values between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>, just like the values of <span class="math inline">\(b\)</span>. Everything then follows by simply replacing <span class="math inline">\(n\)</span> by <span class="math inline">\(n'\)</span> in <a href="#sec-linear_policy" class="quarto-xref"><span class="quarto-unresolved-ref">sec-linear_policy</span></a>. The new deterministic policy is</p>
+<p><span id="eq-policy2_deterministic_part"><span class="math display">\[
+\begin{pmatrix}
+\mu_\alpha \\
+\mu_{\Delta t}
+\end{pmatrix} =
+\begin{pmatrix}
+\theta_0 &amp; \theta_1\\
+\theta_2 &amp; \theta_3
+\end{pmatrix}
+\begin{pmatrix}
+b\\
+n'
+\end{pmatrix} +
+\begin{pmatrix}
+\theta_4\\
+\theta_5
+\end{pmatrix},
+\tag{6.5}\]</span></span></p>
+<p>and the equation of the gradient is unchanged, with the exception of replacing <span class="math inline">\(n\)</span> by <span class="math inline">\(n'\)</span> everywhere.</p>
+<p>With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to <span class="math inline">\(\alpha = 2\times 10^{-4}\)</span> without divergence. Compared to the first experiment, the average episode reward is much better, as seen in <a href="#fig-experimentreward" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-experimentreward</span></a>.</p>
+</section>
+</section>
+<section id="impact-of-initial-conditions" class="level2" data-number="6.4">
+<h2 data-number="6.4" class="anchored" data-anchor-id="impact-of-initial-conditions"><span class="header-section-number">6.4</span> Impact of initial conditions</h2>
+<p>Gradient based iterations use the local information about an objective (or loss) function <span class="math inline">\(J(\theta)\)</span> to compute the update <span class="math inline">\(\mathbfit{\theta} \rightarrow \mathbfit{\theta} \pm \alpha \nabla J(\mathbfit{\theta})\)</span>. This local behavior also means that any convergence of gradient descent is to a local minimum, and we can’t be certain that this mimimum is a global minimum.</p>
+<p>Let us test whether the algorithm converges to the same values regardless of initial conditions. The third experiment is then to run the algorithm with the same parameters, but with varied initial conditions, and to visualize the results, both in the average rewards and the evolution of <span class="math inline">\(\mathbfit{\theta}\)</span> over 200000 episodes.</p>
+<p>The evolution of <span class="math inline">\(\mathbfit{\theta}\)</span> is in <a href="#fig-variable_theta" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-variable_theta</span></a>, and the rolling average of the average episode reward is plotted in <a href="#fig-reward_initial_theta" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-reward_initial_theta</span></a> for different initial value for <span class="math inline">\(\mathbfit{\theta}\)</span>. It turns out that while convergence in reward is to the same values, the parameter <span class="math inline">\(\theta_3\)</span> does not seem to converge to the same value. Furthermore, even with such a large amount of episodes, it is not clear if the other parameters converged.</p>
+</section>
+<section id="further-results" class="level2" data-number="6.5">
+<h2 data-number="6.5" class="anchored" data-anchor-id="further-results"><span class="header-section-number">6.5</span> Further results</h2>
+<p>The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how the model performs once we have found some optimal parameters <span class="math inline">\(\mathbfit{\theta}^*\)</span>. In particular, by using the REINFORCE algorithm, the policy function has to be stochastic during training. The actual policy we choose can, however, be deterministic. So, at the risk of adding some bias, we remove the noise <span class="math inline">\(\sigma\)</span> in the policy and choose to use the “deterministic policy” <span class="math inline">\(\alpha = \mu_\alpha\)</span>, <span class="math inline">\(\Delta t = \mu_{\Delta t}\)</span>, as in <a href="#eq-policy_deterministic_part" class="quarto-xref">Equation&nbsp;<span class="quarto-unresolved-ref">eq-policy_deterministic_part</span></a>, and we denote this policy by <span class="math inline">\(\pi_d(a|s,\mathbfit{\theta}^*)\)</span>. For the value of <span class="math inline">\(\mathbfit{\theta}^*\)</span>, we use its last value in the second experiment, which is (with some rounding off)</p>
+<p><span class="math display">\[
+\mathbfit{\theta}^* = (-3.606 \times 10^{-3},4.476\times 10^{-3},-3.598\times 10^{-4},-0.3542 ,0.2435,1.1305)^\intercal.
+\]</span></p>
+<p>Then, we compute the value of <span class="math inline">\(\rho_{10,b,n}\)</span> using this policy and for different values of <span class="math inline">\(n\)</span> and <span class="math inline">\(b\)</span>, the results are as below in <a href="#fig-learned_policy" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-learned_policy</span></a>. While we have convergence at any point, the convergence is slow, and the maximum value for <span class="math inline">\(\rho_{10}\)</span> is <span class="math inline">\(0.99917\)</span>. Referring back to the grid search experiment(see <a href="#fig-res_ratio_comparison" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-res_ratio_comparison</span></a>), this slow convergence is also partly an issue with the solver itself.</p>
+<p>Since we trained the policy on <span class="math inline">\(\rho_{10}\)</span>, it may be a good idea to check if the solver still converges when we compute more iterations. The result are in <a href="#fig-learned_policy" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-learned_policy</span></a>. There are some points where the solver diverges, which is a problem in particular because the point where it diverges are for small values of <span class="math inline">\(b\)</span>, which is often the case physically.</p>
+<p>This divergence indicates that it may be a good idea to further train the learned policy by computing <span class="math inline">\(\rho_{100}\)</span>, and having a reward of <span class="math inline">\(1-\rho_{100}\)</span> instead of <span class="math inline">\(1-\rho_{10}\)</span>. This of course means that the training time will have to be longer. In that case, we can set <span class="math inline">\(\mathbfit{\theta}^*\)</span> as a starting parameter for the policy.</p>
+<div id="fig-learned_policy_b" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-learned_policy_b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<embed src="images/learned_policy_100.pdf" height="200">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-learned_policy_b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6.1: <span class="math inline">\(\rho_{100}\)</span>. Note the divergence in black, for low values of <span class="math inline">\(b\)</span>.
+</figcaption>
+</figure>
+</div>
+<div id="fig-learned_policy" class="quarto-layout-panel">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-learned_policy-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-learned_policy" style="flex-basis: 100.0%;justify-content: flex-start;">
+<div id="fig-learned_policy_a" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-learned_policy_a-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<embed src="images/learned_policy_10.pdf" class="img-fluid" data-ref-parent="fig-learned_policy">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-learned_policy_a-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <span class="math inline">\(\rho_{10}\)</span>. Maximum residual ratio: 0.99922.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-learned_policy" style="flex-basis: 100.0%;justify-content: flex-start;">
+<div id="fig-learned_policy_b" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-learned_policy_b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<embed src="images/learned_policy_100.pdf" data-ref-parent="fig-learned_policy" height="200">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-learned_policy_b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b) <span class="math inline">\(\rho_{100}\)</span>. Note the divergence in black, for low values of <span class="math inline">\(b\)</span>.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-learned_policy-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6.2: Evolution of the residual ratio <span class="math inline">\(\rho_{10}\)</span> and <span class="math inline">\(\rho_{100}\)</span>, with the learned policy, depending on the problem parameters <span class="math inline">\(n\)</span> and <span class="math inline">\(b\)</span>.
+</figcaption>
+</figure>
+</div>
+
+
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-lillicrap2019continuous" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">T. P. Lillicrap <em>et al.</em>, <span>“Continuous control with deep reinforcement learning.”</span> 2019. Available: <a href="https://arxiv.org/abs/1509.02971">https://arxiv.org/abs/1509.02971</a></div>
+</div>
+<div id="ref-Sutton1998" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">R. S. Sutton and A. G. Barto, <em>Reinforcement learning: An introduction</em>, Second. The MIT Press, 2018. Available: <a href="http://incompleteideas.net/book/the-book-2nd.html">http://incompleteideas.net/book/the-book-2nd.html</a></div>
+</div>
+<div id="ref-DBLP:journals/corr/SchulmanWDRK17" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, <span>“Proximal policy optimization algorithms,”</span> <em>CoRR</em>, vol. abs/1707.06347, 2017, Available: <a href="http://arxiv.org/abs/1707.06347">http://arxiv.org/abs/1707.06347</a></div>
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./7_policyGradient.html" class="pagination-link  aria-label=" &lt;span="" gradient="" method&lt;="" span&gt;"="">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Policy Gradient Method</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./9_summary.html" class="pagination-link" aria-label="<span class='chapter-number'>7</span>&nbsp; <span class='chapter-title'>Summary and Discussion</span>">
+        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Summary and Discussion</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

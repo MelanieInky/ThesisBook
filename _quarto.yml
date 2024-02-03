@@ -5,7 +5,8 @@ project:
 book:
   title: "Reinforcement Learning for the Optimization of Explicit Runge Kutta Method Parameters"
   author: "Mélanie Fournier"
-  date: "03/05/2023"
+  date: "today"
+  date-format: long
   chapters:
     - index.qmd
     - 3_motivation.qmd
@@ -32,6 +33,7 @@ format:
     - left=20mm
     pdf-engine: lualatex
     number-sections: true
+    keep-tex: true
     include-in-header:
       text: 
         \usepackage[ruled,vlined,linesnumbered]{algorithm2e}

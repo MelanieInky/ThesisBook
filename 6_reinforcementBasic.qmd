@@ -97,7 +97,7 @@ While Leonardo only takes actions by looking at his current state, he still want
 - If he ends up on the carrot, he gets a reward of $+5$. 
 - If he ends up in any other state, he gets a reward of $-1$, as he does not want to lose time. 
 
-More formally, the denote the reward Leonardo gets after taking the action $A_t$ from the state $S_t$ by $R_{t+1}$. The set of all possible rewards is denoted by $\mathcal{R}$. Here $\mathcal{R} = \{-1,5,-5\}$. $R_t$ is again a random variable and we denote an observations of the reward at time $t$ by $r_t$. 
+More formally, we denote the reward Leonardo gets after taking the action $A_t$ from the state $S_t$ by $R_{t+1}$. The set of all possible rewards is denoted by $\mathcal{R}$. Here $\mathcal{R} = \{-1,5,-5\}$. $R_t$ is again a random variable and we denote an observation of the reward at time $t$ by $r_t$. 
 
 ### State transitions and rewards probabilities
 
@@ -136,7 +136,7 @@ We formalize the above example by defining a Markov decision process (MDP). This
 A finite Markov decision process (MDP) is defined as a discrete time process, where we have:
 
 - A finite set of all states $\mathcal{S}$.
-- An finite set of all possible actions $\mathcal{A}$.
+- A finite set of all possible actions $\mathcal{A}$.
 - A reward set $\mathcal{R}(s,a)$, which contains the potential rewards received after taking  any action $a\in\mathcal{A}$ from any state $s\in\mathcal{S}$.
 
 We use the notation $S_t, A_t$ as the state and action of the process at time $t$. The reward $R_t$ is the reward received at time t. $S_t,A_t$ and $R_t$ are random variables.
@@ -174,7 +174,7 @@ The model in a Markov decision process is often impossible to define in advance.
 
 We have a Markov decision process, which serves as a nice mathematical formalization of an  agent and its environment @Sutton1998. Now we want to train the agent to make the best possible decisions? Answering this question is the goal of the next sections.
 
-We first define a trajectory. We denote by $S_t$ the state of an agent at instant $t$. Then, according to the policy, this agent takes the action $A_t$. After taking this action, the agent is now at the state $S_{t+1}$, and it gets the rewards $R_{t+1}$. Then the agent takes action $A_{t+1}$, and gets to a new state $S_{t+2}$ with reward $R_{t+2}$. This can continues indefinitely. We define the trajectory of an agent with starting state $S_t = s_t$ as the chain of state, actions and rewards from time $t$ onward:
+We first define a trajectory. We denote by $S_t$ the state of an agent at instant $t$. Then, according to the policy, this agent takes the action $A_t$. After taking this action, the agent is now at the state $S_{t+1}$, and it gets the rewards $R_{t+1}$. Then the agent takes action $A_{t+1}$, and gets to a new state $S_{t+2}$ with reward $R_{t+2}$. This continues indefinitely. We define the trajectory of an agent with starting state $S_t = s_t$ as the chain of states, actions and rewards from time $t$ onward:
 
 $$
 S_t = s_t,A_t \to R_{t+1},S_{t+1},A_{t+1} \to R_{t+2},S_{t+2},A_{t+2} \to \cdots,
@@ -213,7 +213,7 @@ Since the  discounted return is a random variable, we can look at its expectatio
 
 
 :::{#def-state_value}
-**State value** The state value of a state $s$ is the function, defined for any $s\in\mathcal{S}$ as the conditional expectation of the discounted return, given $S_t = s$:
+**State value** The state value of a state $s$ is the function, defined for any $s\in\mathcal{S}$ as the conditional expectation of the discounted return, given $S_t = s$,
 
 $$
 v_\pi(s) = E[G_t|S_t = s] = E[R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots | S_t = s],
@@ -386,7 +386,7 @@ $$
 v_\pi(s) = E[q_\pi(a|s)],
 $$
 
-where $A$ is random variable with p.m.f $\pi(a|s)$. Actions values are important in the sense that they tell us of the "value of taking an action over another", and they appear naturally in almost all reinforcement learning algorithms. One important thing to note is that, by "comparing"  @eq-state_value_action_relation and @eq-Bellman, we get an equivalent definitions of the action values as:
+where $A$ is random variable with p.m.f $\pi(a|s)$. Actions values are important in the sense that they tell us of the "value of taking an action over another", and they appear naturally in almost all reinforcement learning algorithms. One important thing to note is that, by "comparing"  @eq-state_value_action_relation and @eq-Bellman, we get an equivalent definitions of the action values as
 
 $$
 q_\pi(a|s) = \sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}p(s',r|s,a)\left[ r + \gamma v_\pi(s')\right].
@@ -400,7 +400,7 @@ A more rigorous approach to derive @eq-action_value_to_state_value would be simi
 
 ## Optimal policy and value iteration
 
-Now that we have defined to the state values, we want to find a policy that maximizes them, that is, find a policy which we denote by $\pi^*(a,s)$ such that, for any state $s$ and for any policy $\pi(a|s)$, $v_{\pi^*}(s)\geq v_\pi(s)$. It turns out that not only this optimal policy exist, but that we can find it by repeating the following steps, starting from any policy $\pi_0$:
+Now that we have defined the state values, we want to find a policy that maximizes them, that is, find a policy which we denote by $\pi^*(a,s)$ such that, for any state $s$ and for any policy $\pi(a|s)$, $v_{\pi^*}(s)\geq v_\pi(s)$. It turns out that not only this optimal policy exist, but that we can find it by repeating the following steps, starting from any policy $\pi_0$:
 
 - Test the current policy, that is evaluate the state values.
 - From these state values, compute the action values.
@@ -430,5 +430,5 @@ More specifically, we present the pseudo code for the value iteration algorithm.
 
 ---
 
-This algorithm is important in the sense that we can prove that it converges to an optimal policy, that maximizes every state values! Unfortunately, this algorithm scales poorly. In @exm-the_example, we found that computing the state values is equivalent to solving a $2\times 2$ linear system. In the general case, this system as the same dimensions as the number of states. Depending on the problem, solving this linear system can becomes prohibitively expensive (for example, there are several order of magnitude more legal board states in a game of go than atoms in the observable universe @trompCountingLegal), and yet we can design a program that can beat the best human players handily @Silver2016! Nevertheless, the main idea of starting with an initial policy, then getting a better and better policy over time is a fundamental idea in reinforcement learning. 
+This algorithm is important in the sense that we can prove that it converges to an optimal policy, that maximizes all state values! Unfortunately, this algorithm scales poorly. In @exm-the_example, we found that computing the state values is equivalent to solving a $2\times 2$ linear system. In the general case, this system as the same dimensions as the number of states. Depending on the problem, solving this linear system can become prohibitively expensive (for example, there are several orders of magnitude more legal board states in a game of go than atoms in the observable universe @trompCountingLegal), and yet we can design a program that can beat the best human players handily @Silver2016! Nevertheless, the main idea of starting with an initial policy, then getting a better and better policy over time is a fundamental idea in reinforcement learning. 
 
