@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.549">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Mélanie Fournier">
-<meta name="dcterms.date" content="2024-02-03">
+<meta name="dcterms.date" content="2024-09-14">
 
 <title>Reinforcement Learning for the Optimization of Explicit Runge Kutta Method Parameters</title>
 <style>
@@ -90,7 +90,7 @@ div.csl-indent {
   }
 }</script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
@@ -128,13 +128,13 @@ window.Quarto = {
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
         <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Introduction</a></li></ol></nav>
-        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -246,7 +246,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 3, 2024</p>
+      <p class="date">September 14, 2024</p>
     </div>
   </div>
   
@@ -260,22 +260,22 @@ window.Quarto = {
 
 <section id="introduction" class="level1 unnumbered">
 <h1 class="unnumbered">Introduction</h1>
-<p>Machine learning is everywhere. It has applications in computer vision <span class="citation" data-cites="rombach2022highresolution"><a href="#ref-rombach2022highresolution" role="doc-biblioref">[1]</a></span>, robotic <span class="citation" data-cites="RL_robotics"><a href="#ref-RL_robotics" role="doc-biblioref">[2]</a></span>, finance <span class="citation" data-cites="RL_finance_review"><a href="#ref-RL_finance_review" role="doc-biblioref">[3]</a></span>, recommender systems <span class="citation" data-cites="chen2021survey"><a href="#ref-chen2021survey" role="doc-biblioref">[4]</a></span>, playing games at a high level <span class="citation" data-cites="Silver2016"><a href="#ref-Silver2016" role="doc-biblioref">[5]</a></span> or even discovering new matrix multiplication algorithms <span class="citation" data-cites="Fawzi2022"><a href="#ref-Fawzi2022" role="doc-biblioref">[6]</a></span>. The use of machine learning in scientific problems which has been aptly called <em>scientific machine learning</em> is also growing, with the most important example being combining neural network and physic laws to either discover or solve partial differential equations <span class="citation" data-cites="cuomo2022scientific"><a href="#ref-cuomo2022scientific" role="doc-biblioref">[7]</a></span>.</p>
-<p>In this thesis, we focus on studying reinforcement learning, which is one of the three main machine learning paradigm. The three main paradigm are as follow<span class="citation" data-cites="Sutton1998"><a href="#ref-Sutton1998" role="doc-biblioref">[8, Ch. 1.1]</a></span>:</p>
+<p>Machine learning is everywhere. It has applications in computer vision <span class="citation" data-cites="rombach2022highresolution"><a href="10_references.html#ref-rombach2022highresolution" role="doc-biblioref">[1]</a></span>, robotic <span class="citation" data-cites="RL_robotics"><a href="10_references.html#ref-RL_robotics" role="doc-biblioref">[2]</a></span>, finance <span class="citation" data-cites="RL_finance_review"><a href="10_references.html#ref-RL_finance_review" role="doc-biblioref">[3]</a></span>, recommender systems <span class="citation" data-cites="chen2021survey"><a href="10_references.html#ref-chen2021survey" role="doc-biblioref">[4]</a></span>, playing games at a high level <span class="citation" data-cites="Silver2016"><a href="10_references.html#ref-Silver2016" role="doc-biblioref">[5]</a></span> or even discovering new matrix multiplication algorithms <span class="citation" data-cites="Fawzi2022"><a href="10_references.html#ref-Fawzi2022" role="doc-biblioref">[6]</a></span>. The use of machine learning in scientific problems which has been aptly called <em>scientific machine learning</em> is also growing, with the most important example being combining neural network and physic laws to either discover or solve partial differential equations <span class="citation" data-cites="cuomo2022scientific"><a href="10_references.html#ref-cuomo2022scientific" role="doc-biblioref">[7]</a></span>.</p>
+<p>In this thesis, we focus on studying reinforcement learning, which is one of the three main machine learning paradigm. The three main paradigm are as follow<span class="citation" data-cites="Sutton1998"><a href="10_references.html#ref-Sutton1998" role="doc-biblioref">[8, Ch. 1.1]</a></span>:</p>
 <ul>
 <li>Supervised learning, where we learn using data containing an input, and a desired output. Regression models are an example of a supervised learning.</li>
 <li>Unsupervised learning, where the data only has an input but no desired output. Examples include clustering algorithms.</li>
 <li>Reinforcement learning, in which we have an intelligent agent who learns to do something by interacting with its environment, receiving feedback in the form of rewards which the agent wants to maximize.</li>
 </ul>
-<p>What sets apart reinforcement learning from its cousins unsupervised and supervised learning is the introduction of the concept of reward. The agent learns by trial and error, and wants to maximize the rewards it gets over time. This is, in essence, quite similar to how we animals learn to do things, and it is no surprise that reinforcement learning traces its roots from the field of animal learning <span class="citation" data-cites="towardsdatascienceReinforcementLearning"><a href="#ref-towardsdatascienceReinforcementLearning" role="doc-biblioref">[9]</a></span>. Another important root of reinforcement learning comes from the field of optimal control, where the agent and environment of reinforcement learning are respectively the controller and controlled system in control theory <span class="citation" data-cites="Sutton1998"><a href="#ref-Sutton1998" role="doc-biblioref">[8, Ch. 1.7]</a></span>.</p>
+<p>What sets apart reinforcement learning from its cousins unsupervised and supervised learning is the introduction of the concept of reward. The agent learns by trial and error, and wants to maximize the rewards it gets over time. This is, in essence, quite similar to how we animals learn to do things, and it is no surprise that reinforcement learning traces its roots from the field of animal learning <span class="citation" data-cites="towardsdatascienceReinforcementLearning"><a href="10_references.html#ref-towardsdatascienceReinforcementLearning" role="doc-biblioref">[9]</a></span>. Another important root of reinforcement learning comes from the field of optimal control, where the agent and environment of reinforcement learning are respectively the controller and controlled system in control theory <span class="citation" data-cites="Sutton1998"><a href="10_references.html#ref-Sutton1998" role="doc-biblioref">[8, Ch. 1.7]</a></span>.</p>
 <p>To study reinforcement learning, we need a playground. That playground could be an already established playground (such as the Gymnasium API), but in this thesis we use our own playground, which we find in the realm of numerical differential equation solvers.</p>
 <p>Numerical methods for differential equations are amongst the most important methods in numerical analysis. All of these methods have specific strengths and weaknesses. They all have, however, some parameters that need to be chosen, if only for the step size. These parameters have to be chosen to maximize performance, and depend on the problem. In some cases they are taken using some heuristics, but they can also be searched for computationally, which is an issue, as any computation means more time to get to the solution. It would therefore be a great time saver if a computer could <em>learn</em> these heuristics, for example using reinforcement learning! This is the playground we use in this thesis, albeit with a reduced scope.</p>
 <p>We start by motivating the use of numerical ODE solvers to solve linear systems. As a case study, we have a specific type of linear systems, which appears when discretizing the steady state, one dimensional convection diffusion equation <span class="math inline">\(u_{x} = bu_{xx} +1\)</span>. Doing so, we end up with two <em>problem parameters</em>; <span class="math inline">\(b\)</span>, which is a physical constant, and <span class="math inline">\(n\)</span>, stemming from the discretization. The studied numerical solver is an explicit Runge-Kutta method, and has two parameters, a (pseudo-) time step <span class="math inline">\(\Delta t\)</span> and another parameter <span class="math inline">\(\alpha\)</span>, which need to be chosen. How to choose these <em>solver parameters</em>, as a function of the <em>problem parameters</em> is then left to the realm of reinforcement learning.</p>
-<p>We then introduce through intuitive examples (and a very cute bunny) the main concepts of reinforcement learning, such as states, actions, state transitions and rewards which are then formalized as a Markov decision process. We then introduce policy gradient methods, and in particular we introduce the classical REINFORCE <span class="citation" data-cites="Williams1992"><a href="#ref-Williams1992" role="doc-biblioref">[10]</a></span> algorithm, which we use to optimize the solver parameters for the studied linear systems.</p>
+<p>We then introduce through intuitive examples (and a very cute bunny) the main concepts of reinforcement learning, such as states, actions, state transitions and rewards which are then formalized as a Markov decision process. We then introduce policy gradient methods, and in particular we introduce the classical REINFORCE <span class="citation" data-cites="Williams1992"><a href="10_references.html#ref-Williams1992" role="doc-biblioref">[10]</a></span> algorithm, which we use to optimize the solver parameters for the studied linear systems.</p>
 <p>The results, while positive, are hampered somewhat by the fact that the method used in this thesis is not a natural fit to what makes reinforcement learning so powerful. A discussion on how to redefine the problem to make better use of the strengths of reinforcement learning will follow.</p>
 
 
-<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list" style="display: none">
 <div id="ref-rombach2022highresolution" class="csl-entry" role="listitem">
 <div class="csl-left-margin">[1] </div><div class="csl-right-inline">R. Rombach, A. Blattmann, D. Lorenz, P. Esser, and B. Ommer, <span>“High-resolution image synthesis with latent diffusion models.”</span> 2022. Available: <a href="https://arxiv.org/abs/2112.10752">https://arxiv.org/abs/2112.10752</a></div>
 </div>
@@ -345,18 +345,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -388,7 +377,47 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -423,7 +452,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');
@@ -701,7 +734,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   <div class="nav-page nav-page-previous">
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./3_motivation.html" class="pagination-link" aria-label="<span class='chapter-number'>1</span>&nbsp; <span class='chapter-title'>Motivation : Pseudo time iterations</span>">
+      <a href="./3_motivation.html" class="pagination-link" aria-label="Motivation : Pseudo time iterations">
         <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Motivation : Pseudo time iterations</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
