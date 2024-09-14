@@ -233,7 +233,7 @@ p1 = (ggplot(df_theta_exp1, aes(x = 'episode_no_1000', y = 'value'))
 )
 
 fig = p1.draw()
-fig.show()
+fig
 ```
 
 
@@ -261,7 +261,7 @@ p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'rolling reward', color = '
 # + coord_cartesian(ylim=(-0.1,0.01)))
 
 fig = p2.draw()
-fig.show()
+fig
 ```
 
 
@@ -420,15 +420,20 @@ p1 = (ggplot(df_exp_tidy, aes(x = 'episode_no_1000', y = 'value', color = 'Initi
 + geom_line(aes(colour = 'Initial theta'))
 + facet_wrap('~variable', scales='free_y')
 + theme_bw()
-+ theme(panel_spacing_x= 0.4)
+#+ theme(panel_spacing_x= 0.4)
 + xlab('Episode no. / 1000')
 + ylab('Theta')
 + scale_color_manual(values = ['#1d493bff', '#fc9167ff', '#506fb0ff'])
-+ theme(legend_position=[0.5,-0.04],figure_size=(6,3.5))
+#+ theme(legend_position=[0.5,-0.04],figure_size=(6,3.5))
++ theme(figure_size=(6,3.5))
++ theme(
+        legend_direction='horizontal',
+        legend_position='bottom'
+  )
 )
 
 fig = p1.draw()
-fig.show()
+fig
 ```
 
 ```{python}
@@ -451,7 +456,7 @@ p2 = (ggplot(df_exp_reward, aes(x = 'ep_number', y = 'Rolling avg', color = 'Ini
 + scale_color_manual(values = ['#1d493bff', '#fc9167ff', '#506fb0ff']))
 
 fig = p2.draw()
-fig.show()
+fig
 
 ```
 
@@ -604,7 +609,7 @@ plot1.save(filename='images/learned_policy_10.pdf')
 
 ::: {#fig-learned_policy layout-nrow=2}
 
-![$\rho_{10}$. Maximum residual ratio: 0.99922.](images/learned_policy_10.pdf){#fig-learned_policy_a}
+![$\rho_{10}$. Maximum residual ratio: 0.99922.](images/learned_policy_10.pdf){height=200 #fig-learned_policy_a}
 
 ![$\rho_{100}$. Note the divergence in black, for low values of $b$.](images/learned_policy_100.pdf){#fig-learned_policy_b height=200}
 

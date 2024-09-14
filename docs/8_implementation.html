@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.549">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Reinforcement Learning for the Optimization of Explicit Runge Kutta Method Parameters - 6&nbsp; Implementation</title>
+<title>6&nbsp; Implementation – Reinforcement Learning for the Optimization of Explicit Runge Kutta Method Parameters</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -33,7 +33,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -123,7 +123,7 @@ div.csl-indent {
   }
 }</script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
@@ -161,13 +161,13 @@ window.Quarto = {
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
         <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./8_implementation.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Implementation</span></a></li></ol></nav>
-        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -295,7 +295,7 @@ window.Quarto = {
 <h2 data-number="6.1" class="anchored" data-anchor-id="sec-linear_policy"><span class="header-section-number">6.1</span> A linear approximation of the policy</h2>
 <p>We have now defined policy gradient methods as a way to address two issues that happened when we translated the problem as defined in the beginning of the last chapter. These issues being the need for a model free method, and dealing with large, and even infinite state and action set.</p>
 <p>We need to define a policy of the form <span class="math inline">\(\pi(a|s,\mathbfit{\theta})\)</span>, where <span class="math inline">\(a=(\Delta t, \alpha)\)</span> is the action of choosing the solver parameters, given a pair of problem parameters, that is some state, <span class="math inline">\(s=(b,n)\)</span>. We choose to have a policy of the form <span class="math inline">\((\Delta t, \alpha) \approx A(b,n)^\intercal + c\)</span>, where <span class="math inline">\(A\)</span> is a two by two matrix and <span class="math inline">\(c\)</span> a 2-vector. Furthermore, this policy need to be stochastic for the REINFORCE algorithm to work.</p>
-<p>We remark that the action space is, in our case, continuous, so the policy has to be over a continuous action space. In the discrete case, the policy is <span class="math inline">\(\pi(a|s,\mathbfit{\theta})\)</span> is a probability mass function, so that <span class="math inline">\(\sum_a\pi(a|s,\mathbfit{\theta}) = 1\)</span>. We extend it to continuous action space by considering <span class="math inline">\(\pi\)</span> as a probability density function instead, and replacing the sum by an integral, that is <span class="math inline">\(\int_{a\in \mathcal{A}}\pi(a|s,\mathbfit{\theta}) = 1\)</span><span class="citation" data-cites="lillicrap2019continuous"><a href="#ref-lillicrap2019continuous" role="doc-biblioref">[1]</a></span>.</p>
+<p>We remark that the action space is, in our case, continuous, so the policy has to be over a continuous action space. In the discrete case, the policy is <span class="math inline">\(\pi(a|s,\mathbfit{\theta})\)</span> is a probability mass function, so that <span class="math inline">\(\sum_a\pi(a|s,\mathbfit{\theta}) = 1\)</span>. We extend it to continuous action space by considering <span class="math inline">\(\pi\)</span> as a probability density function instead, and replacing the sum by an integral, that is <span class="math inline">\(\int_{a\in \mathcal{A}}\pi(a|s,\mathbfit{\theta}) = 1\)</span><span class="citation" data-cites="lillicrap2019continuous"><a href="10_references.html#ref-lillicrap2019continuous" role="doc-biblioref">[1]</a></span>.</p>
 <p>Let <span class="math inline">\(s\)</span> be a given state, <span class="math inline">\(s=(b,n)\)</span>. We first define the values <span class="math inline">\(\mu_\alpha\)</span> and <span class="math inline">\(\mu_{\Delta t}\)</span>,</p>
 <p><span id="eq-policy_deterministic_part"><span class="math display">\[
 \begin{pmatrix}
@@ -357,7 +357,7 @@ f_2(\Delta t) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\Delta t - \theta_2
 <section id="algorithm-code" class="level3" data-number="6.2.1">
 <h3 data-number="6.2.1" class="anchored" data-anchor-id="algorithm-code"><span class="header-section-number">6.2.1</span> Algorithm code</h3>
 <p>We present in this section the full training in a pseudo code format. The full code is written in a more modular way, and is available on the appendix, as well as on <a href="https://github.com/MelanieInky/ThesisBook">GitHub</a>.</p>
-<div id="ab0b26eb" class="cell" data-execution_count="2">
+<div id="6f1e0ab9" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">##Doesn't run, as it needs other functions</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">##but is a good bridge between pseudocode and the</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">##full code</span></span>
@@ -413,17 +413,45 @@ f_2(\Delta t) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(\Delta t - \theta_2
 <li>Because the discount rate is so low, there is no bias added by estimating the returns at the end of the episodes. The episodes length is set to <span class="math inline">\(20\)</span> as we want to use the updated policy as often as possible.</li>
 <li>The standard deviation of the policy parameters is set to <span class="math inline">\(\sigma = 0.1\)</span>.</li>
 </ul>
-<p>This leaves the choice of the initial value for <span class="math inline">\(\mathbfit{\theta}\)</span>. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In <a href="#fig-res_ratio10" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-res_ratio10</span></a>, it seems that a policy of <span class="math inline">\(\alpha = 0.3\)</span> and <span class="math inline">\(\Delta t = 2\)</span> is a reasonable choice. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter <span class="math inline">\(\theta_4 = 0.3\)</span>, and <span class="math inline">\(\theta_5=2\)</span>, the other parameters are set to 0.</p>
-<p>The algorithm is run for 50000 episodes, and we observe the evolution of the parameters theta(<a href="#fig-theta_evolution_exp1" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-theta_evolution_exp1</span></a>).</p>
+<p>This leaves the choice of the initial value for <span class="math inline">\(\mathbfit{\theta}\)</span>. While it is possible for the parameters to be random, or all set to 0, we use the experiment done in chapter 4 to use. In <a href="5_solverExploration.html#fig-res_ratio10" class="quarto-xref">Figure&nbsp;<span>3.2 (a)</span></a>, it seems that a policy of <span class="math inline">\(\alpha = 0.3\)</span> and <span class="math inline">\(\Delta t = 2\)</span> is a reasonable choice. Since this was done only for a single set of problem parameters, we have no idea of the relationship between problem parameters and optimal solver parameters. Therefore, we only set the parameter <span class="math inline">\(\theta_4 = 0.3\)</span>, and <span class="math inline">\(\theta_5=2\)</span>, the other parameters are set to 0.</p>
+<p>The algorithm is run for 50000 episodes, and we observe the evolution of the parameters theta(<a href="#fig-theta_evolution_exp1" class="quarto-xref">Figure&nbsp;<span>6.1</span></a>).</p>
 <p>Since the discount rate is set to <span class="math inline">\(0\)</span>, in any state, the return is the instant reward received by the agent over a single episode. So, for an episode of length <span class="math inline">\(l\)</span>, we have the rewards <span class="math inline">\(r_1, r_2, \dots, r_l\)</span>. Then, we can plot the average reward <span class="math inline">\(r_{av} = \frac{r_1 + r_2 +\dots + r_l}{l}\)</span> over each episode. Because the variance of <span class="math inline">\(r_{av}\)</span> is still high, we use the rolling average of <span class="math inline">\(r_{av}\)</span> over the last <span class="math inline">\(k = 50\)</span> episodes as a smoother.</p>
-<p>The average reward is the no scaling reward in <a href="#fig-experimentreward" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-experimentreward</span></a> and is trending upward with successive episodes, which is the intended behavior of the algorithm. However, there are certain problems that have been made apparent by the two plots:</p>
+<p>The average reward is the no scaling reward in <a href="#fig-experimentreward" class="quarto-xref">Figure&nbsp;<span>6.2</span></a> and is trending upward with successive episodes, which is the intended behavior of the algorithm. However, there are certain problems that have been made apparent by the two plots:</p>
 <ul>
 <li>Despite running the algorithm for a long time, some of the elements of <span class="math inline">\(\mathbfit{\theta}\)</span> have barely changed, and it is clear that we are far from any convergence of the reward function.</li>
 <li>Even with smoothing, it is apparent that the method has a high variance.</li>
 <li>It seems that <span class="math inline">\(\theta_1\)</span> and <span class="math inline">\(\theta_3\)</span> vary quite a bit over time whereas the other parameters have a steady rate of change.</li>
 </ul>
+<div id="cell-fig-theta_evolution_exp1" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="27">
+<div id="fig-theta_evolution_exp1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-theta_evolution_exp1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="8_implementation_files/figure-html/fig-theta_evolution_exp1-output-1.png" width="902" height="302" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-theta_evolution_exp1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6.1: Evolution of the <span class="math inline">\(\theta\)</span> parameters in a first experiment.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-fig-experimentreward" class="cell" data-cache="true" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="28">
+<div id="fig-experimentreward" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-experimentreward-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="8_implementation_files/figure-html/fig-experimentreward-output-1.png" width="647" height="487" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-experimentreward-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6.2: Evolution of the rolling average (k=50) of the average episode reward, with or without scaling.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
 <p>The slow apparent convergence rate can not be mitigated by a higher learning rate, as this empirically leads to divergence issues.</p>
-<p>The high variance is typical of reinforcement learning tasks, and in particular Monte Carlo based methods, which REINFORCE is a part of. That being said, there exists much better methods that can reduce this variance, at the expense of introducing some bias, such as for example actor-critics methods <span class="citation" data-cites="Sutton1998"><a href="#ref-Sutton1998" role="doc-biblioref">[2, Ch. 13.5]</a></span>, or proximal policy optimization (PPO) <span class="citation" data-cites="DBLP:journals/corr/SchulmanWDRK17"><a href="#ref-DBLP:journals/corr/SchulmanWDRK17" role="doc-biblioref">[3]</a></span>. Both of these methods are not explored in this thesis.</p>
+<p>The high variance is typical of reinforcement learning tasks, and in particular Monte Carlo based methods, which REINFORCE is a part of. That being said, there exists much better methods that can reduce this variance, at the expense of introducing some bias, such as for example actor-critics methods <span class="citation" data-cites="Sutton1998"><a href="10_references.html#ref-Sutton1998" role="doc-biblioref">[2, Ch. 13.5]</a></span>, or proximal policy optimization (PPO) <span class="citation" data-cites="DBLP:journals/corr/SchulmanWDRK17"><a href="10_references.html#ref-DBLP:journals/corr/SchulmanWDRK17" role="doc-biblioref">[3]</a></span>. Both of these methods are not explored in this thesis.</p>
 </section>
 </section>
 <section id="scaling-the-parameters" class="level2" data-number="6.3">
@@ -468,11 +496,11 @@ y_t
 </section>
 <section id="changing-the-variable" class="level3" data-number="6.3.2">
 <h3 data-number="6.3.2" class="anchored" data-anchor-id="changing-the-variable"><span class="header-section-number">6.3.2</span> Changing the variable</h3>
-<p>This section is born from an intuitive idea and is for this reason less formal than the rest. Looking at the equation for the gradient of the log policy (<a href="#eq-policyGradient" class="quarto-xref">Equation&nbsp;<span class="quarto-unresolved-ref">eq-policyGradient</span></a>), we notice that the gradient has a similar expression in each direction. More particularly, the gradient in the direction <span class="math inline">\(i\)</span> is given by the partial derivative</p>
+<p>This section is born from an intuitive idea and is for this reason less formal than the rest. Looking at the equation for the gradient of the log policy (<a href="#eq-policyGradient" class="quarto-xref">Equation&nbsp;<span>6.4</span></a>), we notice that the gradient has a similar expression in each direction. More particularly, the gradient in the direction <span class="math inline">\(i\)</span> is given by the partial derivative</p>
 <p><span class="math display">\[
 \frac{\partial \ln \pi(a|s,\mathbfit{\theta})}{\partial \theta_i} = \xi_{\alpha,\Delta t} (\_) \theta_i
 \]</span></p>
-<p>where <span class="math inline">\(\xi_{\alpha,\Delta t}\)</span> is either <span class="math inline">\(\xi_\alpha\)</span> (<a href="#eq-nabla_xi_alpha" class="quarto-xref">Equation&nbsp;<span class="quarto-unresolved-ref">eq-nabla_xi_alpha</span></a>) or <span class="math inline">\(\xi_{\Delta t}\)</span> (<a href="#eq-nabla_xi_delta_t" class="quarto-xref">Equation&nbsp;<span class="quarto-unresolved-ref">eq-nabla_xi_delta_t</span></a>), and <span class="math inline">\((\_)\)</span> is either:</p>
+<p>where <span class="math inline">\(\xi_{\alpha,\Delta t}\)</span> is either <span class="math inline">\(\xi_\alpha\)</span> (<a href="#eq-nabla_xi_alpha" class="quarto-xref">Equation&nbsp;<span>6.2</span></a>) or <span class="math inline">\(\xi_{\Delta t}\)</span> (<a href="#eq-nabla_xi_delta_t" class="quarto-xref">Equation&nbsp;<span>6.3</span></a>), and <span class="math inline">\((\_)\)</span> is either:</p>
 <ul>
 <li><span class="math inline">\(b\)</span> in the directions <span class="math inline">\(\theta_0\)</span> and <span class="math inline">\(\theta_2\)</span>.</li>
 <li><span class="math inline">\(n\)</span> in the directions <span class="math inline">\(\theta_1\)</span> and <span class="math inline">\(\theta_3\)</span>.</li>
@@ -483,7 +511,7 @@ y_t
 <p><span class="math display">\[
 n' = \frac{n-5}{200}.
 \]</span></p>
-<p>Since <span class="math inline">\(n\)</span> can vary between <span class="math inline">\(5\)</span> and <span class="math inline">\(200\)</span>, <span class="math inline">\(n'\)</span> can have values between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>, just like the values of <span class="math inline">\(b\)</span>. Everything then follows by simply replacing <span class="math inline">\(n\)</span> by <span class="math inline">\(n'\)</span> in <a href="#sec-linear_policy" class="quarto-xref"><span class="quarto-unresolved-ref">sec-linear_policy</span></a>. The new deterministic policy is</p>
+<p>Since <span class="math inline">\(n\)</span> can vary between <span class="math inline">\(5\)</span> and <span class="math inline">\(200\)</span>, <span class="math inline">\(n'\)</span> can have values between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>, just like the values of <span class="math inline">\(b\)</span>. Everything then follows by simply replacing <span class="math inline">\(n\)</span> by <span class="math inline">\(n'\)</span> in <a href="#sec-linear_policy" class="quarto-xref"><span>Section 6.1</span></a>. The new deterministic policy is</p>
 <p><span id="eq-policy2_deterministic_part"><span class="math display">\[
 \begin{pmatrix}
 \mu_\alpha \\
@@ -503,43 +531,61 @@ n'
 \end{pmatrix},
 \tag{6.5}\]</span></span></p>
 <p>and the equation of the gradient is unchanged, with the exception of replacing <span class="math inline">\(n\)</span> by <span class="math inline">\(n'\)</span> everywhere.</p>
-<p>With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to <span class="math inline">\(\alpha = 2\times 10^{-4}\)</span> without divergence. Compared to the first experiment, the average episode reward is much better, as seen in <a href="#fig-experimentreward" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-experimentreward</span></a>.</p>
+<p>With this change implemented, we rerun the first experiment. All the parameters are the same, except that the learning rate can is now set to <span class="math inline">\(\alpha = 2\times 10^{-4}\)</span> without divergence. Compared to the first experiment, the average episode reward is much better, as seen in <a href="#fig-experimentreward" class="quarto-xref">Figure&nbsp;<span>6.2</span></a>.</p>
+<div id="cell-fig-variable_theta" class="cell" data-cache="true" data-fig-height="20%" data-execution_count="5">
+<div class="cell-output cell-output-display" data-execution_count="29">
+<div id="fig-variable_theta" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-variable_theta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="8_implementation_files/figure-html/fig-variable_theta-output-1.png" width="607" height="352" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-variable_theta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6.3: Evolution of the theta parameters with different initial parameters.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-fig-reward_initial_theta" class="cell" data-cache="true" data-execution_count="6">
+<div class="cell-output cell-output-display" data-execution_count="30">
+<div id="fig-reward_initial_theta" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-reward_initial_theta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="8_implementation_files/figure-html/fig-reward_initial_theta-output-1.png" width="647" height="487" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-reward_initial_theta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6.4: Evolution of the rolling average(<span class="math inline">\(k=500\)</span>) of the average episode reward for different initial parameters.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
 </section>
 </section>
 <section id="impact-of-initial-conditions" class="level2" data-number="6.4">
 <h2 data-number="6.4" class="anchored" data-anchor-id="impact-of-initial-conditions"><span class="header-section-number">6.4</span> Impact of initial conditions</h2>
 <p>Gradient based iterations use the local information about an objective (or loss) function <span class="math inline">\(J(\theta)\)</span> to compute the update <span class="math inline">\(\mathbfit{\theta} \rightarrow \mathbfit{\theta} \pm \alpha \nabla J(\mathbfit{\theta})\)</span>. This local behavior also means that any convergence of gradient descent is to a local minimum, and we can’t be certain that this mimimum is a global minimum.</p>
 <p>Let us test whether the algorithm converges to the same values regardless of initial conditions. The third experiment is then to run the algorithm with the same parameters, but with varied initial conditions, and to visualize the results, both in the average rewards and the evolution of <span class="math inline">\(\mathbfit{\theta}\)</span> over 200000 episodes.</p>
-<p>The evolution of <span class="math inline">\(\mathbfit{\theta}\)</span> is in <a href="#fig-variable_theta" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-variable_theta</span></a>, and the rolling average of the average episode reward is plotted in <a href="#fig-reward_initial_theta" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-reward_initial_theta</span></a> for different initial value for <span class="math inline">\(\mathbfit{\theta}\)</span>. It turns out that while convergence in reward is to the same values, the parameter <span class="math inline">\(\theta_3\)</span> does not seem to converge to the same value. Furthermore, even with such a large amount of episodes, it is not clear if the other parameters converged.</p>
+<p>The evolution of <span class="math inline">\(\mathbfit{\theta}\)</span> is in <a href="#fig-variable_theta" class="quarto-xref">Figure&nbsp;<span>6.3</span></a>, and the rolling average of the average episode reward is plotted in <a href="#fig-reward_initial_theta" class="quarto-xref">Figure&nbsp;<span>6.4</span></a> for different initial value for <span class="math inline">\(\mathbfit{\theta}\)</span>. It turns out that while convergence in reward is to the same values, the parameter <span class="math inline">\(\theta_3\)</span> does not seem to converge to the same value. Furthermore, even with such a large amount of episodes, it is not clear if the other parameters converged.</p>
 </section>
 <section id="further-results" class="level2" data-number="6.5">
 <h2 data-number="6.5" class="anchored" data-anchor-id="further-results"><span class="header-section-number">6.5</span> Further results</h2>
-<p>The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how the model performs once we have found some optimal parameters <span class="math inline">\(\mathbfit{\theta}^*\)</span>. In particular, by using the REINFORCE algorithm, the policy function has to be stochastic during training. The actual policy we choose can, however, be deterministic. So, at the risk of adding some bias, we remove the noise <span class="math inline">\(\sigma\)</span> in the policy and choose to use the “deterministic policy” <span class="math inline">\(\alpha = \mu_\alpha\)</span>, <span class="math inline">\(\Delta t = \mu_{\Delta t}\)</span>, as in <a href="#eq-policy_deterministic_part" class="quarto-xref">Equation&nbsp;<span class="quarto-unresolved-ref">eq-policy_deterministic_part</span></a>, and we denote this policy by <span class="math inline">\(\pi_d(a|s,\mathbfit{\theta}^*)\)</span>. For the value of <span class="math inline">\(\mathbfit{\theta}^*\)</span>, we use its last value in the second experiment, which is (with some rounding off)</p>
+<p>The average reward of the episode is a nice way to report on the performance of the method. However, it is difficult to interpret how the model performs once we have found some optimal parameters <span class="math inline">\(\mathbfit{\theta}^*\)</span>. In particular, by using the REINFORCE algorithm, the policy function has to be stochastic during training. The actual policy we choose can, however, be deterministic. So, at the risk of adding some bias, we remove the noise <span class="math inline">\(\sigma\)</span> in the policy and choose to use the “deterministic policy” <span class="math inline">\(\alpha = \mu_\alpha\)</span>, <span class="math inline">\(\Delta t = \mu_{\Delta t}\)</span>, as in <a href="#eq-policy_deterministic_part" class="quarto-xref">Equation&nbsp;<span>6.1</span></a>, and we denote this policy by <span class="math inline">\(\pi_d(a|s,\mathbfit{\theta}^*)\)</span>. For the value of <span class="math inline">\(\mathbfit{\theta}^*\)</span>, we use its last value in the second experiment, which is (with some rounding off)</p>
 <p><span class="math display">\[
 \mathbfit{\theta}^* = (-3.606 \times 10^{-3},4.476\times 10^{-3},-3.598\times 10^{-4},-0.3542 ,0.2435,1.1305)^\intercal.
 \]</span></p>
-<p>Then, we compute the value of <span class="math inline">\(\rho_{10,b,n}\)</span> using this policy and for different values of <span class="math inline">\(n\)</span> and <span class="math inline">\(b\)</span>, the results are as below in <a href="#fig-learned_policy" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-learned_policy</span></a>. While we have convergence at any point, the convergence is slow, and the maximum value for <span class="math inline">\(\rho_{10}\)</span> is <span class="math inline">\(0.99917\)</span>. Referring back to the grid search experiment(see <a href="#fig-res_ratio_comparison" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-res_ratio_comparison</span></a>), this slow convergence is also partly an issue with the solver itself.</p>
-<p>Since we trained the policy on <span class="math inline">\(\rho_{10}\)</span>, it may be a good idea to check if the solver still converges when we compute more iterations. The result are in <a href="#fig-learned_policy" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-learned_policy</span></a>. There are some points where the solver diverges, which is a problem in particular because the point where it diverges are for small values of <span class="math inline">\(b\)</span>, which is often the case physically.</p>
+<p>Then, we compute the value of <span class="math inline">\(\rho_{10,b,n}\)</span> using this policy and for different values of <span class="math inline">\(n\)</span> and <span class="math inline">\(b\)</span>, the results are as below in <a href="#fig-learned_policy" class="quarto-xref">Figure&nbsp;<span>6.5</span></a>. While we have convergence at any point, the convergence is slow, and the maximum value for <span class="math inline">\(\rho_{10}\)</span> is <span class="math inline">\(0.99917\)</span>. Referring back to the grid search experiment(see <a href="5_solverExploration.html#fig-res_ratio_comparison" class="quarto-xref">Figure&nbsp;<span>3.2</span></a>), this slow convergence is also partly an issue with the solver itself.</p>
+<p>Since we trained the policy on <span class="math inline">\(\rho_{10}\)</span>, it may be a good idea to check if the solver still converges when we compute more iterations. The result are in <a href="#fig-learned_policy" class="quarto-xref">Figure&nbsp;<span>6.5</span></a>. There are some points where the solver diverges, which is a problem in particular because the point where it diverges are for small values of <span class="math inline">\(b\)</span>, which is often the case physically.</p>
 <p>This divergence indicates that it may be a good idea to further train the learned policy by computing <span class="math inline">\(\rho_{100}\)</span>, and having a reward of <span class="math inline">\(1-\rho_{100}\)</span> instead of <span class="math inline">\(1-\rho_{10}\)</span>. This of course means that the training time will have to be longer. In that case, we can set <span class="math inline">\(\mathbfit{\theta}^*\)</span> as a starting parameter for the policy.</p>
-<div id="fig-learned_policy_b" class="quarto-figure quarto-figure-center quarto-float anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-learned_policy_b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<embed src="images/learned_policy_100.pdf" height="200">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-learned_policy_b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.1: <span class="math inline">\(\rho_{100}\)</span>. Note the divergence in black, for low values of <span class="math inline">\(b\)</span>.
-</figcaption>
-</figure>
-</div>
 <div id="fig-learned_policy" class="quarto-layout-panel">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-learned_policy-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-learned_policy" style="flex-basis: 100.0%;justify-content: flex-start;">
-<div id="fig-learned_policy_a" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-learned_policy_a" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-learned_policy_a-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<embed src="images/learned_policy_10.pdf" class="img-fluid" data-ref-parent="fig-learned_policy">
+<embed src="images/learned_policy_10.pdf" data-ref-parent="fig-learned_policy" height="200">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-learned_policy_a-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) <span class="math inline">\(\rho_{10}\)</span>. Maximum residual ratio: 0.99922.
@@ -550,7 +596,7 @@ Figure&nbsp;6.1: <span class="math inline">\(\rho_{100}\)</span>. Note the diver
 </div>
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-learned_policy" style="flex-basis: 100.0%;justify-content: flex-start;">
-<div id="fig-learned_policy_b" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-learned_policy_b" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-learned_policy_b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <embed src="images/learned_policy_100.pdf" data-ref-parent="fig-learned_policy" height="200">
@@ -564,13 +610,13 @@ Figure&nbsp;6.1: <span class="math inline">\(\rho_{100}\)</span>. Note the diver
 </div>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-learned_policy-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.2: Evolution of the residual ratio <span class="math inline">\(\rho_{10}\)</span> and <span class="math inline">\(\rho_{100}\)</span>, with the learned policy, depending on the problem parameters <span class="math inline">\(n\)</span> and <span class="math inline">\(b\)</span>.
+Figure&nbsp;6.5: Evolution of the residual ratio <span class="math inline">\(\rho_{10}\)</span> and <span class="math inline">\(\rho_{100}\)</span>, with the learned policy, depending on the problem parameters <span class="math inline">\(n\)</span> and <span class="math inline">\(b\)</span>.
 </figcaption>
 </figure>
 </div>
 
 
-<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list" style="display: none">
 <div id="ref-lillicrap2019continuous" class="csl-entry" role="listitem">
 <div class="csl-left-margin">[1] </div><div class="csl-right-inline">T. P. Lillicrap <em>et al.</em>, <span>“Continuous control with deep reinforcement learning.”</span> 2019. Available: <a href="https://arxiv.org/abs/1509.02971">https://arxiv.org/abs/1509.02971</a></div>
 </div>
@@ -619,18 +665,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -662,7 +697,47 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -697,7 +772,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');
@@ -973,12 +1052,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./7_policyGradient.html" class="pagination-link  aria-label=" &lt;span="" gradient="" method&lt;="" span&gt;"="">
+      <a href="./7_policyGradient.html" class="pagination-link" aria-label="Policy Gradient Method">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Policy Gradient Method</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./9_summary.html" class="pagination-link" aria-label="<span class='chapter-number'>7</span>&nbsp; <span class='chapter-title'>Summary and Discussion</span>">
+      <a href="./9_summary.html" class="pagination-link" aria-label="Summary and Discussion">
         <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Summary and Discussion</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>

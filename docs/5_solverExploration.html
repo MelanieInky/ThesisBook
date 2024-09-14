@@ -2,13 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.549">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Mélanie Fournier">
 
-<title>Reinforcement Learning for the Optimization of Explicit Runge Kutta Method Parameters - 3&nbsp; Explicit Runge-Kutta Method</title>
+<title>3&nbsp; Explicit Runge-Kutta Method – Reinforcement Learning for the Optimization of Explicit Runge Kutta Method Parameters</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -90,7 +90,7 @@ div.csl-indent {
   }
 }</script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
@@ -128,13 +128,13 @@ window.Quarto = {
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
         <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./5_solverExploration.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Explicit Runge-Kutta Method</span></a></li></ol></nav>
-        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -260,7 +260,7 @@ window.Quarto = {
 
 <section id="a-small-introduction-to-explicit-runge-kutta-methods" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="a-small-introduction-to-explicit-runge-kutta-methods"><span class="header-section-number">3.1</span> A small introduction to explicit Runge-Kutta methods</h2>
-<p>This section aims to introduce explicit Runge-Kutta methods, <span class="citation" data-cites="NumDiffEqBook"><a href="#ref-NumDiffEqBook" role="doc-biblioref">[1, Ch. 3]</a></span>, which we use in this paper. We consider solving a generic initial value problem of the form</p>
+<p>This section aims to introduce explicit Runge-Kutta methods, <span class="citation" data-cites="NumDiffEqBook"><a href="10_references.html#ref-NumDiffEqBook" role="doc-biblioref">[1, Ch. 3]</a></span>, which we use in this paper. We consider solving a generic initial value problem of the form</p>
 <p><span class="math display">\[
 y'(t) = f(t,y(t)), \quad y(0) = y_0.
 \]</span></p>
@@ -279,7 +279,7 @@ y_{n+1} = y_n + \Delta tf(t_n,y_n),
 <p><span class="math display">\[
 \int_0^1 f(t_n+\Delta t \tau,y(t_n+\Delta t\tau))\; d\tau \approx \sum_{j=1}^\nu b_j f(t_n + \Delta t c_j,y(t_n+\Delta t c_j)).
 \]</span></p>
-<p>This is all well and good, except that we have to know the values <span class="math inline">\(y(t_n+\Delta c_j)\)</span>, which we do not possess. We can however, play pretend and compute an approximation of these values <span class="math inline">\(\xi_j \approx y(t_n+\Delta t c_j), j=1,\dots, \nu\)</span>. The <span class="math inline">\(\xi_j\)</span> are called <em>stage values</em>. <span class="citation" data-cites="BirkenNotes"><a href="#ref-BirkenNotes" role="doc-biblioref">[2]</a></span>. The main idea to use the <span class="math inline">\(\xi_i\)</span>’s to compute <span class="math inline">\(\xi_j\)</span>, using a linear combination of the terms <span class="math inline">\(f(t_n + \Delta t c_j, \xi_i)\)</span>. That is</p>
+<p>This is all well and good, except that we have to know the values <span class="math inline">\(y(t_n+\Delta c_j)\)</span>, which we do not possess. We can however, play pretend and compute an approximation of these values <span class="math inline">\(\xi_j \approx y(t_n+\Delta t c_j), j=1,\dots, \nu\)</span>. The <span class="math inline">\(\xi_j\)</span> are called <em>stage values</em>. <span class="citation" data-cites="BirkenNotes"><a href="10_references.html#ref-BirkenNotes" role="doc-biblioref">[2]</a></span>. The main idea to use the <span class="math inline">\(\xi_i\)</span>’s to compute <span class="math inline">\(\xi_j\)</span>, using a linear combination of the terms <span class="math inline">\(f(t_n + \Delta t c_j, \xi_i)\)</span>. That is</p>
 <p><span class="math display">\[
 \xi_i = y_n + \Delta t \sum_{j=1}^\nu a_{ij}f(t_n+\Delta t c_j, \xi_j),
 \]</span></p>
@@ -307,7 +307,7 @@ y_{n+1} = y_n + h\sum_{j=1}^\nu b_j f(t_n+\Delta t c_j,\xi_j),
 </section>
 <section id="sec-RK_solver_test_problem" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="sec-RK_solver_test_problem"><span class="header-section-number">3.2</span> Application to the test problem</h2>
-<p>We now have to solve the ODE <span class="math inline">\(u'(t) = e - Mu(t)\)</span> where <span class="math inline">\(M\)</span> depends on the problem parameters <span class="math inline">\(b\)</span> and <span class="math inline">\(\Delta x = 1 / (n+1)\)</span>, and <span class="math inline">\(n\)</span> is the chosen number of subdivisions of <span class="math inline">\([0,1]\)</span>. We consider in this thesis the following RK method with two stages <span class="citation" data-cites="BirkenNotes"><a href="#ref-BirkenNotes" role="doc-biblioref">[2]</a></span>;</p>
+<p>We now have to solve the ODE <span class="math inline">\(u'(t) = e - Mu(t)\)</span> where <span class="math inline">\(M\)</span> depends on the problem parameters <span class="math inline">\(b\)</span> and <span class="math inline">\(\Delta x = 1 / (n+1)\)</span>, and <span class="math inline">\(n\)</span> is the chosen number of subdivisions of <span class="math inline">\([0,1]\)</span>. We consider in this thesis the following RK method with two stages <span class="citation" data-cites="BirkenNotes"><a href="10_references.html#ref-BirkenNotes" role="doc-biblioref">[2]</a></span>;</p>
 <p><span class="math display">\[
 \begin{array}
 {c|cc}
@@ -345,14 +345,14 @@ u_{n+1} = u_n + \Delta t f(t_n+\alpha \Delta t, \xi_2).
 \tag{3.2}\]</span></span> and <span id="eq-K"><span class="math display">\[
 \mathbfit{K} = \mathbfit{I}- \mathbfit{LM} = \left[\mathbfit{I}- \Delta t(\mathbfit{I}- \alpha \Delta t \mathbfit{M})\mathbfit{M}\right].
 \tag{3.3}\]</span></span></p>
-<p>We recognize this iteration as a linear stationary iteration, which converges to a unique fixed point for any starting value <span class="math inline">\(\mathbfit{u}_0\)</span> if and only if <span class="math inline">\(\rho(K)&lt;1\)</span>, <span class="citation" data-cites="iterative_method_book"><a href="#ref-iterative_method_book" role="doc-biblioref">[3, Ch. 2.2]</a></span>, where <span class="math inline">\(\rho(\mathbfit{K})\)</span> is the spectral radius of <span class="math inline">\(\mathbfit{K}\)</span>. Furthermore, this iteration satisfies the consistency requirement <span class="math inline">\(\mathbfit{K} = \mathbfit{I}-\mathbfit{LM}\)</span>, so the fixed point, when it exists, is <span class="math inline">\(\mathbfit{u}^* = \mathbfit{M}^{-1}\mathbfit{e}\)</span>.</p>
+<p>We recognize this iteration as a linear stationary iteration, which converges to a unique fixed point for any starting value <span class="math inline">\(\mathbfit{u}_0\)</span> if and only if <span class="math inline">\(\rho(K)&lt;1\)</span>, <span class="citation" data-cites="iterative_method_book"><a href="10_references.html#ref-iterative_method_book" role="doc-biblioref">[3, Ch. 2.2]</a></span>, where <span class="math inline">\(\rho(\mathbfit{K})\)</span> is the spectral radius of <span class="math inline">\(\mathbfit{K}\)</span>. Furthermore, this iteration satisfies the consistency requirement <span class="math inline">\(\mathbfit{K} = \mathbfit{I}-\mathbfit{LM}\)</span>, so the fixed point, when it exists, is <span class="math inline">\(\mathbfit{u}^* = \mathbfit{M}^{-1}\mathbfit{e}\)</span>.</p>
 <div class="proof remark">
-<p><span class="proof-title"><em>Remark</em>. </span>One may remark that <span class="math inline">\(\mathbfit{K} = p(\Delta t \mathbfit{M})\)</span> with <span class="math inline">\(p(z) = 1- z + \alpha z^2\)</span> a polynomial. This polynomial is also the stability polynomial of the RK method <span class="citation" data-cites="BirkenNotes"><a href="#ref-BirkenNotes" role="doc-biblioref">[2]</a></span>.</p>
+<p><span class="proof-title"><em>Remark</em>. </span>One may remark that <span class="math inline">\(\mathbfit{K} = p(\Delta t \mathbfit{M})\)</span> with <span class="math inline">\(p(z) = 1- z + \alpha z^2\)</span> a polynomial. This polynomial is also the stability polynomial of the RK method <span class="citation" data-cites="BirkenNotes"><a href="10_references.html#ref-BirkenNotes" role="doc-biblioref">[2]</a></span>.</p>
 </div>
 </section>
 <section id="residual-ratios" class="level3" data-number="3.2.2">
 <h3 data-number="3.2.2" class="anchored" data-anchor-id="residual-ratios"><span class="header-section-number">3.2.2</span> Residual ratios</h3>
-<p>We have shown in the last section the sufficient and necessary condition for the solver to converge to the desired solution <span class="math inline">\(\mathbfit{u}^* = \mathbfit{M}^{-1}\mathbfit{e}\)</span>. This condition is that <span class="math inline">\(\rho(\mathbfit{K})&lt;1\)</span>. The spectral radius can be computed with power iterations <span class="citation" data-cites="NLA_book"><a href="#ref-NLA_book" role="doc-biblioref">[4, Pt. V]</a></span>, but this is an expensive task that we may not be able to do in practice. Furthermore, the derivation of <span class="math inline">\(\mathbfit{K}\)</span> is specific to this method, and may not be as accessible with other methods. We instead turn our attention to another method.</p>
+<p>We have shown in the last section the sufficient and necessary condition for the solver to converge to the desired solution <span class="math inline">\(\mathbfit{u}^* = \mathbfit{M}^{-1}\mathbfit{e}\)</span>. This condition is that <span class="math inline">\(\rho(\mathbfit{K})&lt;1\)</span>. The spectral radius can be computed with power iterations <span class="citation" data-cites="NLA_book"><a href="10_references.html#ref-NLA_book" role="doc-biblioref">[4, Pt. V]</a></span>, but this is an expensive task that we may not be able to do in practice. Furthermore, the derivation of <span class="math inline">\(\mathbfit{K}\)</span> is specific to this method, and may not be as accessible with other methods. We instead turn our attention to another method.</p>
 <p>We set <span class="math inline">\(\mathbfit{u}_0 = \mathbfit{e}\)</span> as an initial value. We define the relative residual after <span class="math inline">\(k\)</span> steps as</p>
 <p><span id="eq-relative_residual"><span class="math display">\[
 r_k = \frac{||\mathbfit{M}\mathbfit{u}_k - \mathbfit{e}||}{||\mathbfit{e}||},
@@ -362,10 +362,10 @@ r_k = \frac{||\mathbfit{M}\mathbfit{u}_k - \mathbfit{e}||}{||\mathbfit{e}||},
 <p><span id="eq-residual_ratio_equation"><span class="math display">\[
 \rho_k = \frac{r_k}{r_{k-1}} = \frac{||\mathbfit{Mu}_k - \mathbfit{e}||}{||\mathbfit{Mu}_{k-1}-\mathbfit{e}||}.
 \tag{3.5}\]</span></span></p>
-<p>Note that the residual ratio depends on both the problem parameters and the solver parameters. It will be useful in future sections to make that relation evident by using the notation <span class="math inline">\(\rho_{k,b,n}(\alpha, \Delta t)\)</span>. <a href="#fig-residual_ratio_evolution" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-residual_ratio_evolution</span></a> shows the evolution of the relative residual, as well as the residual ratio for specific parameters. After a certain number of iterations, the residual ratio stabilizes. This can be however be after a large amount of iterations, so the rate of convergence can be costly to compute.</p>
+<p>Note that the residual ratio depends on both the problem parameters and the solver parameters. It will be useful in future sections to make that relation evident by using the notation <span class="math inline">\(\rho_{k,b,n}(\alpha, \Delta t)\)</span>. <a href="#fig-residual_ratio_evolution" class="quarto-xref">Figure&nbsp;<span>3.1</span></a> shows the evolution of the relative residual, as well as the residual ratio for specific parameters. After a certain number of iterations, the residual ratio stabilizes. This can be however be after a large amount of iterations, so the rate of convergence can be costly to compute.</p>
 <div id="cell-fig-residual_ratio_evolution" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
-<div id="fig-residual_ratio_evolution" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-residual_ratio_evolution" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-residual_ratio_evolution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="5_solverExploration_files/figure-html/fig-residual_ratio_evolution-output-1.png" width="614" height="429" class="figure-img">
@@ -382,7 +382,7 @@ Figure&nbsp;3.1: Evolution of the residual norm over iteration, with problem par
 <section id="sec-small_experiment" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="sec-small_experiment"><span class="header-section-number">3.3</span> A small experiment</h2>
 <p>We are interested in finding the best parameters <span class="math inline">\((\Delta t, \alpha)\)</span> to use for some specific problem parameters <span class="math inline">\((b,n)\)</span>. Ideally, we should minimize the asymptotic residual ratio <span class="math inline">\(\rho_\infty\)</span>, but this is computationally intensive, so we restrict ourselves to minimizing the residual ratio <span class="math inline">\(\rho_k\)</span> after a fixed amount of iterations.</p>
-<p>As we’ve seen in <a href="#fig-residual_ratio_evolution" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-residual_ratio_evolution</span></a>, <span class="math inline">\(\rho_k\)</span> can vary quite a bit depending on <span class="math inline">\(k\)</span>, so we decide to investigate the residual ratio after 10 iterations and 100 iterations. We set the problem parameters <span class="math inline">\(b = 0.05\)</span>, and <span class="math inline">\(n = 100\)</span>, and we plot <span class="math inline">\(\rho_{k,0.05,100}(\Delta t, \alpha)\)</span> for different values of <span class="math inline">\(k\)</span>. This is achieved by making a linear grid for parameters <span class="math inline">\(\Delta t\)</span> and <span class="math inline">\(\alpha\)</span> of size <span class="math inline">\(100\times 100\)</span>, where <span class="math inline">\(\alpha\)</span> varies between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>, and <span class="math inline">\(\Delta t\)</span> varies between <span class="math inline">\(0\)</span> and <span class="math inline">\(5\)</span>, then computing the residual ratios on that grid.</p>
+<p>As we’ve seen in <a href="#fig-residual_ratio_evolution" class="quarto-xref">Figure&nbsp;<span>3.1</span></a>, <span class="math inline">\(\rho_k\)</span> can vary quite a bit depending on <span class="math inline">\(k\)</span>, so we decide to investigate the residual ratio after 10 iterations and 100 iterations. We set the problem parameters <span class="math inline">\(b = 0.05\)</span>, and <span class="math inline">\(n = 100\)</span>, and we plot <span class="math inline">\(\rho_{k,0.05,100}(\Delta t, \alpha)\)</span> for different values of <span class="math inline">\(k\)</span>. This is achieved by making a linear grid for parameters <span class="math inline">\(\Delta t\)</span> and <span class="math inline">\(\alpha\)</span> of size <span class="math inline">\(100\times 100\)</span>, where <span class="math inline">\(\alpha\)</span> varies between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>, and <span class="math inline">\(\Delta t\)</span> varies between <span class="math inline">\(0\)</span> and <span class="math inline">\(5\)</span>, then computing the residual ratios on that grid.</p>
 <p>We wish to find the optimal parameters for this specific problem, that is, the ones that minimize <span class="math inline">\(\rho_{k}\)</span>, for different values of <span class="math inline">\(k\)</span>. We are also interested in seeing how much the optimal parameters depend on <span class="math inline">\(k\)</span>.</p>
 <p>After 100 iterations, we see that we need to choose the parameters in more narrow region than after 10 iterations to get <span class="math inline">\(\rho_{100}&lt;1\)</span>, suggesting that convergence of the solver may not hold even if it seems to hold for the first few iterations. However, this doesn’t seem to be the case when we consider higher values of <span class="math inline">\(k\)</span>. Nevertheless, we can see how the solver parameters interact with the residual ratio.</p>
 <p>By doing this experiment, we motivate the following method: using a grid search, look for the solver parameters that minimize <span class="math inline">\(\rho_k\)</span>, where <span class="math inline">\(k\)</span> has to be chosen as low as possible to minimize computing time, but also high enough to ensure that the solver won’t diverge after more iterations. This method however need to be repeated for each individual problem parameters. We therefore explore a possible solution to this problem by using a reinforcement learning algorithm to “learn” the optimal solver parameters <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\Delta t\)</span>, as a function of the problem parameters <span class="math inline">\(b\)</span> and <span class="math inline">\(n\)</span>.</p>
@@ -391,7 +391,7 @@ Figure&nbsp;3.1: Evolution of the residual norm over iteration, with problem par
 <div aria-describedby="fig-res_ratio_comparison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-res_ratio_comparison" style="flex-basis: 50.0%;justify-content: flex-start;">
-<div id="fig-res_ratio10" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-res_ratio10" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-res_ratio10-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <embed src="images/res_ratio10.pdf" class="img-fluid" data-ref-parent="fig-res_ratio_comparison">
@@ -403,7 +403,7 @@ Figure&nbsp;3.1: Evolution of the residual norm over iteration, with problem par
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-res_ratio_comparison" style="flex-basis: 50.0%;justify-content: flex-start;">
-<div id="fig-res_ratio100" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-res_ratio100" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-res_ratio100-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <embed src="images/res_ratio100.pdf" class="img-fluid" data-ref-parent="fig-res_ratio_comparison">
@@ -417,7 +417,7 @@ Figure&nbsp;3.1: Evolution of the residual norm over iteration, with problem par
 </div>
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-res_ratio_comparison" style="flex-basis: 50.0%;justify-content: flex-start;">
-<div id="fig-res_ratio200" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-res_ratio200" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-res_ratio200-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <embed src="images/res_ratio200.pdf" class="img-fluid" data-ref-parent="fig-res_ratio_comparison">
@@ -429,7 +429,7 @@ Figure&nbsp;3.1: Evolution of the residual norm over iteration, with problem par
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-res_ratio_comparison" style="flex-basis: 50.0%;justify-content: flex-start;">
-<div id="fig-res_ratio500" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-res_ratio500" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-res_ratio500-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <embed src="images/res_ratio500.pdf" class="img-fluid" data-ref-parent="fig-res_ratio_comparison">
@@ -449,7 +449,7 @@ Figure&nbsp;3.2: Contour plot of some residual ratios <span class="math inline">
 </div>
 
 
-<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list" style="display: none">
 <div id="ref-NumDiffEqBook" class="csl-entry" role="listitem">
 <div class="csl-left-margin">[1] </div><div class="csl-right-inline">A. Iserles, <em>A first course in the numerical analysis of differential equations /</em>, 2. ed. in Cambridge texts in applied mathematics. Cambridge ; Cambridge University Press, 2009.</div>
 </div>
@@ -501,18 +501,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -544,7 +533,47 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -579,7 +608,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');
@@ -855,12 +888,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./4_convecDiff.html" class="pagination-link  aria-label=" &lt;span="" test="" problem,="" the="" convection="" diffusion="" equation&lt;="" span&gt;"="">
+      <a href="./4_convecDiff.html" class="pagination-link" aria-label="A Test Problem, the Convection Diffusion Equation">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">A Test Problem, the Convection Diffusion Equation</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./6_reinforcementBasic.html" class="pagination-link" aria-label="<span class='chapter-number'>4</span>&nbsp; <span class='chapter-title'>Basics of Reinforcement Learning (RL)</span>">
+      <a href="./6_reinforcementBasic.html" class="pagination-link" aria-label="Basics of Reinforcement Learning (RL)">
         <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Basics of Reinforcement Learning (RL)</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
