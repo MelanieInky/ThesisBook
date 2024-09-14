@@ -3,3 +3,8 @@
 /Log/
 notedThesis.pdf
 /.venv/
+test.aux
+test.fdb_latexmk
+test.fls
+test.Log
+test.tex
