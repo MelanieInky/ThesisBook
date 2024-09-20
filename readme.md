@@ -10,3 +10,7 @@ To reproduce the experiments in the last sections, simply open the main.py file,
 
 The book was rendered and published with quarto 1.5.57, using a python 3.11.7 (see requirements.txt), Jupyter 5.7.2.
 
+Keywords: reinforcement learning, policy gradient, REINFORCE, Runge-Kutta method, differential equation, scientific machine learning
+
+
+
